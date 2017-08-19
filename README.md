@@ -50,6 +50,6 @@ tt <br>
 
 
 
-### Opinionated analysis development
+### Opinionated analysis development (Hillary Parker)
 
 https://www.slideshare.net/hilaryparker/opinionated-analysis-development?next_slideshow=1ßß
