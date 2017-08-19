@@ -20,6 +20,8 @@ Slide 40 for remedies.
 
 Slide 3.
 
+### [*organization*](http://www2.stat.duke.edu/~rcs46/lectures_2015/01-markdown-git/slides/organization-slides/organization-slides.pdf) Jenny Bryan
+
 ## Coding Standards
 
 ### [*R Code Style Guide*](http://adv-r.had.co.nz/Style.html) Hadley Wickham
