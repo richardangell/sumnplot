@@ -6,6 +6,7 @@ Links to various resources to help with analysis development.
 
 * [Analysis Development](#analysis-development)
 * [Coding Standards](#coding-standards)
+* [Git Workflow](#git-workflow)
 
 ------
 
@@ -29,3 +30,32 @@ Slide 3.
 ### [*R Style Guide*](https://google.github.io/styleguide/Rguide.xml) Google
 
 Do not follow section *2. Identifiers*, follow Hadley Wickham's convention instead.
+
+## Git Workflow
+(Note, section is a work in progress)
+
+### [*Git Workflows That Work*](http://blog.endpoint.com/2014/05/git-workflows-that-work.html) Spencer Christensen
+
+An overview of 4 different Git workflows.
+
+### [*Comparing Workflows*](https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow) Atlassian
+
+4 increasingly complex Git workflows.
+
+### [*Github Flow*](http://scottchacon.com/2011/08/31/github-flow.html) Scott Chacon
+
+Git workflow used at Github.
+
+### [*Understanding the Git Workflow*](https://sandofsky.com/blog/git-workflow.html) Benjamin Sandofsky
+
+### [*A successful Git branching model*](http://nvie.com/posts/a-successful-git-branching-model/) Vincent Driessen
+
+Gitflow.
+
+### [*Gitflow considered harmful*](http://endoflineblog.com/gitflow-considered-harmful) Adam Ruka
+
+Case against Gitflow.
+
+### [*A successful Git branching model considered harmful*](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/) Jussi Judin
+
+Case against Gitflow.
