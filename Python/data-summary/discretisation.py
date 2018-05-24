@@ -59,7 +59,19 @@ def equal_weight(data, variable, weights, n):
 
     print('bb')
 
-    df = data[[variable, weights]].sort_values(variable)
+    if weights == None:
+
+        df = data[[variable]].copy()
+
+        df ['weights'] = 1
+
+        weights = 'weights'
+
+        df.sort_values(variable, inplace = True)
+
+    else:
+
+        df = data[[variable, weights]].sort_values(variable)
 
     # group by variable of interest to get weights and count by each data value
     summary = df.groupby(df[variable]).agg({weights: ['sum', 'count']})
@@ -68,32 +80,38 @@ def equal_weight(data, variable, weights, n):
 
     summary.reset_index(inplace = True)
 
-    summary[variable] = summary[variable].astype(str)
+    bin_weight = summary['sum'].sum() / n
 
-    total_count = summary['count'].sum()
+    rows = []
+    weighted_cut_points = []
 
-    # if the total record count does not equal the number of rows from df
-    # then create a new row to append containing the sum and count of null rows
-    # this is required because pandas removes null rows from the groupby 
-    # see https://github.com/pandas-dev/pandas/issues/3729 for more info
-    if total_count != df.shape[0]:
+    bucket_sum = 0
+
+    for i in range(summary.shape[0]):
         
-        null_row = pd.DataFrame(data = {variable: 'Null', 
-                                        'sum': df[weights].sum() - summary['sum'].sum(), 
-                                        'count': df.shape[0] - total_count}, 
-                                index = [summary.shape[0]])
-
-        summary = summary.append(null_row)
-
-    summary['cumsum_weight'] = summary['sum'].cumsum(skipna = False)
-
-    summary['cumsum_weight_pct'] = summary.cumsum_weight / summary['sum'].sum() 
-
-    summary['weighted_bucket'] = summary.cumsum_weight_pct / (1 / n)
-
+        bucket_sum += summary.iloc[i]['sum']
+        
+        if bucket_sum >= bin_weight:
+            
+            rows.append(i)
+            
+            weighted_cut_points.append(summary.iloc[i][variable])
+            
+            bucket_sum = 0
     
+    # if the last value that was added was not from the last row
+    if (weighted_cut_points[len(weighted_cut_points)-1]) != summary.iloc[i][variable]:
+        
+        rows.append(i)
+        
+        weighted_cut_points.append(summary.iloc[i][variable])
 
-    return(2)
+    variable_cut = pd.cut(data[variable], weighted_cut_points, include_lowest = True)
+    
+    variable_cut = add_null_category(variable_cut)
+
+    return(variable_cut)
+
 
 
 
