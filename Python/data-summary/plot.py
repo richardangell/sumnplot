@@ -134,6 +134,8 @@ def plot_1way_summary(df,
 
     summary_values = df.groupby(cut).agg(f)
 
+    summary_values.index.name = by_col
+
     summary_values.columns = [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
                                                           summary_values.columns.get_level_values(1).values)]
 
