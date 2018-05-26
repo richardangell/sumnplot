@@ -45,8 +45,6 @@ def discretise(data, bucketing_type, variable, n = None, weights = None):
 
 def equal_width(variable, n):
 
-    print('aa')
-    
     variable_cut = pd.cut(variable, n, include_lowest = True)
 
     variable_cut = add_null_category(variable_cut)
@@ -56,8 +54,6 @@ def equal_width(variable, n):
 
 
 def equal_weight(data, variable, weights, n):
-
-    print('bb')
 
     if weights == None:
 
