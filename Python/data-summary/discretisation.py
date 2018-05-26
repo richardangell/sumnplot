@@ -45,6 +45,7 @@ def discretise(data, bucketing_type, variable, n = None, weights = None):
 
 def equal_width(variable, n):
 
+    # see https://github.com/pandas-dev/pandas/issues/17047 for issues with include_lowest
     variable_cut = pd.cut(variable, n, include_lowest = True)
 
     variable_cut = add_null_category(variable_cut)

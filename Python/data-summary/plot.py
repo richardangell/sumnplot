@@ -164,6 +164,7 @@ def plot_2way_summary(df,
                       observed, 
                       fitted = None, 
                       fitted2 = None, 
+                      bars_percent = False,
                       bins = None, 
                       bucketing_type = None,
                       title = None,
@@ -229,6 +230,7 @@ def plot_2way_summary(df,
                                   observed = observed_summary, 
                                   fitted = fitted_summary, 
                                   fitted2 = fitted2_summary, 
+                                  bars_percent = bars_percent,
                                   title = title,
                                   figsize_h = figsize_h, 
                                   figsize_w = figsize_w,
@@ -243,6 +245,7 @@ def plot_summarised_variable_2way(summary_df,
                                   observed, 
                                   fitted = None, 
                                   fitted2 = None, 
+                                  bars_percent = False,
                                   title = None,
                                   figsize_h = 14, 
                                   figsize_w = 8,
@@ -266,6 +269,14 @@ def plot_summarised_variable_2way(summary_df,
 
 
     unstack_weights = summary_df[weights].unstack()
+
+    if bars_percent:
+
+        row_totals = unstack_weights.sum(axis = 1)
+
+        for col in unstack_weights.columns.values:
+
+            unstack_weights[col] = unstack_weights[col] / row_totals
 
     # fill in levels with no weight (i.e. nulls) with 0
     unstack_weights.fillna(0, inplace = True)
