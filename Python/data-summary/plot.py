@@ -309,7 +309,7 @@ def plot_summarised_variable_2way(summary_df,
 
     ax2 = ax1.twinx()
 
-    unstack_observed = summary_df['income_mean'].unstack()
+    unstack_observed = summary_df[observed].unstack()
 
     for i in range(len(split_levels)):
         
