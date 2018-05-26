@@ -220,6 +220,8 @@ def plot_2way_summary(df,
 
     summary_values = df.groupby([cut, df[split_by_col]]).agg(f)
 
+    summary_values.index.names = [by_col, split_by_col]
+
     summary_values.columns = [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
                                                           summary_values.columns.get_level_values(1).values)]
 
