@@ -16,6 +16,16 @@ def discretise(data, bucketing_type, variable, n = None, quantiles = None, weigh
 
         assert weights in data.columns.values, 'weights; %s is not in data' % weights
 
+    if quantiles is not None:
+
+        quantiles = np.array(quantiles)
+
+        quantiles = np.unique(np.sort(np.append(quantiles, [0, 1])))
+
+        assert np.all(quantiles >= 0), 'quantiles should be all greater than or equal to 0'
+
+        assert np.all(quantiles <= 1), 'quantiles should be all less than or equal to 1'
+
     if bucketing_type == 'equal_width':
 
         bucketed_variable = equal_width(variable = data[variable],
@@ -36,7 +46,10 @@ def discretise(data, bucketing_type, variable, n = None, quantiles = None, weigh
 
     elif bucketing_type == 'weighted_quantile':
 
-        raise ValueError('weighted_quantile bucketing_type not yet supported.')
+        bucketed_variable = weighted_quantile(data = data, 
+                                              variable = variable,
+                                              weights = weights,
+                                              quantiles = quantiles)
 
     else:
 
@@ -116,10 +129,6 @@ def equal_weight(data, variable, weights, n):
 
 def quantile(data, variable, quantiles):
 
-    quantiles = np.array(quantiles)
-
-    quantiles = np.unique(np.sort(np.append(quantiles, [0, 1])))
-
     quantile_values = data[variable].quantile(quantiles)
 
     variable_cut = pd.cut(data[variable], np.unique(quantile_values), include_lowest = True)
@@ -127,6 +136,48 @@ def quantile(data, variable, quantiles):
     variable_cut = add_null_category(variable_cut)
 
     return(variable_cut)    
+
+
+
+
+def weighted_quantile(data, variable, weights, quantiles):
+
+    if weights == None:
+
+        df = data.loc[~data[variable].isnull(), [variable]].copy()
+
+        df['weights'] = 1
+
+        weights = 'weights'
+
+        df.sort_values(variable, inplace = True)
+
+    else:
+
+        df = data.loc[~data[variable].isnull(), [variable, weights]].sort_values(variable)
+
+    df['cumsum_weights'] = df[weights].cumsum() / df[weights].sum()
+
+    j = 0
+
+    weighted_cut_points = []
+
+    for i in range(df.shape[0]):
+        
+        if df.iloc[i]['cumsum_weights'] >= quantiles[j]:
+
+            weighted_cut_points.append(df.iloc[i][variable])
+
+            j += 1
+
+    variable_cut = pd.cut(data[variable], np.unique(weighted_cut_points), include_lowest = True)
+    
+    variable_cut = add_null_category(variable_cut)
+
+    return(variable_cut)
+
+
+
 
 
 def add_null_category(categorical_variable):
