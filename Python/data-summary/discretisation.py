@@ -1,8 +1,8 @@
 import pandas as pd
+import numpy as np
 
 
-
-def discretise(data, bucketing_type, variable, n = None, weights = None):
+def discretise(data, bucketing_type, variable, n = None, quantiles = None, weights = None):
 
     type_valid_options = ['equal_width', 'equal_weight', 'quantile', 'weighted_quantile']
 
@@ -30,7 +30,9 @@ def discretise(data, bucketing_type, variable, n = None, weights = None):
 
     elif bucketing_type == 'quantile':
 
-        raise ValueError('quantile bucketing_type not yet supported.')
+        bucketed_variable = quantile(data = data, 
+                                     variable = variable,
+                                     quantiles = quantiles)
 
     elif bucketing_type == 'weighted_quantile':
 
@@ -110,6 +112,21 @@ def equal_weight(data, variable, weights, n):
     return(variable_cut)
 
 
+
+
+def quantile(data, variable, quantiles):
+
+    quantiles = np.array(quantiles)
+
+    quantiles = np.unique(np.sort(np.append(quantiles, [0, 1])))
+
+    quantile_values = data[variable].quantile(quantiles)
+
+    variable_cut = pd.cut(data[variable], np.unique(quantile_values), include_lowest = True)
+
+    variable_cut = add_null_category(variable_cut)
+
+    return(variable_cut)    
 
 
 def add_null_category(categorical_variable):
