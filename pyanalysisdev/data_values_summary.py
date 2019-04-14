@@ -77,7 +77,13 @@ def summarise_column(df, column, max_values, summary_values, top_mid_bottom):
 
     
 def resize_column_summary(df, max_values, summary_values, top_mid_bottom):
-    
+    '''Function to resize the output the results of value_counts() to be max_values rows.
+
+    If n (number rows of df) < max_values then df is padded with rows containing None. Otherwise
+    if n > max_values then the first, middle and last top_mid_bottom rows are selected and similarly
+    padded.
+    '''
+
     n = df.shape[0]
     
     if n == max_values:
