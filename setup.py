@@ -1,4 +1,4 @@
-from setuptools
+import setuptools
 import re
 
 with open('README.md', 'r') as fh:

@@ -1,6 +1,4 @@
-import data_values_summary as dvs
-import discretisation as d
-import plot as p
+import pyandev.data_values_summary as dvs
 import pandas as pd
 
 
