@@ -60,13 +60,18 @@ def data_values_summary(df, columns = None, max_values = 50, summary_values = 5,
 
 
 def summarise_column(df, column, max_values, summary_values, top_mid_bottom):
+    '''Function to return value_counts for a sinlge column in df resized to max_values rows.'''
+
+    value_counts = df[column].value_counts(dropna = False).sort_index(ascending = True).reset_index()
     
-    value_counts = df[column].value_counts().sort_index(ascending = True).reset_index()
-    
-    value_counts.columns = [column + ".value", column + ".count"]
+    value_counts.columns = [column + "_value", column + "_count"]
     
     value_counts_resize = resize_column_summary(value_counts, max_values, summary_values, top_mid_bottom)
     
+    if not value_counts_resize.shape[0] == max_values:
+
+        raise ValueError('unexpected shape for value_counts_resize for column; ' + column)
+
     return(value_counts_resize)
     
 
@@ -124,4 +129,3 @@ def resize_column_summary(df, max_values, summary_values, top_mid_bottom):
 
 
 
-        
