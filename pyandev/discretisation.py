@@ -249,7 +249,15 @@ def equal_weight(df, variable, n, weights = None):
         values_sorted = False,
     )
 
-    variable_cut = pd.cut(df[variable], np.unique(weight_quantiles), include_lowest = True, duplicates = 'drop')
+    # remove null values from weightd quantiles array, o/w results in the following error;
+    # ValueError: missing values must be missing in the same location both left and right sides
+    # from line 452 in pandas/core/arrays/interval.py
+    variable_cut = pd.cut(
+        df[variable], 
+        np.unique(weight_quantiles[~np.isnan(weight_quantiles)]), 
+        include_lowest = True,
+        duplicates = 'drop',
+    )
     
     variable_cut = add_null_category(variable_cut)
 
@@ -436,7 +444,13 @@ def weighted_quantile(df, variable, quantiles, weights = None):
         values_sorted = False,
     )
 
-    variable_cut = pd.cut(df[variable], np.unique(weight_quantiles), include_lowest = True, duplicates = 'drop')
+    # again drop nulls from weighted quantiles
+    variable_cut = pd.cut(
+        df[variable], 
+        np.unique(weight_quantiles[~np.isnan(weight_quantiles)]),
+        include_lowest = True, 
+        duplicates = 'drop',
+    )
     
     variable_cut = add_null_category(variable_cut)
 
