@@ -11,7 +11,7 @@ import pyandev.discretisation as d
 
 def plot_summarised_variable(summary_df, 
                              weights, 
-                             observed, 
+                             observed = None, 
                              fitted = None, 
                              fitted2 = None, 
                              title = None,
@@ -43,12 +43,14 @@ def plot_summarised_variable(summary_df,
     
     ax2 = ax1.twinx()
     
-    # plot average observed on the 2nd axis in pink
-    ax2.plot(summary_df.loc[:,observed].reset_index(drop = True).dropna().index,
-             summary_df.loc[:,observed].reset_index(drop = True).dropna(),
-             color = 'magenta', 
-             linestyle = '-',
-             marker = 'D')
+    if observed is not None:
+
+        # plot average observed on the 2nd axis in pink
+        ax2.plot(summary_df.loc[:,observed].reset_index(drop = True).dropna().index,
+                summary_df.loc[:,observed].reset_index(drop = True).dropna(),
+                color = 'magenta', 
+                linestyle = '-',
+                marker = 'D')
     
     if fitted is not None:
     
@@ -89,7 +91,7 @@ def plot_summarised_variable(summary_df,
 def plot_1way_summary(df, 
                       weights,
                       by_col, 
-                      observed, 
+                      observed = None, 
                       fitted = None, 
                       fitted2 = None, 
                       bins = None, 
@@ -123,7 +125,20 @@ def plot_1way_summary(df,
 
         raise TypeError('unexpected type for column; ' + by_col)
 
-    f = {weights: ['sum'], observed: ['mean']}
+    # function to apply to each variable
+    f = {weights: ['sum']}
+
+    weights_summary = weights + '_sum'
+
+    if observed is not None:
+
+        f[observed] = ['mean']
+
+        observed_summary = observed + '_mean'
+
+    else:
+
+        observed_summary = observed
 
     if fitted is not None:
 
@@ -152,10 +167,6 @@ def plot_1way_summary(df,
     summary_values.columns = \
         [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
                                      summary_values.columns.get_level_values(1).values)]
-
-    weights_summary = weights + '_sum'
-
-    observed_summary = observed + '_mean'
 
     plot_summarised_variable(summary_df = summary_values, 
                              weights = weights_summary, 
