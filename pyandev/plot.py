@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import pyandev.discretisation as d
 
+from pandas.api.types import is_numeric_dtype
+from matplotlib.backends.backend_pdf import PdfPages
+
+import pyandev.discretisation as d
 
 
 
@@ -16,8 +18,14 @@ def plot_summarised_variable(summary_df,
                              figsize_h = 14, 
                              figsize_w = 8,
                              legend = True,
-                             pdf = None):
-    """Plot a variable after it has been summarised already"""
+                             pdf = None,
+                             ):
+    '''Plot a variable once it has already been summarised.'''
+
+    if not isinstance(summary_df, pd.DataFrame):
+
+        raise ValueError('summary_df should be a pd.DataFrame')
+
 
     if title is None:
         
@@ -70,7 +78,7 @@ def plot_summarised_variable(summary_df,
 
         pdf.savefig()
 
-
+        plt.close(fig)
 
 
 
@@ -90,13 +98,14 @@ def plot_1way_summary(df,
                       figsize_h = 14, 
                       figsize_w = 8,
                       legend = True,
-                      pdf = None):
+                      pdf = None,
+                      ):
 
-    if df[by_col].dtype == 'O':
+    if df[by_col].dtype.name == ['object', 'category']:
         
         cut = by_col
 
-    elif df[by_col].dtype in ['int', 'int32', 'int64', 'float']:
+    elif is_numeric_dtype(df[by_col]):
 
         if df[by_col].nunique(dropna = False) <= bins:
 
@@ -104,11 +113,15 @@ def plot_1way_summary(df,
 
         else:
 
-            cut = d.discretise(data = df,
+            cut = d.discretise(df = df,
                                bucketing_type = bucketing_type,
                                variable = by_col,
                                n = bins,
-                               weights = weights)
+                               weights_column = weights)
+
+    else:
+
+        raise TypeError('unexpected type for column; ' + by_col)
 
     f = {weights: ['sum'], observed: ['mean']}
 
@@ -136,8 +149,9 @@ def plot_1way_summary(df,
 
     summary_values.index.name = by_col
 
-    summary_values.columns = [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
-                                                          summary_values.columns.get_level_values(1).values)]
+    summary_values.columns = \
+        [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
+                                     summary_values.columns.get_level_values(1).values)]
 
     weights_summary = weights + '_sum'
 
@@ -173,16 +187,18 @@ def plot_2way_summary(df,
                       figsize_h = 14, 
                       figsize_w = 8,
                       legend = True,
-                      pdf = None):
+                      pdf = None,
+                      ):
 
-    assert df[split_by_col].nunique(dropna = False) <= 7, \
-        'number of levels of split_by_col (' + split_by_col + ') is too large (greater than 7)'
+    if df[split_by_col].nunique(dropna = False) > 7:
 
-    if df[by_col].dtype == 'O':
+        raise ValueError('number of levels of split_by_col (' + split_by_col + ') is too large (greater than 7)')
+
+    if df[by_col].dtype.name in ['object', 'category']:
         
         cut = by_col
 
-    elif df[by_col].dtype in ['int', 'int32', 'int64', 'float']:
+    elif is_numeric_dtype(df[by_col]):
 
         if df[by_col].nunique(dropna = False) <= bins:
 
@@ -190,11 +206,15 @@ def plot_2way_summary(df,
 
         else:
 
-            cut = d.discretise(data = df,
+            cut = d.discretise(df = df,
                                bucketing_type = bucketing_type,
                                variable = by_col,
                                n = bins,
-                               weights = weights)
+                               weights_column = weights)
+
+    else:
+
+        raise TypeError('unexpected type for column; ' + by_col)
 
     f = {weights: ['sum'], observed: ['mean']}
 
@@ -222,8 +242,9 @@ def plot_2way_summary(df,
 
     summary_values.index.names = [by_col, split_by_col]
 
-    summary_values.columns = [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
-                                                          summary_values.columns.get_level_values(1).values)]
+    summary_values.columns = \
+        [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
+                                     summary_values.columns.get_level_values(1).values)]
 
     weights_summary = weights + '_sum'
 
@@ -254,8 +275,9 @@ def plot_summarised_variable_2way(summary_df,
                                   figsize_h = 14, 
                                   figsize_w = 8,
                                   legend = True,
-                                  pdf = None):
-    """Plot a variable after it has been 2-way summarised already"""
+                                  pdf = None,
+                                  ):
+    '''Plot a variable after it has been 2-way summarised already'''
 
     bin_colours = ['gold', 'khaki', 'goldenrod', 'darkkhaki', 'darkgoldenrod', 'olive', 'y']
 
@@ -333,7 +355,6 @@ def plot_summarised_variable_2way(summary_df,
                     linestyle = '-',
                     marker = 'D')
 
-
     if fitted2 is not None:
 
         unstack_fitted2 = summary_df[fitted2].unstack()
@@ -356,7 +377,7 @@ def plot_summarised_variable_2way(summary_df,
 
         pdf.savefig()
 
-
+    plt.close(fig)
 
 
 
