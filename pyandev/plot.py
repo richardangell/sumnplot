@@ -9,6 +9,9 @@ import pyandev.discretisation as d
 
 
 
+
+
+
 def plot_summarised_variable(summary_df, 
                              weights, 
                              observed = None, 
@@ -102,6 +105,56 @@ def plot_1way_summary(df,
                       legend = True,
                       pdf = None,
                       ):
+
+    if not isinstance(df, pd.DataFrame):
+
+        raise TypeError('df should be a pd.DataFrame')
+
+    if not isinstance(weights, str):
+
+        raise TypeError('weights should be a str')
+
+    if not weights in df.columns.values:
+
+        raise ValueError('weights; ' + weights + ' not in df')
+
+    if not isinstance(by_col, str):
+
+        raise TypeError('by_col should be a str')
+
+    if not by_col in df.columns.values:
+
+        raise ValueError('by_col; ' + by_col + ' not in df')
+
+    if not observed is None:
+
+        if not isinstance(observed, str):
+
+            raise TypeError('observed should be a str')
+
+        if not observed in df.columns.values:
+
+            raise ValueError('observed; ' + observed + ' not in df')
+
+    if not fitted is None:
+
+        if not isinstance(fitted, str):
+
+            raise TypeError('fitted should be a str')
+
+        if not fitted in df.columns.values:
+
+            raise ValueError('fitted; ' + fitted + ' not in df')
+
+    if not fitted2 is None:
+
+        if not isinstance(fitted2, str):
+
+            raise TypeError('fitted2 should be a str')
+
+        if not fitted2 in df.columns.values:
+
+            raise ValueError('fitted2; ' + fitted2 + ' not in df')
 
     if df[by_col].dtype.name == ['object', 'category']:
         
@@ -200,6 +253,64 @@ def plot_2way_summary(df,
                       legend = True,
                       pdf = None,
                       ):
+
+    if not isinstance(df, pd.DataFrame):
+
+        raise TypeError('df should be a pd.DataFrame')
+
+    if not isinstance(weights, str):
+
+        raise TypeError('weights should be a str')
+
+    if not weights in df.columns.values:
+
+        raise ValueError('weights; ' + weights + ' not in df')
+
+    if not isinstance(by_col, str):
+
+        raise TypeError('by_col should be a str')
+
+    if not by_col in df.columns.values:
+
+        raise ValueError('by_col; ' + by_col + ' not in df')
+
+    if not isinstance(split_by_col, str):
+
+        raise TypeError('split_by_col should be a str')
+
+    if not split_by_col in df.columns.values:
+
+        raise ValueError('split_by_col; ' + split_by_col + ' not in df')
+
+    if not observed is None:
+
+        if not isinstance(observed, str):
+
+            raise TypeError('observed should be a str')
+
+        if not observed in df.columns.values:
+
+            raise ValueError('observed; ' + observed + ' not in df')
+
+    if not fitted is None:
+
+        if not isinstance(fitted, str):
+
+            raise TypeError('fitted should be a str')
+
+        if not fitted in df.columns.values:
+
+            raise ValueError('fitted; ' + fitted + ' not in df')
+
+    if not fitted2 is None:
+
+        if not isinstance(fitted2, str):
+
+            raise TypeError('fitted2 should be a str')
+
+        if not fitted2 in df.columns.values:
+
+            raise ValueError('fitted2; ' + fitted2 + ' not in df')
 
     if df[split_by_col].nunique(dropna = False) > 7:
 
