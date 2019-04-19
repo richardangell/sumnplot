@@ -21,6 +21,8 @@ def summary_plot(df,
                  observed = None, 
                  fitted = None, 
                  fitted2 = None, 
+                 fitted3 = None,
+                 fitted4 = None,
                  bins = 20, 
                  bucketing_type = 'equal_width',
                  title = None,
@@ -80,6 +82,26 @@ def summary_plot(df,
 
             raise ValueError('fitted2; ' + fitted2 + ' not in df')
 
+    if not fitted3 is None:
+
+        if not isinstance(fitted3, str):
+
+            raise TypeError('fitted3 should be a str')
+
+        if not fitted3 in df.columns.values:
+
+            raise ValueError('fitted3; ' + fitted3 + ' not in df')
+
+    if not fitted4 is None:
+
+        if not isinstance(fitted4, str):
+
+            raise TypeError('fitted4 should be a str')
+
+        if not fitted4 in df.columns.values:
+
+            raise ValueError('fitted4; ' + fitted4 + ' not in df')
+
     if df[by_col].dtype.name == ['object', 'category']:
         
         cut = by_col
@@ -137,6 +159,26 @@ def summary_plot(df,
 
         fitted2_summary = fitted2
 
+    if fitted3 is not None:
+
+        f[fitted3] = ['mean']
+
+        fitted3_summary = fitted3 + '_mean'
+
+    else:
+
+        fitted3_summary = fitted3
+
+    if fitted4 is not None:
+
+        f[fitted4] = ['mean']
+
+        fitted4_summary = fitted4 + '_mean'
+
+    else:
+
+        fitted4_summary = fitted4
+
     summary_values = df.groupby(cut).agg(f)
 
     summary_values.index.name = by_col
@@ -150,6 +192,8 @@ def summary_plot(df,
                              observed = observed_summary, 
                              fitted = fitted_summary, 
                              fitted2 = fitted2_summary, 
+                             fitted3 = fitted3_summary,
+                             fitted4 = fitted4_summary,
                              title = title,
                              figsize_h = figsize_h, 
                              figsize_w = figsize_w,
@@ -167,6 +211,8 @@ def plot_summarised_variable(summary_df,
                              observed = None, 
                              fitted = None, 
                              fitted2 = None, 
+                             fitted3 = None,
+                             fitted4 = None,
                              title = None,
                              figsize_h = 14, 
                              figsize_w = 8,
@@ -222,6 +268,22 @@ def plot_summarised_variable(summary_df,
                  linestyle = '-',
                  marker = 'D')
     
+    if fitted3 is not None:
+        
+        ax2.plot(summary_df.loc[:,fitted3].reset_index(drop = True).dropna().index,
+                 summary_df.loc[:,fitted3].reset_index(drop = True).dropna(),
+                 color = 'orangered', 
+                 linestyle = '-',
+                 marker = 'D')
+
+    if fitted4 is not None:
+        
+        ax2.plot(summary_df.loc[:,fitted4].reset_index(drop = True).dropna().index,
+                 summary_df.loc[:,fitted4].reset_index(drop = True).dropna(),
+                 color = 'dodgerblue', 
+                 linestyle = '-',
+                 marker = 'D')
+
     if legend:
     
         ax1.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
