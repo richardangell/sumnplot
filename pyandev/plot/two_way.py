@@ -19,6 +19,7 @@ def summary_plot(df,
                  observed, 
                  fitted = None, 
                  fitted2 = None, 
+                 bar_type = 'stacked',
                  bars_percent = False,
                  bins = 20, 
                  bucketing_type = 'equal_width',
@@ -86,6 +87,14 @@ def summary_plot(df,
         if not fitted2 in df.columns.values:
 
             raise ValueError('fitted2; ' + fitted2 + ' not in df')
+
+    if not isinstance(bar_type, str):
+
+        raise TypeError('bar_type must be a str')
+
+    if not bar_type in ['stacked']:
+
+        raise ValueError('unexpected bar_type; ' + bar_type)
 
     if df[split_by_col].nunique(dropna = False) > 7:
 
@@ -160,6 +169,7 @@ def summary_plot(df,
                                   observed = observed_summary, 
                                   fitted = fitted_summary, 
                                   fitted2 = fitted2_summary, 
+                                  bar_type = bar_type,
                                   bars_percent = bars_percent,
                                   title = title,
                                   figsize_h = figsize_h, 
@@ -180,6 +190,7 @@ def plot_summarised_variable_2way(summary_df,
                                   observed, 
                                   fitted = None, 
                                   fitted2 = None, 
+                                  bar_type = 'stacked',
                                   bars_percent = False,
                                   title = None,
                                   figsize_h = 14, 
@@ -219,22 +230,24 @@ def plot_summarised_variable_2way(summary_df,
 
     split_levels = unstack_weights.columns.values
 
-    top_bins = np.zeros(unstack_weights.shape[0])
+    if bar_type == 'stacked':
 
-    # plot bin counts on 1st axis 
-    for i in range(0, len(split_levels)):
+        top_bins = np.zeros(unstack_weights.shape[0])
 
-        heights = unstack_weights.loc[:,split_levels[i]].reset_index(drop = True)
+        # plot bin counts on 1st axis 
+        for i in range(0, len(split_levels)):
 
-        ax1.bar(x = np.arange(unstack_weights.shape[0]), 
-                height = heights,
-                color = bin_colours[i],
-                label = split_levels[i],
-                bottom = top_bins)
+            heights = unstack_weights.loc[:,split_levels[i]].reset_index(drop = True)
 
-        top_bins = top_bins + heights
+            ax1.bar(x = np.arange(unstack_weights.shape[0]), 
+                    height = heights,
+                    color = bin_colours[i],
+                    label = split_levels[i],
+                    bottom = top_bins)
 
-    plt.xticks(np.arange(unstack_weights.shape[0]), unstack_weights.index, rotation = 270)
+            top_bins = top_bins + heights
+
+        plt.xticks(np.arange(unstack_weights.shape[0]), unstack_weights.index, rotation = 270)
 
     ax2 = ax1.twinx()
 
