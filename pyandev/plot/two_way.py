@@ -98,8 +98,16 @@ def summary_plot(df,
     elif is_numeric_dtype(df[by_col]):
 
         if df[by_col].nunique(dropna = False) <= bins:
+            
+            # if there are nulls convert to string otherwise they will not be included in the 
+            # plot (stemming from the groupby)
+            if df[by_col].isnull().sum() > 0:
 
-            cut = by_col
+                cut = df[by_col].astype(str)
+
+            else:
+
+                cut = by_col
 
         else:
 
