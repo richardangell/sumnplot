@@ -178,7 +178,7 @@ def lift_curve_model_ratio(df,
 
         ratio_col = fitted + '_over_' + fitted2
 
-        df[ratio_col] = df['fitted'] / df['fitted2']
+        df[ratio_col] = df[fitted] / df[fitted2]
 
         p.one_way.summary_plot(
             df = df, 
