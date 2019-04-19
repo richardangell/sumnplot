@@ -130,6 +130,14 @@ def summary_plot(df,
 
         raise TypeError('unexpected type for column; ' + by_col)
 
+    if is_numeric_dtype(df[split_by_col]) and df[split_by_col].isnull().sum() > 0:
+
+        by_col2 = df[split_by_col].astype(str)
+
+    else:
+
+        by_col2 = split_by_col
+
     f = {weights: ['sum'], observed: ['mean']}
 
     if fitted is not None:
@@ -152,7 +160,7 @@ def summary_plot(df,
 
         fitted2_summary = fitted2
 
-    summary_values = df.groupby([cut, df[split_by_col]]).agg(f)
+    summary_values = df.groupby([cut, by_col2]).agg(f)
 
     summary_values.index.names = [by_col, split_by_col]
 
