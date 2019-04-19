@@ -92,7 +92,7 @@ def summary_plot(df,
 
         raise TypeError('bar_type must be a str')
 
-    if not bar_type in ['stacked']:
+    if not bar_type in ['stacked', 'side_by_side']:
 
         raise ValueError('unexpected bar_type; ' + bar_type)
 
@@ -257,6 +257,32 @@ def plot_summarised_variable_2way(summary_df,
 
         plt.xticks(np.arange(unstack_weights.shape[0]), unstack_weights.index, rotation = 270)
 
+        x_ticket_offset = 0
+
+    elif bar_type == 'side_by_side':
+
+        bar_width =  0.8 / unstack_weights.shape[1]
+
+        x_offset = 0
+
+        for i in range(0, len(split_levels)):
+
+            ax1.bar(np.arange(unstack_weights.shape[0]) + x_offset, 
+                    unstack_weights.loc[:,split_levels[i]].reset_index(drop = True),
+                    color = bin_colours[i],
+                    width = bar_width,
+                    label = split_levels[i])
+
+            x_offset += bar_width
+        
+        x_ticket_offset = (bar_width * (unstack_weights.shape[1] / 2)) - (bar_width * 0.5)
+
+        plt.xticks(np.arange(unstack_weights.shape[0]) + x_ticket_offset, unstack_weights.index, rotation = 270)
+
+    else:
+
+        raise ValueError('unexpected value for bar_type; ' + bar_type)
+
     ax2 = ax1.twinx()
 
     unstack_observed = summary_df[observed].unstack()
@@ -264,7 +290,7 @@ def plot_summarised_variable_2way(summary_df,
     for i in range(len(split_levels)):
         
         # plot average observed on the 2nd axis in pink
-        ax2.plot(unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna().index,
+        ax2.plot(unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna().index + x_ticket_offset,
                  unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna(),
                  color = obs_colours[i], 
                  linestyle = '-',
@@ -277,7 +303,7 @@ def plot_summarised_variable_2way(summary_df,
         for i in range(len(split_levels)):
             
             # plot average observed on the 2nd axis in pink
-            ax2.plot(unstack_fitted.loc[:,split_levels[i]].reset_index(drop = True).dropna().index,
+            ax2.plot(unstack_fitted.loc[:,split_levels[i]].reset_index(drop = True).dropna().index + x_ticket_offset,
                      unstack_fitted.loc[:,split_levels[i]].reset_index(drop = True).dropna(),
                      color = fit_colours[i], 
                      linestyle = '-',
@@ -290,7 +316,7 @@ def plot_summarised_variable_2way(summary_df,
         for i in range(len(split_levels)):
             
             # plot average observed on the 2nd axis in pink
-            ax2.plot(unstack_fitted2.loc[:,split_levels[i]].reset_index(drop = True).dropna().index,
+            ax2.plot(unstack_fitted2.loc[:,split_levels[i]].reset_index(drop = True).dropna().index + x_ticket_offset,
                      unstack_fitted2.loc[:,split_levels[i]].reset_index(drop = True).dropna(),
                      color = fit2_colours[i], 
                      linestyle = '-',
