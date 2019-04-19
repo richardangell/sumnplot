@@ -110,7 +110,13 @@ def summary_plot(df,
 
         if df[by_col].nunique(dropna = False) <= bins:
 
-            cut = by_col
+            if df[by_col].isnull().sum() > 0:
+
+                cut = df[by_col].astype(str)
+
+            else:
+
+                cut = by_col
 
         else:
 
