@@ -4,7 +4,7 @@ from sklearn.datasets import load_boston
 
 
 
-def load_boston_df(insert_missings = False, add_weights_column = False):
+def load_boston_df(insert_missings = False, add_weights_column = False, add_dummy_predictions = False, add_dummy_predictions2 = False):
     '''Load boston dataset from sklearn and prepare it as a pandas DataFrame.'''
 
     if not isinstance(insert_missings, bool):
@@ -30,6 +30,18 @@ def load_boston_df(insert_missings = False, add_weights_column = False):
         np.random.seed(5)
 
         boston_df['weights'] = np.random.randint(low = 0, high = 10, size = boston_df.shape[0]) / 3
+
+    if add_dummy_predictions:
+
+        np.random.seed(9)
+
+        boston_df['target_dummy_pred'] = boston_df['target'] + np.random.normal(0, 3, boston_df.shape[0])
+
+    if add_dummy_predictions2:
+
+        np.random.seed(13)
+
+        boston_df['target_dummy_pred2'] = boston_df['target'] + np.random.normal(2, 3, boston_df.shape[0])
 
     return boston_df
 
