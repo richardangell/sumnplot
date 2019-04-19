@@ -6,7 +6,7 @@ from pandas.api.types import is_numeric_dtype
 from matplotlib.backends.backend_pdf import PdfPages
 
 import pyandev.discretisation as d
-
+import pyandev.plot.helpers as h
 
 
 
@@ -175,6 +175,8 @@ def summary_plot(df,
         if not fitted4 in df.columns.values:
 
             raise ValueError('fitted4; ' + fitted4 + ' not in df')
+
+    pdf = h.check_pdf_arg(pdf)
 
     if df[by_col].dtype.name == ['object', 'category']:
         
@@ -354,8 +356,9 @@ def plot_summarised_variable(summary_df,
     legend : bool, default = True
         Should a legend be added to the plot?
 
-    pdf : str, default = None
-        Full fielpath of a pdf to output the plot to. If None not pdf saved.
+    pdf : str or PdfPages, default = None
+        If str then the full fielpath of a pdf to output the plot to. If None not pdf saved. Otherwise
+        a PdfPages object to save figure to must be passed.
 
     '''
 
@@ -431,7 +434,15 @@ def plot_summarised_variable(summary_df,
     
     if pdf is not None:
 
-        pdf.savefig()
+        if isinstance(pdf, str):
+
+            with PdfPages(pdf) as pdf:
+
+                pdf.savefig()
+
+        else:
+
+            pdf.savefig()
 
         plt.close(fig)
 
