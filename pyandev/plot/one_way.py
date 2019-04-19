@@ -13,8 +13,6 @@ import pyandev.discretisation as d
 
 
 
-
-
 def summary_plot(df, 
                  weights,
                  by_col, 
@@ -31,6 +29,73 @@ def summary_plot(df,
                  legend = True,
                  pdf = None,
                  ):
+    '''Function to plot a one way summary of the specified variable.
+
+    The one way summary graph consists of the following;
+    - sum of weights (yellow bars, left axis)
+    - optionally, mean observed values (pink line, right axis)
+    - optionally, mean fitted values i.e. model predictions (green line, right axis)
+    - optionally, mean fitted 2 values i.e. model 2 predictions (light green line, right axis)
+    - optionally, mean fitted 3 values i.e. model 3 predictions (orange line, right axis)
+    - optionally, mean fitted 4 values i.e. model 4 predictions (blue line, right axis)    
+    by another variable, specified in the by_col argument.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data of interest. Must contain columns with names supplied in weights and by_col args.
+        
+    weights : str
+        Column name of weights in df. 
+
+    by_col : str
+        Column name in df of variable to summarise by.
+
+    observed : str, defualt = None
+        Optional. Column name of observed values in df. If default value of None is passed
+        then observed values are not plotted.
+
+    fitted : str, defualt = None
+        Optional. Column name of fitted (predicted) values in df. If default value of None is passed
+        then fitted values are not plotted.
+
+    fitted2 : str, defualt = None
+        Optional. Column name of second set of fitted (predicted) values in df. If default value of 
+        None is passed then fitted2 values are not plotted.
+
+    fitted3 : str, defualt = None
+        Optional. Column name of third set of fitted (predicted) values in df. If default value of 
+        None is passed then fitted3 values are not plotted.
+
+    fitted4 : str, defualt = None
+        Optional. Column name of fourth set of fitted (predicted) values in df. If default value of 
+        None is passed then fitted4 values are not plotted.
+
+    bins : int, default = 20
+        The number of bins to bucket by_col into if it is a numeric column, and has more than that many
+        unique values.
+
+    bucketing_type : str, default = 'equal_width'
+        Type of bucketing to use to discretise by_col if it is numeric (and has more than bins unique values).
+        Must be one of the values accepted by pyandev.discretisation.discretise; "equal_width", "equal_weight",
+        "quantile" or "weighted_quantile".
+
+    title : str, default = None
+        Title of the plot. If None by_col is used as the title.
+
+    figsize_h : int, default = 14
+        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    figsize_w : int, default = 8
+        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    legend : bool, default = True
+        Should a legend be added to the plot?
+
+    pdf : str, default = None
+        Full fielpath of a pdf to output the plot to. If None not pdf saved.
+
+    '''
 
     if not isinstance(df, pd.DataFrame):
 
@@ -225,7 +290,54 @@ def plot_summarised_variable(summary_df,
                              legend = True,
                              pdf = None,
                              ):
-    '''Plot a variable once it has already been summarised.'''
+    '''Plot a one way variable summary from summary stats.
+    
+    This function should be used once a variable has been summarised.
+    
+    Parameters
+    ----------
+    summary_df : pd.DataFrame
+        DataFrame with summarised info to plot. Must contain a column with name specified by weights.
+        
+    weights : str
+        Column name of weights in summary_df. 
+
+    observed : str, defualt = None
+        Optional. Column name of observed values in summary_df. If default value of None is passed
+        then observed values are not plotted.
+
+    fitted : str, defualt = None
+        Optional. Column name of fitted (predicted) values in summary_df. If default value of None is passed
+        then fitted values are not plotted.
+
+    fitted2 : str, defualt = None
+        Optional. Column name of second set of fitted (predicted) values in summary_df. If default value of 
+        None is passed then fitted2 values are not plotted.
+
+    fitted3 : str, defualt = None
+        Optional. Column name of third set of fitted (predicted) values in summary_df. If default value of 
+        None is passed then fitted3 values are not plotted.
+
+    fitted4 : str, defualt = None
+        Optional. Column name of fourth set of fitted (predicted) values in summary_df. If default value of 
+        None is passed then fitted4 values are not plotted.
+
+    title : str, default = None
+        Title of the plot. If None summary_df.index.name is used as the title.
+
+    figsize_h : int, default = 14
+        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    figsize_w : int, default = 8
+        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    legend : bool, default = True
+        Should a legend be added to the plot?
+
+    pdf : str, default = None
+        Full fielpath of a pdf to output the plot to. If None not pdf saved.
+
+    '''
 
     if not isinstance(summary_df, pd.DataFrame):
 
