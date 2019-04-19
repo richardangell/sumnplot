@@ -15,20 +15,20 @@ import pyandev.discretisation as d
 
 
 
-def plot_1way_summary(df, 
-                      weights,
-                      by_col, 
-                      observed = None, 
-                      fitted = None, 
-                      fitted2 = None, 
-                      bins = 20, 
-                      bucketing_type = 'equal_width',
-                      title = None,
-                      figsize_h = 14, 
-                      figsize_w = 8,
-                      legend = True,
-                      pdf = None,
-                      ):
+def summary_plot(df, 
+                 weights,
+                 by_col, 
+                 observed = None, 
+                 fitted = None, 
+                 fitted2 = None, 
+                 bins = 20, 
+                 bucketing_type = 'equal_width',
+                 title = None,
+                 figsize_h = 14, 
+                 figsize_w = 8,
+                 legend = True,
+                 pdf = None,
+                 ):
 
     if not isinstance(df, pd.DataFrame):
 
