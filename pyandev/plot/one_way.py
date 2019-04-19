@@ -28,6 +28,7 @@ def summary_plot(df,
                  figsize_w = 8,
                  legend = True,
                  pdf = None,
+                 return_summary_values = False,
                  ):
     '''Function to plot a one way summary of the specified variable.
 
@@ -94,6 +95,14 @@ def summary_plot(df,
 
     pdf : str, default = None
         Full fielpath of a pdf to output the plot to. If None not pdf saved.
+
+    return_summary_values : bool, default = False
+        If True the table of summarised values that is plotted is returned from the function.
+
+    Returns
+    -------
+    summary_values : pd.DataFrame
+        If return_summary_values is True then a dataframe containing the plotted summary values is returned.
 
     '''
 
@@ -280,7 +289,9 @@ def summary_plot(df,
                              legend = legend,
                              pdf = pdf)
 
+    if return_summary_values:
 
+        return summary_values
 
 
 
