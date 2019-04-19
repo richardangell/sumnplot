@@ -279,7 +279,7 @@ def plot_summarised_variable_2way(summary_df,
 
         pdf.savefig()
 
-    plt.close(fig)
+        plt.close(fig)
 
 
 
