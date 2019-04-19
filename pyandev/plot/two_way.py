@@ -16,7 +16,7 @@ def summary_plot(df,
                  weights,
                  by_col, 
                  split_by_col,
-                 observed, 
+                 observed = None, 
                  fitted = None, 
                  fitted2 = None, 
                  bar_type = 'stacked',
@@ -52,8 +52,8 @@ def summary_plot(df,
     split_by_col : str
         Second column name in df of variable to summarise by.
 
-    observed : str
-        Column name of observed values in df.
+    observed : str, defualt = None
+        Optional. Column name of observed values in df.
 
     fitted : str, defualt = None
         Optional. Column name of fitted (predicted) values in df. If default value of None is passed
@@ -205,7 +205,19 @@ def summary_plot(df,
 
         by_col2 = split_by_col
 
-    f = {weights: ['sum'], observed: ['mean']}
+    f = {weights: ['sum']}
+
+    weights_summary = weights + '_sum'
+
+    if not observed is None:
+
+        f[observed] = ['mean']
+
+        observed_summary = observed + '_mean'
+
+    else:
+
+        observed_summary = observed
 
     if fitted is not None:
 
@@ -235,10 +247,6 @@ def summary_plot(df,
         [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
                                      summary_values.columns.get_level_values(1).values)]
 
-    weights_summary = weights + '_sum'
-
-    observed_summary = observed + '_mean'
-
     plot_summarised_variable_2way(summary_df = summary_values, 
                                   weights = weights_summary, 
                                   observed = observed_summary, 
@@ -262,7 +270,7 @@ def summary_plot(df,
 
 def plot_summarised_variable_2way(summary_df, 
                                   weights, 
-                                  observed, 
+                                  observed = None, 
                                   fitted = None, 
                                   fitted2 = None, 
                                   bar_type = 'stacked',
@@ -282,10 +290,10 @@ def plot_summarised_variable_2way(summary_df,
     summary_df : pd.DataFrame
         Data of interest. Must contain columns with names supplied in weights and by_col args.
         
-    weights : str
-        Column name of weights in summary_df. 
+    weights : str, defualt = None
+        Optional. Column name of weights in summary_df. 
 
-    observed : str
+    observed : str, 
         Column name of observed values in summary_df.
 
     fitted : str, defualt = None
@@ -397,16 +405,18 @@ def plot_summarised_variable_2way(summary_df,
 
     ax2 = ax1.twinx()
 
-    unstack_observed = summary_df[observed].unstack()
+    if not observed is None:
 
-    for i in range(len(split_levels)):
-        
-        # plot average observed on the 2nd axis in pink
-        ax2.plot(unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna().index + x_ticket_offset,
-                 unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna(),
-                 color = obs_colours[i], 
-                 linestyle = '-',
-                 marker = 'D')
+        unstack_observed = summary_df[observed].unstack()
+
+        for i in range(len(split_levels)):
+            
+            # plot average observed on the 2nd axis in pink
+            ax2.plot(unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna().index + x_ticket_offset,
+                    unstack_observed.loc[:,split_levels[i]].reset_index(drop = True).dropna(),
+                    color = obs_colours[i], 
+                    linestyle = '-',
+                    marker = 'D')
 
     if fitted is not None:
 
