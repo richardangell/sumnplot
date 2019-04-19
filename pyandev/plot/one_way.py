@@ -200,10 +200,10 @@ def plot_summarised_variable(summary_df,
 
         # plot average observed on the 2nd axis in pink
         ax2.plot(summary_df.loc[:,observed].reset_index(drop = True).dropna().index,
-                summary_df.loc[:,observed].reset_index(drop = True).dropna(),
-                color = 'magenta', 
-                linestyle = '-',
-                marker = 'D')
+                 summary_df.loc[:,observed].reset_index(drop = True).dropna(),
+                 color = 'magenta', 
+                 linestyle = '-',
+                 marker = 'D')
     
     if fitted is not None:
     
@@ -216,8 +216,8 @@ def plot_summarised_variable(summary_df,
 
     if fitted2 is not None:
         
-        ax2.plot(summary_df.iloc[:,fitted2].reset_index(drop = True).dropna().index,
-                 summary_df.iloc[:,fitted2].reset_index(drop = True).dropna(),
+        ax2.plot(summary_df.loc[:,fitted2].reset_index(drop = True).dropna().index,
+                 summary_df.loc[:,fitted2].reset_index(drop = True).dropna(),
                  color = 'lime', 
                  linestyle = '-',
                  marker = 'D')
