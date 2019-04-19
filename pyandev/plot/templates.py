@@ -176,7 +176,7 @@ def lift_curve_model_ratio(df,
 
         df = df[[weights, observed, fitted, fitted2]].copy()
 
-        ratio_col = fitted + '_over_' + fitted2
+        ratio_col = fitted + ' over ' + fitted2
 
         df[ratio_col] = df[fitted] / df[fitted2]
 
