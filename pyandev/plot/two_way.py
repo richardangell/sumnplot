@@ -207,13 +207,13 @@ def summary_plot(df,
 
     f = {weights: ['sum']}
 
-    weights_summary = weights + '_sum'
+    weights_summary = weights + '__sum'
 
     if not observed is None:
 
-        f[observed] = ['mean']
+        f[observed] = ['sum']
 
-        observed_summary = observed + '_mean'
+        observed_summary = observed + '__mean'
 
     else:
 
@@ -221,9 +221,9 @@ def summary_plot(df,
 
     if fitted is not None:
 
-        f[fitted] = ['mean']
+        f[fitted] = ['sum']
 
-        fitted_summary = fitted + '_mean'
+        fitted_summary = fitted + '__mean'
 
     else:
 
@@ -231,9 +231,9 @@ def summary_plot(df,
 
     if fitted2 is not None:
 
-        f[fitted2] = ['mean']
+        f[fitted2] = ['sum']
 
-        fitted2_summary = fitted2 + '_mean'
+        fitted2_summary = fitted2 + '__mean'
 
     else:
 
@@ -244,8 +244,16 @@ def summary_plot(df,
     summary_values.index.names = [by_col, split_by_col]
 
     summary_values.columns = \
-        [i + '_' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
-                                     summary_values.columns.get_level_values(1).values)]
+        [i + '__' + j for i, j in zip(summary_values.columns.get_level_values(0).values,
+                                      summary_values.columns.get_level_values(1).values)]
+
+    for col in [observed, fitted, fitted2]:
+
+        if not col is None:
+
+            summary_values[col + '__sum'] = summary_values[col + '__sum'] / summary_values[weights_summary]
+
+            summary_values.rename(columns = {col + '__sum': col + '__mean'}, inplace = True)
 
     plot_summarised_variable_2way(summary_df = summary_values, 
                                   weights = weights_summary, 
