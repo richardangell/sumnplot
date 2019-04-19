@@ -219,23 +219,20 @@ def plot_summarised_variable_2way(summary_df,
 
     split_levels = unstack_weights.columns.values
 
+    top_bins = np.zeros(unstack_weights.shape[0])
+
     # plot bin counts on 1st axis 
-    ax1.bar(np.arange(unstack_weights.shape[0]), 
-            unstack_weights.loc[:,split_levels[0]].reset_index(drop = True),
-            color = bin_colours[0],
-            label = split_levels[0])
+    for i in range(0, len(split_levels)):
 
-    top_bins = unstack_weights.loc[:,split_levels[0]].reset_index(drop = True)
+        heights = unstack_weights.loc[:,split_levels[i]].reset_index(drop = True)
 
-    for i in range(1, len(split_levels)):
-        
-        ax1.bar(np.arange(unstack_weights.shape[0]), 
-                unstack_weights.loc[:,split_levels[i]].reset_index(drop = True),
+        ax1.bar(x = np.arange(unstack_weights.shape[0]), 
+                height = heights,
                 color = bin_colours[i],
                 label = split_levels[i],
                 bottom = top_bins)
 
-        top_bins = top_bins + unstack_weights.loc[:,split_levels[i]].reset_index(drop = True)
+        top_bins = top_bins + heights
 
     plt.xticks(np.arange(unstack_weights.shape[0]), unstack_weights.index, rotation = 270)
 
