@@ -29,6 +29,73 @@ def summary_plot(df,
                  legend = True,
                  pdf = None,
                  ):
+    '''Function to plot a two way summary of the specified variable, split by another variable.
+
+    The two way summary graph consists of the following;
+    - sum of weights (yellow bars, left axis)
+    - mean observed values (pink line(s), right axis)
+    - optionally, mean fitted values i.e. model predictions (green line(s), right axis)
+    - optionally, mean fitted 2 values i.e. model 2 predictions (light green line(s), right axis) 
+    by another variable (x axis) specified in the by_col argument and split by the split_by_col variable (bars).
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data of interest. Must contain columns with names supplied in weights and by_col args.
+        
+    weights : str
+        Column name of weights in df. 
+
+    by_col : str
+        Column name in df of variable to summarise by.
+
+    split_by_col : str
+        Second column name in df of variable to summarise by.
+
+    observed : str
+        Column name of observed values in df.
+
+    fitted : str, defualt = None
+        Optional. Column name of fitted (predicted) values in df. If default value of None is passed
+        then fitted values are not plotted.
+
+    fitted2 : str, defualt = None
+        Optional. Column name of second set of fitted (predicted) values in df. If default value of 
+        None is passed then fitted2 values are not plotted.
+
+    bar_type : str, default = 'stacked'
+        Must be one of 'stacked' or 'side_by_side'. Method to display bars visualising sum of weights 
+        split by 2 variables. If 'stacked' then bars corresponding to the split of the second index on summary_df
+        are plotted on top of each other, if 'side_by_side' then they are plotted side by side. 
+
+    bars_percent : bool, default = False
+        Should bars be rescaled to percentages instead of sum of values?
+
+    bins : int, default = 20
+        The number of bins to bucket by_col into if it is a numeric column, and has more than that many
+        unique values.
+
+    bucketing_type : str, default = 'equal_width'
+        Type of bucketing to use to discretise by_col if it is numeric (and has more than bins unique values).
+        Must be one of the values accepted by pyandev.discretisation.discretise; "equal_width", "equal_weight",
+        "quantile" or "weighted_quantile".
+
+    title : str, default = None
+        Title of the plot. If None by_col is used as the title.
+
+    figsize_h : int, default = 14
+        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    figsize_w : int, default = 8
+        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    legend : bool, default = True
+        Should a legend be added to the plot?
+
+    pdf : str, default = None
+        Full fielpath of a pdf to output the plot to. If None not pdf saved.
+
+    '''
 
     if not isinstance(df, pd.DataFrame):
 
@@ -206,7 +273,53 @@ def plot_summarised_variable_2way(summary_df,
                                   legend = True,
                                   pdf = None,
                                   ):
-    '''Plot a variable after it has been 2-way summarised already'''
+    '''Plot a two way variable summary from summary stats.
+    
+    This function should be used once a variable has been summarised.
+    
+    Parameters
+    ----------
+    summary_df : pd.DataFrame
+        Data of interest. Must contain columns with names supplied in weights and by_col args.
+        
+    weights : str
+        Column name of weights in summary_df. 
+
+    observed : str
+        Column name of observed values in summary_df.
+
+    fitted : str, defualt = None
+        Optional. Column name of fitted (predicted) values in summary_df. If default value of None is passed
+        then fitted values are not plotted.
+
+    fitted2 : str, defualt = None
+        Optional. Column name of second set of fitted (predicted) values in summary_df. If default value of 
+        None is passed then fitted2 values are not plotted.
+
+    bar_type : str, default = 'stacked'
+        Must be one of 'stacked' or 'side_by_side'. Method to display bars visualising sum of weights 
+        split by 2 variables. If 'stacked' then bars corresponding to the split of the second index on summary_df
+        are plotted on top of each other, if 'side_by_side' then they are plotted side by side. 
+
+    bars_percent : bool, default = False
+        Should bars be rescaled to percentages instead of sum of values?
+
+    title : str, default = None
+        Title of the plot. If None by_col is used as the title.
+
+    figsize_h : int, default = 14
+        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    figsize_w : int, default = 8
+        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    legend : bool, default = True
+        Should a legend be added to the plot?
+
+    pdf : str, default = None
+        Full fielpath of a pdf to output the plot to. If None not pdf saved.
+    
+    '''
 
     bin_colours = ['gold', 'khaki', 'goldenrod', 'darkkhaki', 'darkgoldenrod', 'olive', 'y']
 
@@ -221,7 +334,6 @@ def plot_summarised_variable_2way(summary_df,
         title = summary_df.index.names[0] + ' by ' + summary_df.index.names[1]
 
     fig, ax1 = plt.subplots(figsize=(figsize_h, figsize_w))
-
 
     unstack_weights = summary_df[weights].unstack()
 
