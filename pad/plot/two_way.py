@@ -466,8 +466,10 @@ def plot_summarised_variable_2way(summary_df,
                      linestyle = '-',
                      marker = 'D')
 
-    ax1.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
-    plt.legend(bbox_to_anchor=(1.05, (0.94 - (0.03 * len(split_levels)))), loc = 2, borderaxespad = 0.)
+    if legend:
+
+        ax1.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
+        plt.legend(bbox_to_anchor=(1.05, (0.94 - (0.03 * len(split_levels)))), loc = 2, borderaxespad = 0.)
 
     plt.title(title, fontsize = 20)
     
