@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>discretisation &mdash; py-analysis-development 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to py-analysis-development’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> py-analysis-development
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">discretisation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">py-analysis-development</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>discretisation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/discretisation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="discretisation">
+<h1>discretisation<a class="headerlink" href="#discretisation" title="Permalink to this headline">¶</a></h1>
+<p>Functions for discretising ordered variables into buckets.</p>
+<span class="target" id="module-pad.discretisation"></span><dl class="function">
+<dt id="pad.discretisation.add_null_category">
+<code class="descclassname">pad.discretisation.</code><code class="descname">add_null_category</code><span class="sig-paren">(</span><em>categorical_variable</em>, <em>null_category_name='Null'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#add_null_category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.add_null_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to add new categorical level to categorical variable and set NAs to this category.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>categorical_variable</strong> (<em>pd.Series</em>) – Categorical variable to add null categorical level to.</p></li>
+<li><p><strong>null_category_name</strong> (<em>str</em><em>, </em><em>default = 'Null'</em>) – The name of the categorical level for null values to add.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cat</strong> – Categorical variable (pandas category type) with null categorical level added.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.discretisation.compute_weighted_quantile">
+<code class="descclassname">pad.discretisation.</code><code class="descname">compute_weighted_quantile</code><span class="sig-paren">(</span><em>values</em>, <em>quantiles</em>, <em>sample_weight=None</em>, <em>values_sorted=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#compute_weighted_quantile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.compute_weighted_quantile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Funtion to calculate weighted percentiles.</p>
+<p>Code modified from the answer given by users Alleo &amp; Max Ghenis on stackoverflow; <a class="reference external" href="https://stackoverflow.com/a/29677616">https://stackoverflow.com/a/29677616</a>.
+See <a class="reference external" href="https://en.wikipedia.org/wiki/Percentile#The_weighted_percentile_method">https://en.wikipedia.org/wiki/Percentile#The_weighted_percentile_method</a> for description of method.
+Removed the old_style arg and associated code from stackoverflow answer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>array-like</em>) – Data of interest, must contain a column supplied in variable.</p></li>
+<li><p><strong>quantiles</strong> (<em>array-like</em>) – Value(s) between 0 &lt;= quantiles &lt;= 1, the weighted quantile(s) to compute.</p></li>
+<li><p><strong>sample_weight</strong> (<em>array-like</em><em>, </em><em>default = None</em>) – Array of weights, must be same length as values. Default value of None
+means each observation in values is equally weighted.</p></li>
+<li><p><strong>values_sorted</strong> (<em>bool</em>) – Are the values and sample_weight arrays pre-sorted? If True arrays will not
+be sorted in function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cat</strong> – Computed (weighted) quantiles.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.discretisation.discretise">
+<code class="descclassname">pad.discretisation.</code><code class="descname">discretise</code><span class="sig-paren">(</span><em>df</em>, <em>variable</em>, <em>n=None</em>, <em>bucketing_type='equal_width'</em>, <em>weights_column=None</em>, <em>quantiles=array([0.</em>, <em>0.1</em>, <em>0.2</em>, <em>0.3</em>, <em>0.4</em>, <em>0.5</em>, <em>0.6</em>, <em>0.7</em>, <em>0.8</em>, <em>0.9</em>, <em>1. ])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#discretise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.discretise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to discretise a numeric variable with one of the following approaches; equal_width,
+equal_weight, quantile or weighted_quantile buckets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Data of interest, must contain a column supplied in variable.</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – Column to bucket in df. Must be numeric type.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of buckets to use in case of “equal_width” or “equal_weight” bucketing.</p></li>
+<li><p><strong>bucketing_type</strong> (<em>str</em><em>, </em><em>default = &quot;equal_width&quot;</em>) – One of the following “equal_width”, “equal_weight”, “quantile” or “weighted_quantile”.
+The type of bucketing to use.</p></li>
+<li><p><strong>weights_column</strong> (<em>str</em><em>, </em><em>default = None</em>) – Column of weights in df. Default value of None results in equal weighted observations. Only used
+for “equal_weight” or “weighted_quantile” buckets.</p></li>
+<li><p><strong>quantiles</strong> (<em>float</em><em> or </em><em>array-like</em><em>, </em><em>default = np.linspace</em><em>(</em><em>0</em><em>, </em><em>1</em><em>, </em><em>11</em><em>)</em>) – Value(s) between 0 &lt;= quantiles &lt;= 1, the quantile(s) to compute.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>bucketed_variable</strong> – Categorical version (pandas category type) of df[variable] bucketed according to bucketing_type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.discretisation.equal_weight">
+<code class="descclassname">pad.discretisation.</code><code class="descname">equal_weight</code><span class="sig-paren">(</span><em>df</em>, <em>variable</em>, <em>n</em>, <em>weights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#equal_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.equal_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to split variable into n buckets of equal weight.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Data of interest, must contain a column supplied in variable.</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – Column to bucket in df. Must be numeric type.</p></li>
+<li><p><strong>weights</strong> (<em>str</em>) – Column of weights in df. Default value of None results in equal weighted observations.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of buckets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cat</strong> – Categorical version (pandas category type) of df[variable] bucketed into n
+levels of equal weight.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.discretisation.equal_width">
+<code class="descclassname">pad.discretisation.</code><code class="descname">equal_width</code><span class="sig-paren">(</span><em>df</em>, <em>variable</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#equal_width"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.equal_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to split variable into n buckets of equal width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Data of interest, must contain a column supplied in variable.</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – Column to bucket in df. Must be numeric type.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of buckets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cat</strong> – Categorical version (pandas category type) of df[variable] bucketed into n
+levels of equal width.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.discretisation.quantile">
+<code class="descclassname">pad.discretisation.</code><code class="descname">quantile</code><span class="sig-paren">(</span><em>df</em>, <em>variable</em>, <em>quantiles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#quantile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.quantile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to split variable into buckets according to the supplied quantiles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Data of interest, must contain a column supplied in variable.</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – Column to bucket in df. Must be numeric type.</p></li>
+<li><p><strong>quantiles</strong> (<em>float</em><em> or </em><em>array-like</em>) – Value(s) between 0 &lt;= quantiles &lt;= 1, the quantile(s) to compute.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cat</strong> – Categorical version (pandas category type) of df[variable] bucketed according to
+the supplied quantiles.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.discretisation.weighted_quantile">
+<code class="descclassname">pad.discretisation.</code><code class="descname">weighted_quantile</code><span class="sig-paren">(</span><em>df</em>, <em>variable</em>, <em>quantiles</em>, <em>weights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/discretisation.html#weighted_quantile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.discretisation.weighted_quantile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to split variable into buckets according to the supplied weighted quantiles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Data of interest, must contain a column supplied in variable.</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – Column to bucket in df. Must be numeric type.</p></li>
+<li><p><strong>quantiles</strong> (<em>float</em><em> or </em><em>array-like</em>) – Value(s) between 0 &lt;= quantiles &lt;= 1, the quantile(s) to compute.</p></li>
+<li><p><strong>weights</strong> (<em>str</em><em>, </em><em>default = None</em>) – Column of weights in df. Default value of None results in observations treated as equally weighted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cat</strong> – Categorical version (pandas category type) of df[variable] bucketed according to
+the supplied quantiles.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to py-analysis-development’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Richard Angell
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

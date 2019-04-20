@@ -1,0 +1,698 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pad.discretisation &mdash; py-analysis-development 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> py-analysis-development
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../discretisation.html">discretisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../one_way.html">one way plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../two_way.html">two way plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../templates.html">plotting templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plot_helpers.html">plot helpers</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">py-analysis-development</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>pad.discretisation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pad.discretisation</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="k">import</span> <span class="n">is_numeric_dtype</span>
+
+
+<div class="viewcode-block" id="discretise"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.discretise">[docs]</a><span class="k">def</span> <span class="nf">discretise</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bucketing_type</span> <span class="o">=</span> <span class="s1">&#39;equal_width&#39;</span><span class="p">,</span> <span class="n">weights_column</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)):</span>
+    <span class="sd">&#39;&#39;&#39;Function to discretise a numeric variable with one of the following approaches; equal_width, </span>
+<span class="sd">    equal_weight, quantile or weighted_quantile buckets.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Data of interest, must contain a column supplied in variable.</span>
+<span class="sd">        </span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Column to bucket in df. Must be numeric type.</span>
+
+<span class="sd">    n : int</span>
+<span class="sd">        Number of buckets to use in case of &quot;equal_width&quot; or &quot;equal_weight&quot; bucketing.</span>
+
+<span class="sd">    bucketing_type : str, default = &quot;equal_width&quot;</span>
+<span class="sd">        One of the following &quot;equal_width&quot;, &quot;equal_weight&quot;, &quot;quantile&quot; or &quot;weighted_quantile&quot;.</span>
+<span class="sd">        The type of bucketing to use.</span>
+
+<span class="sd">    weights_column : str, default = None</span>
+<span class="sd">        Column of weights in df. Default value of None results in equal weighted observations. Only used</span>
+<span class="sd">        for &quot;equal_weight&quot; or &quot;weighted_quantile&quot; buckets.</span>
+
+<span class="sd">    quantiles : float or array-like, default = np.linspace(0, 1, 11)</span>
+<span class="sd">        Value(s) between 0 &lt;= quantiles &lt;= 1, the quantile(s) to compute.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bucketed_variable : pd.Series </span>
+<span class="sd">        Categorical version (pandas category type) of df[variable] bucketed according to bucketing_type.</span>
+<span class="sd">        </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df must be a pandas DataFrame&#39;</span><span class="p">)</span>
+
+    <span class="n">type_valid_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;equal_width&#39;</span><span class="p">,</span> <span class="s1">&#39;equal_weight&#39;</span><span class="p">,</span> <span class="s1">&#39;quantile&#39;</span><span class="p">,</span> <span class="s1">&#39;weighted_quantile&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bucketing_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;bucketing_type must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">bucketing_type</span> <span class="ow">in</span> <span class="n">type_valid_options</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid value for bucketing_type; &#39;</span> <span class="o">+</span>  <span class="n">bucketing_type</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+        
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable; &#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">weights_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights_column</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;weights_column must be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">weights_column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;weights_column; &#39;</span> <span class="o">+</span> <span class="n">weights_column</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">quantiles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quantiles</span><span class="p">)</span>
+
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quantiles</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles should be all greater than or equal to 0&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles should be all less than or equal to 1&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bucketing_type</span> <span class="o">==</span> <span class="s1">&#39;equal_width&#39;</span><span class="p">:</span>
+
+        <span class="n">bucketed_variable</span> <span class="o">=</span> <span class="n">equal_width</span><span class="p">(</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span> 
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">variable</span><span class="p">,</span> 
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">bucketing_type</span> <span class="o">==</span> <span class="s1">&#39;equal_weight&#39;</span><span class="p">:</span>
+
+        <span class="n">bucketed_variable</span> <span class="o">=</span> <span class="n">equal_weight</span><span class="p">(</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span> 
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">variable</span><span class="p">,</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">weights_column</span><span class="p">,</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">bucketing_type</span> <span class="o">==</span> <span class="s1">&#39;quantile&#39;</span><span class="p">:</span>
+
+        <span class="n">bucketed_variable</span> <span class="o">=</span> <span class="n">quantile</span><span class="p">(</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span> 
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">variable</span><span class="p">,</span>
+            <span class="n">quantiles</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">bucketing_type</span> <span class="o">==</span> <span class="s1">&#39;weighted_quantile&#39;</span><span class="p">:</span>
+
+        <span class="n">bucketed_variable</span> <span class="o">=</span> <span class="n">weighted_quantile</span><span class="p">(</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span> 
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">variable</span><span class="p">,</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">weights_column</span><span class="p">,</span>
+            <span class="n">quantiles</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bucketed_variable</span></div>
+
+
+
+<div class="viewcode-block" id="equal_width"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.equal_width">[docs]</a><span class="k">def</span> <span class="nf">equal_width</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function to split variable into n buckets of equal width.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Data of interest, must contain a column supplied in variable.</span>
+<span class="sd">        </span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Column to bucket in df. Must be numeric type.</span>
+<span class="sd">    </span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of buckets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cat : pd.Series </span>
+<span class="sd">        Categorical version (pandas category type) of df[variable] bucketed into n</span>
+<span class="sd">        levels of equal width. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df should be a pd.DataFrame&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;variable must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable; &#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">]):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df[&#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39;] is not numeric type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;n must be an int&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;n must be greater than 0&#39;</span><span class="p">)</span>
+
+    <span class="c1"># see https://github.com/pandas-dev/pandas/issues/17047 for issues with include_lowest</span>
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">include_lowest</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">duplicates</span> <span class="o">=</span> <span class="s1">&#39;drop&#39;</span><span class="p">)</span>
+
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">add_null_category</span><span class="p">(</span><span class="n">variable_cut</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">variable_cut</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="equal_weight"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.equal_weight">[docs]</a><span class="k">def</span> <span class="nf">equal_weight</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function to split variable into n buckets of equal weight.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Data of interest, must contain a column supplied in variable.</span>
+<span class="sd">        </span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Column to bucket in df. Must be numeric type.</span>
+
+<span class="sd">    weights : str</span>
+<span class="sd">        Column of weights in df. Default value of None results in equal weighted observations.</span>
+
+<span class="sd">    n : int</span>
+<span class="sd">        Number of buckets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cat : pd.Series </span>
+<span class="sd">        Categorical version (pandas category type) of df[variable] bucketed into n</span>
+<span class="sd">        levels of equal weight. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df should be a pd.DataFrame&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;variable must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable; &#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">]):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df[&#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39;] is not numeric type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;n must be an int&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;n must be greater than 0&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;weights must be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">weights</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;weights; &#39;</span> <span class="o">+</span> <span class="n">weights</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">weights</span><span class="p">]):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df[&#39;</span> <span class="o">+</span> <span class="n">weights</span> <span class="o">+</span> <span class="s1">&#39;] is not numeric type&#39;</span><span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">weights</span><span class="p">]</span>
+
+    <span class="n">weight_quantiles</span> <span class="o">=</span> <span class="n">compute_weighted_quantile</span><span class="p">(</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> 
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span> 
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">weights</span><span class="p">,</span> 
+        <span class="n">values_sorted</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># remove null values from weightd quantiles array, o/w results in the following error;</span>
+    <span class="c1"># ValueError: missing values must be missing in the same location both left and right sides</span>
+    <span class="c1"># from line 452 in pandas/core/arrays/interval.py</span>
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> 
+        <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">weight_quantiles</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">weight_quantiles</span><span class="p">)]),</span> 
+        <span class="n">include_lowest</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="s1">&#39;drop&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">add_null_category</span><span class="p">(</span><span class="n">variable_cut</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">variable_cut</span></div>
+
+
+
+<div class="viewcode-block" id="quantile"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.quantile">[docs]</a><span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function to split variable into buckets according to the supplied quantiles.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Data of interest, must contain a column supplied in variable.</span>
+<span class="sd">        </span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Column to bucket in df. Must be numeric type.</span>
+<span class="sd">    </span>
+<span class="sd">    quantiles : float or array-like</span>
+<span class="sd">        Value(s) between 0 &lt;= quantiles &lt;= 1, the quantile(s) to compute.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cat : pd.Series </span>
+<span class="sd">        Categorical version (pandas category type) of df[variable] bucketed according to</span>
+<span class="sd">        the supplied quantiles. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df should be a pd.DataFrame&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;variable must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable; &#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">]):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df[&#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39;] is not numeric type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles should be all greater than or equal to 0&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles should be all less than or equal to 1&#39;</span><span class="p">)</span>
+
+    <span class="n">quantile_values</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">quantiles</span><span class="p">)</span>
+
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">quantile_values</span><span class="p">),</span> <span class="n">include_lowest</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">duplicates</span> <span class="o">=</span> <span class="s1">&#39;drop&#39;</span><span class="p">)</span>
+
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">add_null_category</span><span class="p">(</span><span class="n">variable_cut</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">variable_cut</span>    </div>
+
+
+
+<div class="viewcode-block" id="compute_weighted_quantile"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.compute_weighted_quantile">[docs]</a><span class="k">def</span> <span class="nf">compute_weighted_quantile</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">sample_weight</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">values_sorted</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Funtion to calculate weighted percentiles.</span>
+
+<span class="sd">    Code modified from the answer given by users Alleo &amp; Max Ghenis on stackoverflow; https://stackoverflow.com/a/29677616.</span>
+<span class="sd">    See https://en.wikipedia.org/wiki/Percentile#The_weighted_percentile_method for description of method.</span>
+<span class="sd">    Removed the old_style arg and associated code from stackoverflow answer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : array-like</span>
+<span class="sd">        Data of interest, must contain a column supplied in variable.</span>
+<span class="sd">        </span>
+<span class="sd">    quantiles : array-like</span>
+<span class="sd">        Value(s) between 0 &lt;= quantiles &lt;= 1, the weighted quantile(s) to compute.</span>
+<span class="sd">    </span>
+<span class="sd">    sample_weight : array-like, default = None</span>
+<span class="sd">        Array of weights, must be same length as values. Default value of None </span>
+<span class="sd">        means each observation in values is equally weighted.</span>
+
+<span class="sd">    values_sorted : bool</span>
+<span class="sd">        Are the values and sample_weight arrays pre-sorted? If True arrays will not</span>
+<span class="sd">        be sorted in function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cat : np.array </span>
+<span class="sd">        Computed (weighted) quantiles. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles must be in the range [0, 1]&#39;</span><span class="p">)</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quantiles</span><span class="p">)</span>
+    <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quantiles</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])))</span>
+    <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+    <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">values_sorted</span><span class="p">:</span>
+        <span class="n">sorter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span>
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">sample_weight</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span>
+
+    <span class="n">weighted_quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sample_weight</span>
+
+    <span class="n">weighted_quantiles</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">quantiles</span><span class="p">,</span> <span class="n">weighted_quantiles</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="weighted_quantile"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.weighted_quantile">[docs]</a><span class="k">def</span> <span class="nf">weighted_quantile</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function to split variable into buckets according to the supplied weighted quantiles.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Data of interest, must contain a column supplied in variable.</span>
+<span class="sd">        </span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Column to bucket in df. Must be numeric type.</span>
+<span class="sd">    </span>
+<span class="sd">    quantiles : float or array-like</span>
+<span class="sd">        Value(s) between 0 &lt;= quantiles &lt;= 1, the quantile(s) to compute.</span>
+
+<span class="sd">    weights : str, default = None</span>
+<span class="sd">        Column of weights in df. Default value of None results in observations treated as equally weighted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cat : pd.Series </span>
+<span class="sd">        Categorical version (pandas category type) of df[variable] bucketed according to</span>
+<span class="sd">        the supplied quantiles. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df should be a pd.DataFrame&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;variable must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable; &#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">]):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df[&#39;</span> <span class="o">+</span> <span class="n">variable</span> <span class="o">+</span> <span class="s1">&#39;] is not numeric type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles should be all greater than or equal to 0&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">quantiles</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;quantiles should be all less than or equal to 1&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;weights must be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">weights</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;weights; &#39;</span> <span class="o">+</span> <span class="n">weights</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">weights</span><span class="p">]):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df[&#39;</span> <span class="o">+</span> <span class="n">weights</span> <span class="o">+</span> <span class="s1">&#39;] is not numeric type&#39;</span><span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">weights</span><span class="p">]</span>
+
+    <span class="n">weight_quantiles</span> <span class="o">=</span> <span class="n">compute_weighted_quantile</span><span class="p">(</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> 
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">,</span> 
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">weights</span><span class="p">,</span> 
+        <span class="n">values_sorted</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># again drop nulls from weighted quantiles</span>
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> 
+        <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">weight_quantiles</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">weight_quantiles</span><span class="p">)]),</span>
+        <span class="n">include_lowest</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="s1">&#39;drop&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">variable_cut</span> <span class="o">=</span> <span class="n">add_null_category</span><span class="p">(</span><span class="n">variable_cut</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">variable_cut</span></div>
+
+
+
+<div class="viewcode-block" id="add_null_category"><a class="viewcode-back" href="../../discretisation.html#pad.discretisation.add_null_category">[docs]</a><span class="k">def</span> <span class="nf">add_null_category</span><span class="p">(</span><span class="n">categorical_variable</span><span class="p">,</span> <span class="n">null_category_name</span> <span class="o">=</span> <span class="s1">&#39;Null&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function to add new categorical level to categorical variable and set NAs to this category.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    categorical_variable : pd.Series</span>
+<span class="sd">        Categorical variable to add null categorical level to.</span>
+<span class="sd">        </span>
+<span class="sd">    null_category_name : str, default = &#39;Null&#39; </span>
+<span class="sd">        The name of the categorical level for null values to add.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cat : pd.Series </span>
+<span class="sd">        Categorical variable (pandas category type) with null categorical level added.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">categorical_variable</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;categorical_variable should be a pandas Series&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">categorical_variable</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;category&#39;</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;categorical_variable should be category dtype&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">null_category_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;null_category_name must be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">null_category_name</span> <span class="ow">in</span> <span class="n">categorical_variable</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;null_category_name; &#39;</span> <span class="o">+</span> <span class="n">null_category_name</span> <span class="o">+</span> <span class="s1">&#39; already in categorical_variable.cat.categories&#39;</span><span class="p">)</span>
+
+    <span class="n">cat</span> <span class="o">=</span> <span class="n">categorical_variable</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">add_categories</span><span class="p">([</span><span class="n">null_category_name</span><span class="p">])</span>
+
+    <span class="n">cat</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;Null&#39;</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cat</span></div>
+
+
+
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Richard Angell
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
