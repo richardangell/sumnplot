@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from pandas.api.types import is_numeric_dtype
 from matplotlib.backends.backend_pdf import PdfPages
 
-import pyandev.discretisation as d
-import pyandev.plot.helpers as h
+import pad.discretisation as d
+import pad.plot.helpers as h
 
 
 

@@ -460,7 +460,7 @@ def weighted_quantile(df, variable, quantiles, weights = None):
 
 def add_null_category(categorical_variable, null_category_name = 'Null'):
     '''Function to add new categorical level to categorical variable and set NAs to this category.
-    
+
     Parameters
     ----------
     categorical_variable : pd.Series

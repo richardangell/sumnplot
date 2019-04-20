@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import pyandev.plot as p
+import pad.plot as p
 
 
 

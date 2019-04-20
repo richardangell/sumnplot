@@ -1,4 +1,4 @@
-import pyandev.data_values_summary as dvs
+import pad.data_values_summary as dvs
 import pandas as pd
 
 
