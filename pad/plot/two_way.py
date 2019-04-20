@@ -440,7 +440,7 @@ def plot_summarised_variable_2way(summary_df,
                     linestyle = '-',
                     marker = 'D')
 
-    if fitted is not None:
+    if not fitted is None:
 
         unstack_fitted = summary_df[fitted].unstack()
 
@@ -453,7 +453,7 @@ def plot_summarised_variable_2way(summary_df,
                      linestyle = '-',
                      marker = 'D')
 
-    if fitted2 is not None:
+    if not fitted2 is None:
 
         unstack_fitted2 = summary_df[fitted2].unstack()
 
@@ -469,7 +469,10 @@ def plot_summarised_variable_2way(summary_df,
     if legend:
 
         ax1.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
-        plt.legend(bbox_to_anchor=(1.05, (0.94 - (0.03 * len(split_levels)))), loc = 2, borderaxespad = 0.)
+
+        if (not observed is None) or (not fitted is None) or (not fitted2 is None): 
+
+            plt.legend(bbox_to_anchor=(1.05, (0.94 - (0.03 * len(split_levels)))), loc = 2, borderaxespad = 0.)
 
     plt.title(title, fontsize = 20)
     

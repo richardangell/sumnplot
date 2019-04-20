@@ -428,7 +428,11 @@ def plot_summarised_variable(summary_df,
     if legend:
     
         ax1.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
-        plt.legend(bbox_to_anchor=(1.05, 0.94), loc = 2, borderaxespad = 0.)
+
+        if (not observed is None) or (not fitted is None) or (not fitted2 is None) \
+            or (not fitted3 is None) or (not fitted4 is None): 
+
+            plt.legend(bbox_to_anchor=(1.05, 0.94), loc = 2, borderaxespad = 0.)
         
     plt.title(title, fontsize = 20)
     
