@@ -434,6 +434,8 @@ def plot_summarised_variable(summary_df,
     
     if pdf is not None:
 
+        fig.tight_layout()
+        
         if isinstance(pdf, str):
 
             with PdfPages(pdf) as pdf:
