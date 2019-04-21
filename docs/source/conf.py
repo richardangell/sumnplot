@@ -29,9 +29,10 @@ author = 'Richard Angell'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1'
+import pad
+version = pad.__version__
 # The full version, including alpha/beta/rc tags.
-release = '0.1.1'
+release = pad.__version__
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
