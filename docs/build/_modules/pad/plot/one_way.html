@@ -1,0 +1,651 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pad.plot.one_way &mdash; py-analysis-development 0.2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> py-analysis-development
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../discretisation.html">discretisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../one_way.html">one way plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../two_way.html">two way plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../templates.html">plotting templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../plot_helpers.html">plot helpers</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">py-analysis-development</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pad.plot.one_way</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pad.plot.one_way</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="k">import</span> <span class="n">is_numeric_dtype</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="k">import</span> <span class="n">PdfPages</span>
+
+<span class="kn">import</span> <span class="nn">pad.discretisation</span> <span class="k">as</span> <span class="nn">d</span>
+<span class="kn">import</span> <span class="nn">pad.plot.helpers</span> <span class="k">as</span> <span class="nn">h</span>
+
+
+
+
+
+
+<div class="viewcode-block" id="summary_plot"><a class="viewcode-back" href="../../../one_way.html#pad.plot.one_way.summary_plot">[docs]</a><span class="k">def</span> <span class="nf">summary_plot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> 
+                 <span class="n">weights</span><span class="p">,</span>
+                 <span class="n">by_col</span><span class="p">,</span> 
+                 <span class="n">observed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">fitted</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">fitted2</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">fitted3</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fitted4</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> 
+                 <span class="n">bucketing_type</span> <span class="o">=</span> <span class="s1">&#39;equal_width&#39;</span><span class="p">,</span>
+                 <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">figsize_h</span> <span class="o">=</span> <span class="mi">14</span><span class="p">,</span> 
+                 <span class="n">figsize_w</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+                 <span class="n">legend</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">pdf</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">return_summary_values</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function to plot a one way summary of the specified variable.</span>
+
+<span class="sd">    The one way summary graph consists of the following;</span>
+<span class="sd">    - sum of weights (yellow bars, left axis)</span>
+<span class="sd">    - optionally, mean observed values (pink line, right axis)</span>
+<span class="sd">    - optionally, mean fitted values i.e. model predictions (green line, right axis)</span>
+<span class="sd">    - optionally, mean fitted 2 values i.e. model 2 predictions (light green line, right axis)</span>
+<span class="sd">    - optionally, mean fitted 3 values i.e. model 3 predictions (orange line, right axis)</span>
+<span class="sd">    - optionally, mean fitted 4 values i.e. model 4 predictions (blue line, right axis)    </span>
+<span class="sd">    by another variable, specified in the by_col argument.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Data of interest. Must contain columns with names supplied in weights and by_col args.</span>
+<span class="sd">        </span>
+<span class="sd">    weights : str</span>
+<span class="sd">        Column name of weights in df. </span>
+
+<span class="sd">    by_col : str</span>
+<span class="sd">        Column name in df of variable to summarise by.</span>
+
+<span class="sd">    observed : str, defualt = None</span>
+<span class="sd">        Optional. Column name of observed values in df. If default value of None is passed</span>
+<span class="sd">        then observed values are not plotted.</span>
+
+<span class="sd">    fitted : str, defualt = None</span>
+<span class="sd">        Optional. Column name of fitted (predicted) values in df. If default value of None is passed</span>
+<span class="sd">        then fitted values are not plotted.</span>
+
+<span class="sd">    fitted2 : str, defualt = None</span>
+<span class="sd">        Optional. Column name of second set of fitted (predicted) values in df. If default value of </span>
+<span class="sd">        None is passed then fitted2 values are not plotted.</span>
+
+<span class="sd">    fitted3 : str, defualt = None</span>
+<span class="sd">        Optional. Column name of third set of fitted (predicted) values in df. If default value of </span>
+<span class="sd">        None is passed then fitted3 values are not plotted.</span>
+
+<span class="sd">    fitted4 : str, defualt = None</span>
+<span class="sd">        Optional. Column name of fourth set of fitted (predicted) values in df. If default value of </span>
+<span class="sd">        None is passed then fitted4 values are not plotted.</span>
+
+<span class="sd">    bins : int, default = 20</span>
+<span class="sd">        The number of bins to bucket by_col into if it is a numeric column, and has more than that many</span>
+<span class="sd">        unique values.</span>
+
+<span class="sd">    bucketing_type : str, default = &#39;equal_width&#39;</span>
+<span class="sd">        Type of bucketing to use to discretise by_col if it is numeric (and has more than bins unique values).</span>
+<span class="sd">        Must be one of the values accepted by pyandev.discretisation.discretise; &quot;equal_width&quot;, &quot;equal_weight&quot;,</span>
+<span class="sd">        &quot;quantile&quot; or &quot;weighted_quantile&quot;.</span>
+
+<span class="sd">    title : str, default = None</span>
+<span class="sd">        Title of the plot. If None by_col is used as the title.</span>
+
+<span class="sd">    figsize_h : int, default = 14</span>
+<span class="sd">        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.</span>
+
+<span class="sd">    figsize_w : int, default = 8</span>
+<span class="sd">        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.</span>
+
+<span class="sd">    legend : bool, default = True</span>
+<span class="sd">        Should a legend be added to the plot?</span>
+
+<span class="sd">    pdf : str, default = None</span>
+<span class="sd">        Full fielpath of a pdf to output the plot to. If None not pdf saved.</span>
+
+<span class="sd">    return_summary_values : bool, default = False</span>
+<span class="sd">        If True the table of summarised values that is plotted is returned from the function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    summary_values : pd.DataFrame</span>
+<span class="sd">        If return_summary_values is True then a dataframe containing the plotted summary values is returned.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;df should be a pd.DataFrame&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;weights should be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">weights</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;weights; &#39;</span> <span class="o">+</span> <span class="n">weights</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">by_col</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;by_col should be a str&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">by_col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;by_col; &#39;</span> <span class="o">+</span> <span class="n">by_col</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">observed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;observed should be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">observed</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;observed; &#39;</span> <span class="o">+</span> <span class="n">observed</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fitted</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;fitted should be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;fitted; &#39;</span> <span class="o">+</span> <span class="n">fitted</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fitted2</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;fitted2 should be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted2</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;fitted2; &#39;</span> <span class="o">+</span> <span class="n">fitted2</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted3</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fitted3</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;fitted3 should be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted3</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;fitted3; &#39;</span> <span class="o">+</span> <span class="n">fitted3</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted4</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fitted4</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;fitted4 should be a str&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fitted4</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;fitted4; &#39;</span> <span class="o">+</span> <span class="n">fitted4</span> <span class="o">+</span> <span class="s1">&#39; not in df&#39;</span><span class="p">)</span>
+
+    <span class="n">pdf</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">check_pdf_arg</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">by_col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">]:</span>
+        
+        <span class="n">cut</span> <span class="o">=</span> <span class="n">by_col</span>
+
+    <span class="k">elif</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">by_col</span><span class="p">]):</span>
+
+        <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">by_col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(</span><span class="n">dropna</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">bins</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">by_col</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                <span class="n">cut</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">by_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">cut</span> <span class="o">=</span> <span class="n">by_col</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">cut</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">discretise</span><span class="p">(</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span>
+                               <span class="n">bucketing_type</span> <span class="o">=</span> <span class="n">bucketing_type</span><span class="p">,</span>
+                               <span class="n">variable</span> <span class="o">=</span> <span class="n">by_col</span><span class="p">,</span>
+                               <span class="n">n</span> <span class="o">=</span> <span class="n">bins</span><span class="p">,</span>
+                               <span class="n">weights_column</span> <span class="o">=</span> <span class="n">weights</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;unexpected type for column; &#39;</span> <span class="o">+</span> <span class="n">by_col</span><span class="p">)</span>
+
+    <span class="c1"># function to apply to each variable</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="p">{</span><span class="n">weights</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]}</span>
+
+    <span class="n">weights_summary</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">+</span> <span class="s1">&#39;__sum&#39;</span>
+
+    <span class="k">if</span> <span class="n">observed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">f</span><span class="p">[</span><span class="n">observed</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
+
+        <span class="n">observed_summary</span> <span class="o">=</span> <span class="n">observed</span> <span class="o">+</span> <span class="s1">&#39;__mean&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">observed_summary</span> <span class="o">=</span> <span class="n">observed</span>
+
+    <span class="k">if</span> <span class="n">fitted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">f</span><span class="p">[</span><span class="n">fitted</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
+
+        <span class="n">fitted_summary</span> <span class="o">=</span> <span class="n">fitted</span> <span class="o">+</span> <span class="s1">&#39;__mean&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">fitted_summary</span> <span class="o">=</span> <span class="n">fitted</span>
+
+    <span class="k">if</span> <span class="n">fitted2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">f</span><span class="p">[</span><span class="n">fitted2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
+
+        <span class="n">fitted2_summary</span> <span class="o">=</span> <span class="n">fitted2</span> <span class="o">+</span> <span class="s1">&#39;__mean&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">fitted2_summary</span> <span class="o">=</span> <span class="n">fitted2</span>
+
+    <span class="k">if</span> <span class="n">fitted3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">f</span><span class="p">[</span><span class="n">fitted3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
+
+        <span class="n">fitted3_summary</span> <span class="o">=</span> <span class="n">fitted3</span> <span class="o">+</span> <span class="s1">&#39;__mean&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">fitted3_summary</span> <span class="o">=</span> <span class="n">fitted3</span>
+
+    <span class="k">if</span> <span class="n">fitted4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">f</span><span class="p">[</span><span class="n">fitted4</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
+
+        <span class="n">fitted4_summary</span> <span class="o">=</span> <span class="n">fitted4</span> <span class="o">+</span> <span class="s1">&#39;__mean&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">fitted4_summary</span> <span class="o">=</span> <span class="n">fitted4</span>
+
+    <span class="n">summary_values</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">cut</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">summary_values</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">by_col</span>
+
+    <span class="n">summary_values</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> \
+        <span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;__&#39;</span> <span class="o">+</span> <span class="n">j</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">summary_values</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                      <span class="n">summary_values</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+
+    <span class="c1"># for each column divide column sum by weights sum to get bucket averages</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="n">observed</span><span class="p">,</span> <span class="n">fitted</span><span class="p">,</span> <span class="n">fitted2</span><span class="p">,</span> <span class="n">fitted3</span><span class="p">,</span> <span class="n">fitted4</span><span class="p">]:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">summary_values</span><span class="p">[</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;__sum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_values</span><span class="p">[</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;__sum&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">summary_values</span><span class="p">[</span><span class="n">weights_summary</span><span class="p">]</span>
+
+            <span class="n">summary_values</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;__sum&#39;</span><span class="p">:</span> <span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;__mean&#39;</span><span class="p">},</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">plot_summarised_variable</span><span class="p">(</span><span class="n">summary_df</span> <span class="o">=</span> <span class="n">summary_values</span><span class="p">,</span> 
+                             <span class="n">weights</span> <span class="o">=</span> <span class="n">weights_summary</span><span class="p">,</span> 
+                             <span class="n">observed</span> <span class="o">=</span> <span class="n">observed_summary</span><span class="p">,</span> 
+                             <span class="n">fitted</span> <span class="o">=</span> <span class="n">fitted_summary</span><span class="p">,</span> 
+                             <span class="n">fitted2</span> <span class="o">=</span> <span class="n">fitted2_summary</span><span class="p">,</span> 
+                             <span class="n">fitted3</span> <span class="o">=</span> <span class="n">fitted3_summary</span><span class="p">,</span>
+                             <span class="n">fitted4</span> <span class="o">=</span> <span class="n">fitted4_summary</span><span class="p">,</span>
+                             <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="p">,</span>
+                             <span class="n">figsize_h</span> <span class="o">=</span> <span class="n">figsize_h</span><span class="p">,</span> 
+                             <span class="n">figsize_w</span> <span class="o">=</span> <span class="n">figsize_w</span><span class="p">,</span>
+                             <span class="n">legend</span> <span class="o">=</span> <span class="n">legend</span><span class="p">,</span>
+                             <span class="n">pdf</span> <span class="o">=</span> <span class="n">pdf</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_summary_values</span><span class="p">:</span>
+
+        <span class="k">return</span> <span class="n">summary_values</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="plot_summarised_variable"><a class="viewcode-back" href="../../../one_way.html#pad.plot.one_way.plot_summarised_variable">[docs]</a><span class="k">def</span> <span class="nf">plot_summarised_variable</span><span class="p">(</span><span class="n">summary_df</span><span class="p">,</span> 
+                             <span class="n">weights</span><span class="p">,</span> 
+                             <span class="n">observed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                             <span class="n">fitted</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                             <span class="n">fitted2</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                             <span class="n">fitted3</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">fitted4</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">figsize_h</span> <span class="o">=</span> <span class="mi">14</span><span class="p">,</span> 
+                             <span class="n">figsize_w</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+                             <span class="n">legend</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                             <span class="n">pdf</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Plot a one way variable summary from summary stats.</span>
+<span class="sd">    </span>
+<span class="sd">    This function should be used once a variable has been summarised.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    summary_df : pd.DataFrame</span>
+<span class="sd">        DataFrame with summarised info to plot. Must contain a column with name specified by weights.</span>
+<span class="sd">        </span>
+<span class="sd">    weights : str</span>
+<span class="sd">        Column name of weights in summary_df. </span>
+
+<span class="sd">    observed : str, defualt = None</span>
+<span class="sd">        Optional. Column name of observed values in summary_df. If default value of None is passed</span>
+<span class="sd">        then observed values are not plotted.</span>
+
+<span class="sd">    fitted : str, defualt = None</span>
+<span class="sd">        Optional. Column name of fitted (predicted) values in summary_df. If default value of None is passed</span>
+<span class="sd">        then fitted values are not plotted.</span>
+
+<span class="sd">    fitted2 : str, defualt = None</span>
+<span class="sd">        Optional. Column name of second set of fitted (predicted) values in summary_df. If default value of </span>
+<span class="sd">        None is passed then fitted2 values are not plotted.</span>
+
+<span class="sd">    fitted3 : str, defualt = None</span>
+<span class="sd">        Optional. Column name of third set of fitted (predicted) values in summary_df. If default value of </span>
+<span class="sd">        None is passed then fitted3 values are not plotted.</span>
+
+<span class="sd">    fitted4 : str, defualt = None</span>
+<span class="sd">        Optional. Column name of fourth set of fitted (predicted) values in summary_df. If default value of </span>
+<span class="sd">        None is passed then fitted4 values are not plotted.</span>
+
+<span class="sd">    title : str, default = None</span>
+<span class="sd">        Title of the plot. If None summary_df.index.name is used as the title.</span>
+
+<span class="sd">    figsize_h : int, default = 14</span>
+<span class="sd">        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.</span>
+
+<span class="sd">    figsize_w : int, default = 8</span>
+<span class="sd">        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.</span>
+
+<span class="sd">    legend : bool, default = True</span>
+<span class="sd">        Should a legend be added to the plot?</span>
+
+<span class="sd">    pdf : str or PdfPages, default = None</span>
+<span class="sd">        If str then the full fielpath of a pdf to output the plot to. If None not pdf saved. Otherwise</span>
+<span class="sd">        a PdfPages object to save figure to must be passed.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summary_df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;summary_df should be a pd.DataFrame&#39;</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="n">title</span> <span class="o">=</span> <span class="n">summary_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">figsize_h</span><span class="p">,</span> <span class="n">figsize_w</span><span class="p">))</span>
+    
+    <span class="c1"># plot bin counts on 1st axis </span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> 
+            <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">weights</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">weights</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">summary_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">rotation</span> <span class="o">=</span> <span class="mi">270</span><span class="p">)</span>
+    
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">observed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># plot average observed on the 2nd axis in pink</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">observed</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                 <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">observed</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
+                 <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;magenta&#39;</span><span class="p">,</span> 
+                 <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                 <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">fitted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    
+        <span class="c1"># plot average observed on the 2nd axis in green</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                 <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
+                 <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;forestgreen&#39;</span><span class="p">,</span> 
+                 <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                 <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fitted2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                 <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
+                 <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span> 
+                 <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                 <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">fitted3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted3</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                 <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted3</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
+                 <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> 
+                 <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                 <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fitted4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted4</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                 <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">fitted4</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
+                 <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;dodgerblue&#39;</span><span class="p">,</span> 
+                 <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                 <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+    
+        <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">loc</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">borderaxespad</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">observed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">fitted</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">fitted2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">fitted3</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">fitted4</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span> 
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.94</span><span class="p">),</span> <span class="n">loc</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">borderaxespad</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span>
+        
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">pdf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+            <span class="k">with</span> <span class="n">PdfPages</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdf</span><span class="p">:</span>
+
+                <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">()</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Richard Angell
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

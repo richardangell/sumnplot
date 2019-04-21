@@ -9,7 +9,7 @@ def list_reqs(fname='requirements.txt'):
         return fd.read().splitlines()
 
 def get_version():
-    VERSION_FILE='pyandev/_version.py'
+    VERSION_FILE='pad/_version.py'
     version_str = open(VERSION_FILE, 'rt').read()
     VERSION_RE = r"^__version__ = ['\"]([^'\"]*)['\"]"
     mo = re.search(VERSION_RE, version_str, re.M)
@@ -20,7 +20,7 @@ def get_version():
     return(version)
 
 setuptools.setup(
-    name='pyandev',
+    name='py-analysis-development',
     version=get_version(),
     description='Python analysis development package',
     long_description=long_description,

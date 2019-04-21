@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>one way plotting &mdash; py-analysis-development 0.2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="two way plotting" href="two_way.html" />
+    <link rel="prev" title="discretisation" href="discretisation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> py-analysis-development
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="discretisation.html">discretisation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">one way plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="two_way.html">two way plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">plotting templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot_helpers.html">plot helpers</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">py-analysis-development</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>one way plotting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/one_way.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="one-way-plotting">
+<h1>one way plotting<a class="headerlink" href="#one-way-plotting" title="Permalink to this headline">¶</a></h1>
+<p>One way plotting functions.</p>
+<span class="target" id="module-pad.plot.one_way"></span><dl class="function">
+<dt id="pad.plot.one_way.plot_summarised_variable">
+<code class="descclassname">pad.plot.one_way.</code><code class="descname">plot_summarised_variable</code><span class="sig-paren">(</span><em>summary_df</em>, <em>weights</em>, <em>observed=None</em>, <em>fitted=None</em>, <em>fitted2=None</em>, <em>fitted3=None</em>, <em>fitted4=None</em>, <em>title=None</em>, <em>figsize_h=14</em>, <em>figsize_w=8</em>, <em>legend=True</em>, <em>pdf=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/plot/one_way.html#plot_summarised_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.plot.one_way.plot_summarised_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a one way variable summary from summary stats.</p>
+<p>This function should be used once a variable has been summarised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>summary_df</strong> (<em>pd.DataFrame</em>) – DataFrame with summarised info to plot. Must contain a column with name specified by weights.</p></li>
+<li><p><strong>weights</strong> (<em>str</em>) – Column name of weights in summary_df.</p></li>
+<li><p><strong>observed</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of observed values in summary_df. If default value of None is passed
+then observed values are not plotted.</p></li>
+<li><p><strong>fitted</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of fitted (predicted) values in summary_df. If default value of None is passed
+then fitted values are not plotted.</p></li>
+<li><p><strong>fitted2</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of second set of fitted (predicted) values in summary_df. If default value of
+None is passed then fitted2 values are not plotted.</p></li>
+<li><p><strong>fitted3</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of third set of fitted (predicted) values in summary_df. If default value of
+None is passed then fitted3 values are not plotted.</p></li>
+<li><p><strong>fitted4</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of fourth set of fitted (predicted) values in summary_df. If default value of
+None is passed then fitted4 values are not plotted.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>default = None</em>) – Title of the plot. If None summary_df.index.name is used as the title.</p></li>
+<li><p><strong>figsize_h</strong> (<em>int</em><em>, </em><em>default = 14</em>) – Height of plot figure, used in matplotlib.pylot.subplots figsize arg.</p></li>
+<li><p><strong>figsize_w</strong> (<em>int</em><em>, </em><em>default = 8</em>) – Width of plot figure, used in matplotlib.pylot.subplots figsize arg.</p></li>
+<li><p><strong>legend</strong> (<em>bool</em><em>, </em><em>default = True</em>) – Should a legend be added to the plot?</p></li>
+<li><p><strong>pdf</strong> (<em>str</em><em> or </em><em>PdfPages</em><em>, </em><em>default = None</em>) – If str then the full fielpath of a pdf to output the plot to. If None not pdf saved. Otherwise
+a PdfPages object to save figure to must be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pad.plot.one_way.summary_plot">
+<code class="descclassname">pad.plot.one_way.</code><code class="descname">summary_plot</code><span class="sig-paren">(</span><em>df</em>, <em>weights</em>, <em>by_col</em>, <em>observed=None</em>, <em>fitted=None</em>, <em>fitted2=None</em>, <em>fitted3=None</em>, <em>fitted4=None</em>, <em>bins=20</em>, <em>bucketing_type='equal_width'</em>, <em>title=None</em>, <em>figsize_h=14</em>, <em>figsize_w=8</em>, <em>legend=True</em>, <em>pdf=None</em>, <em>return_summary_values=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pad/plot/one_way.html#summary_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pad.plot.one_way.summary_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to plot a one way summary of the specified variable.</p>
+<p>The one way summary graph consists of the following;
+- sum of weights (yellow bars, left axis)
+- optionally, mean observed values (pink line, right axis)
+- optionally, mean fitted values i.e. model predictions (green line, right axis)
+- optionally, mean fitted 2 values i.e. model 2 predictions (light green line, right axis)
+- optionally, mean fitted 3 values i.e. model 3 predictions (orange line, right axis)
+- optionally, mean fitted 4 values i.e. model 4 predictions (blue line, right axis)
+by another variable, specified in the by_col argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Data of interest. Must contain columns with names supplied in weights and by_col args.</p></li>
+<li><p><strong>weights</strong> (<em>str</em>) – Column name of weights in df.</p></li>
+<li><p><strong>by_col</strong> (<em>str</em>) – Column name in df of variable to summarise by.</p></li>
+<li><p><strong>observed</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of observed values in df. If default value of None is passed
+then observed values are not plotted.</p></li>
+<li><p><strong>fitted</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of fitted (predicted) values in df. If default value of None is passed
+then fitted values are not plotted.</p></li>
+<li><p><strong>fitted2</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of second set of fitted (predicted) values in df. If default value of
+None is passed then fitted2 values are not plotted.</p></li>
+<li><p><strong>fitted3</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of third set of fitted (predicted) values in df. If default value of
+None is passed then fitted3 values are not plotted.</p></li>
+<li><p><strong>fitted4</strong> (<em>str</em><em>, </em><em>defualt = None</em>) – Optional. Column name of fourth set of fitted (predicted) values in df. If default value of
+None is passed then fitted4 values are not plotted.</p></li>
+<li><p><strong>bins</strong> (<em>int</em><em>, </em><em>default = 20</em>) – The number of bins to bucket by_col into if it is a numeric column, and has more than that many
+unique values.</p></li>
+<li><p><strong>bucketing_type</strong> (<em>str</em><em>, </em><em>default = 'equal_width'</em>) – Type of bucketing to use to discretise by_col if it is numeric (and has more than bins unique values).
+Must be one of the values accepted by pyandev.discretisation.discretise; “equal_width”, “equal_weight”,
+“quantile” or “weighted_quantile”.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>default = None</em>) – Title of the plot. If None by_col is used as the title.</p></li>
+<li><p><strong>figsize_h</strong> (<em>int</em><em>, </em><em>default = 14</em>) – Height of plot figure, used in matplotlib.pylot.subplots figsize arg.</p></li>
+<li><p><strong>figsize_w</strong> (<em>int</em><em>, </em><em>default = 8</em>) – Width of plot figure, used in matplotlib.pylot.subplots figsize arg.</p></li>
+<li><p><strong>legend</strong> (<em>bool</em><em>, </em><em>default = True</em>) – Should a legend be added to the plot?</p></li>
+<li><p><strong>pdf</strong> (<em>str</em><em>, </em><em>default = None</em>) – Full fielpath of a pdf to output the plot to. If None not pdf saved.</p></li>
+<li><p><strong>return_summary_values</strong> (<em>bool</em><em>, </em><em>default = False</em>) – If True the table of summarised values that is plotted is returned from the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>summary_values</strong> – If return_summary_values is True then a dataframe containing the plotted summary values is returned.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="two_way.html" class="btn btn-neutral float-right" title="two way plotting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="discretisation.html" class="btn btn-neutral float-left" title="discretisation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Richard Angell
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
