@@ -25,6 +25,19 @@ def check_type(obj: Any, expected_types: List[Type], obj_name: str) -> None:
         )
 
 
+def check_condition(condition: bool, error_message_text: str):
+    """Check that condition (which evaluates to a bool) is True and raise a
+    ValueError if not.
+    """
+
+    check_type(condition, [bool], "condition")
+    check_type(error_message_text, [str], "error_message_text")
+
+    if not condition:
+
+        raise ValueError(f"condition: [{error_message_text}] not met")
+
+
 def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
     """Function to check that all specified columns are in a given DataFrame."""
 

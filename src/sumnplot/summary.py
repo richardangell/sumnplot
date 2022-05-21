@@ -1,57 +1,31 @@
 import pandas as pd
 
+from .checks import check_type, check_condition, check_columns_in_df
+
 
 def data_values_summary(
-    df, columns=None, max_values=50, summary_values=5, top_mid_bottom=5
+    df: pd.DataFrame, columns=None, max_values=50, summary_values=5, top_mid_bottom=5
 ):
     """Function to produce summaries of values in a DataFrame."""
 
-    if not isinstance(df, pd.DataFrame):
+    check_type(df, [pd.DataFrame], "df")
+    check_type(max_values, [int], "max_values")
+    check_type(summary_values, [int], "summary_values")
+    check_type(top_mid_bottom, [int], "top_mid_bottom")
 
-        raise TypeError("df should be a pandas DataFrame")
+    check_condition(max_values > 0, "max_values > 0")
+    check_condition(summary_values > 0, "summary_values > 0")
+    check_condition(top_mid_bottom > 0, "top_mid_bottom > 0")
 
     if columns is None:
-
         columns = df.columns.values
 
-    else:
-
-        if not isinstance(columns, list):
-
-            raise TypeError("columns should be a list (of columns in df)")
-
-        for col in columns:
-
-            if col not in df.columns.values:
-
-                raise ValueError(str(col) + " not in df")
-
-    if not isinstance(max_values, int):
-
-        raise TypeError("max_values should be an int")
-
-    if not max_values > 0:
-
-        raise ValueError("max_values must be greater than 0")
-
-    if not isinstance(summary_values, int):
-
-        raise TypeError("summary_values should be an int")
-
-    if not summary_values > 0:
-
-        raise ValueError("summary_values must be greater than 0")
-
-    if not isinstance(top_mid_bottom, int):
-
-        raise TypeError("top_mid_bottom should be an int")
-
-    if not top_mid_bottom > 0:
-
-        raise ValueError("top_mid_bottom must be greater than 0")
+    check_columns_in_df(df, columns)
 
     columns_summary = [
-        summarise_column(df, col, max_values, summary_values, top_mid_bottom)
+        summarise_column_value_counts(
+            df, col, max_values, summary_values, top_mid_bottom
+        )
         for col in columns
     ]
 
@@ -60,34 +34,50 @@ def data_values_summary(
     return columns_summary_all
 
 
-def summarise_column(df, column, max_values, summary_values, top_mid_bottom):
-    """Function to return value_counts for a sinlge column in df resized to max_values rows."""
+def summarise_column_value_counts(
+    df: pd.DataFrame,
+    column: str,
+    max_values: int,
+    summary_values: int,
+    top_mid_bottom: int,
+) -> pd.DataFrame:
+    """Function to return value_counts for a sinlge column in df resized to
+    max_values rows.
+    """
 
-    value_counts = (
-        df[column].value_counts(dropna=False).sort_index(ascending=True).reset_index()
+    value_counts = get_column_values(df[column])
+
+    value_counts_resize = resize_column_value_counts(
+        value_counts, max_values, summary_values
     )
-
-    value_counts.columns = [column + "_value", column + "_count"]
-
-    value_counts_resize = resize_column_summary(
-        value_counts, max_values, summary_values, top_mid_bottom
-    )
-
-    if not value_counts_resize.shape[0] == max_values:
-
-        raise ValueError(
-            "unexpected shape for value_counts_resize for column; " + column
-        )
 
     return value_counts_resize
 
 
-def resize_column_summary(df, max_values, summary_values, top_mid_bottom):
-    """Function to resize the output the results of value_counts() to be max_values rows.
+def get_column_values(column: pd.Series, ascending: bool = True) -> pd.DataFrame:
+    """Run a value_counts on pandas Series and return the results sorted by index
+    with the index as a column in the output.
+    """
 
-    If n (number rows of df) < max_values then df is padded with rows containing None. Otherwise
-    if n > max_values then the first, middle and last top_mid_bottom rows are selected and similarly
-    padded.
+    value_counts = (
+        column.value_counts(dropna=False).sort_index(ascending=ascending).reset_index()
+    )
+
+    value_counts.columns = [column + "_value", column + "_count"]
+
+    return value_counts
+
+
+def resize_column_value_counts(
+    df: pd.DataFrame, max_values: int, summary_values: int
+) -> pd.DataFrame:
+    """Function to resize the output the results of value_counts() to be
+    max_values rows.
+
+    If n (number rows of df) < max_values then df is padded with rows
+    containing None. Otherwise if n > max_values then the first, middle and
+    last top_mid_bottom rows are selected and similarly padded with None
+    value rows.
     """
 
     n = df.shape[0]
@@ -96,48 +86,46 @@ def resize_column_summary(df, max_values, summary_values, top_mid_bottom):
 
         return df.reset_index(drop=True)
 
-    elif n < max_values:
-
-        extra_rows = max_values - n
-
-        append_rows = pd.DataFrame(
-            {df.columns[0]: extra_rows * [None], df.columns[1]: extra_rows * [None]}
-        )
-
-        return df.append(append_rows).reset_index(drop=True)
-
     else:
 
-        select_rows = df.loc[0 : (summary_values - 1)]
+        pad_row = pd.DataFrame({df.columns[0]: [None], df.columns[1]: [None]})
 
-        append_rows = pd.DataFrame(
-            {df.columns[0]: 1 * [None], df.columns[1]: 1 * [None]}
-        )
+        if n < max_values:
 
-        select_rows = select_rows.append(append_rows)
+            extra_rows = max_values - n
 
-        mid_row = n // 2
+            dfs_to_concat = [pad_row] * extra_rows
 
-        below_mid_row = mid_row - (summary_values // 2)
+            dfs_to_concat.insert(0, df)
 
-        middle_rows = df.loc[below_mid_row : (below_mid_row + summary_values)]
+        else:
 
-        select_rows = select_rows.append(middle_rows)
+            dfs_to_concat = []
 
-        select_rows = select_rows.append(append_rows)
+            bottom_rows = df.loc[0 : (summary_values - 1)].copy()
 
-        top_rows = df.loc[(n - summary_values) :]
+            mid_row = n // 2
+            below_mid_row = mid_row - (summary_values // 2)
 
-        select_rows = select_rows.append(top_rows)
+            middle_rows = df.loc[
+                below_mid_row : (below_mid_row + summary_values)
+            ].copy()
+            top_rows = df.loc[(n - summary_values) :].copy()
 
-        extra_rows = max_values - select_rows.shape[0]
+            extra_pad_rows = max_values - (3 * summary_values + 2)
 
-        if extra_rows > 0:
+            if extra_pad_rows > 0:
 
-            append_rows = pd.DataFrame(
-                {df.columns[0]: extra_rows * [None], df.columns[1]: extra_rows * [None]}
-            )
+                dfs_to_concat = [pad_row] * extra_pad_rows
 
-            select_rows = select_rows.append(append_rows)
+            else:
 
-        return select_rows.reset_index(drop=True)
+                dfs_to_concat = []
+
+            dfs_to_concat.insert(0, top_rows)
+            dfs_to_concat.insert(0, pad_row)
+            dfs_to_concat.insert(0, middle_rows)
+            dfs_to_concat.insert(0, pad_row)
+            dfs_to_concat.insert(0, bottom_rows)
+
+        return pd.concat(dfs_to_concat, axis=0).reset_index(drop=True)
