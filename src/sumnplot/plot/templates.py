@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import pad.plot as p
+from . import one_way
 
 
 def lift_curve(
@@ -61,7 +61,7 @@ def lift_curve(
 
         raise ValueError("fitted; " + fitted + " not in df")
 
-    p.one_way.summary_plot(
+    one_way.summary_plot(
         df=df,
         weights=weights,
         by_col=fitted,
@@ -162,7 +162,7 @@ def lift_curve_model_ratio(
 
     if not models_fitted_ratio is None:
 
-        p.one_way.summary_plot(
+        one_way.summary_plot(
             df=df,
             weights=weights,
             by_col=models_fitted_ratio,
@@ -180,7 +180,7 @@ def lift_curve_model_ratio(
 
         df[ratio_col] = df[fitted] / df[fitted2]
 
-        p.one_way.summary_plot(
+        one_way.summary_plot(
             df=df,
             weights=weights,
             by_col=ratio_col,
