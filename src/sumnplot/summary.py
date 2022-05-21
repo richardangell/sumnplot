@@ -2,9 +2,15 @@ import pandas as pd
 
 from .checks import check_type, check_condition, check_columns_in_df
 
+from typing import List
+
 
 def data_values_summary(
-    df: pd.DataFrame, columns=None, max_values=50, summary_values=5, top_mid_bottom=5
+    df: pd.DataFrame,
+    columns: List = None,
+    max_values: int = 50,
+    summary_values: int = 5,
+    top_mid_bottom: int = 5,
 ):
     """Function to produce summaries of values in a DataFrame."""
 
