@@ -10,28 +10,22 @@ def data_values_summary(
     columns: List = None,
     max_values: int = 50,
     summary_values: int = 5,
-    top_mid_bottom: int = 5,
 ):
     """Function to produce summaries of values in a DataFrame."""
 
     check_type(df, [pd.DataFrame], "df")
     check_type(max_values, [int], "max_values")
     check_type(summary_values, [int], "summary_values")
-    check_type(top_mid_bottom, [int], "top_mid_bottom")
 
     check_condition(max_values > 0, "max_values > 0")
     check_condition(summary_values > 0, "summary_values > 0")
-    check_condition(top_mid_bottom > 0, "top_mid_bottom > 0")
-
     if columns is None:
         columns = df.columns.values
 
     check_columns_in_df(df, columns)
 
     columns_summary = [
-        summarise_column_value_counts(
-            df, col, max_values, summary_values, top_mid_bottom
-        )
+        summarise_column_value_counts(df, col, max_values, summary_values)
         for col in columns
     ]
 
@@ -41,11 +35,7 @@ def data_values_summary(
 
 
 def summarise_column_value_counts(
-    df: pd.DataFrame,
-    column: str,
-    max_values: int,
-    summary_values: int,
-    top_mid_bottom: int,
+    df: pd.DataFrame, column: str, max_values: int, summary_values: int
 ) -> pd.DataFrame:
     """Function to return value_counts for a sinlge column in df resized to
     max_values rows.
@@ -82,7 +72,7 @@ def resize_column_value_counts(
 
     If n (number rows of df) < max_values then df is padded with rows
     containing None. Otherwise if n > max_values then the first, middle and
-    last top_mid_bottom rows are selected and similarly padded with None
+    last summary_values rows are selected and similarly padded with None
     value rows.
     """
 
