@@ -5,12 +5,12 @@ from .checks import check_type, check_condition, check_columns_in_df
 from typing import List
 
 
-def data_values_summary(
+def dataset_values_summary(
     df: pd.DataFrame,
     columns: List = None,
     max_values: int = 50,
     summary_values: int = 5,
-):
+) -> pd.DataFrame:
     """Function to produce summaries of values in a DataFrame."""
 
     check_type(df, [pd.DataFrame], "df")
