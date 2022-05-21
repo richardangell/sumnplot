@@ -6,7 +6,6 @@ from pandas.api.types import is_numeric_dtype
 from matplotlib.backends.backend_pdf import PdfPages
 
 from .. import discretisation as d
-from . import helpers as h
 
 
 def summary_plot(
@@ -172,8 +171,6 @@ def summary_plot(
         if not fitted4 in df.columns.values:
 
             raise ValueError("fitted4; " + fitted4 + " not in df")
-
-    pdf = h.check_pdf_arg(pdf)
 
     if df[by_col].dtype.name == ["object", "category"]:
 

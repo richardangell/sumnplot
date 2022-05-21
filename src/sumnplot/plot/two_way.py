@@ -6,7 +6,6 @@ from pandas.api.types import is_numeric_dtype
 from matplotlib.backends.backend_pdf import PdfPages
 
 from .. import discretisation as d
-from . import helpers as h
 
 
 def summary_plot(
@@ -169,8 +168,6 @@ def summary_plot(
     if not bar_type in ["stacked", "side_by_side"]:
 
         raise ValueError("unexpected bar_type; " + bar_type)
-
-    pdf = h.check_pdf_arg(pdf)
 
     if df[split_by_col].nunique(dropna=False) > 7:
 
