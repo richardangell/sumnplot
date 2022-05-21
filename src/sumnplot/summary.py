@@ -22,7 +22,7 @@ def data_values_summary(
 
         for col in columns:
 
-            if not col in df.columns.values:
+            if col not in df.columns.values:
 
                 raise ValueError(str(col) + " not in df")
 
