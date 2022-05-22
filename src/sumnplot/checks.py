@@ -1,7 +1,6 @@
 """Module for simple reusable checks."""
 
 import pandas as pd
-import numpy as np
 
 from typing import Any, Type, List, Union, Tuple
 
@@ -34,12 +33,12 @@ def check_type(
         )
 
 
-def check_condition(condition: Union[bool, np.bool_], error_message_text: str):
+def check_condition(condition: bool, error_message_text: str):
     """Check that condition (which evaluates to a bool) is True and raise a
     ValueError if not.
     """
 
-    check_type(condition, (bool, np.bool_), "condition")
+    check_type(condition, bool, "condition")
     check_type(error_message_text, str, "error_message_text")
 
     if not condition:

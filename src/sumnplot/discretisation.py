@@ -215,7 +215,7 @@ class QuantileDiscretiser(Discretiser):
         quantiles_array = np.array(quantiles)
         quantiles_array = np.unique(np.sort(np.append(quantiles_array, [0, 1])))
 
-        check_condition(np.all(quantiles_array >= 0), "all quantiles >= 0")
-        check_condition(np.all(quantiles_array <= 1), "all quantiles <= 1")
+        check_condition(all(quantiles_array >= 0), "all quantiles >= 0")
+        check_condition(all(quantiles_array <= 1), "all quantiles <= 1")
 
         return tuple(quantiles_array)
