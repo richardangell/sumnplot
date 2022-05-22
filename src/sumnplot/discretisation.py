@@ -109,6 +109,10 @@ class EqualWidthDiscretiser(Discretiser):
 
         return self
 
+    def _get_max_number_of_bins(self):
+
+        return self.n
+
 
 class EqualWeightDiscretiser(Discretiser):
     def __init__(self, variable, n=10):
@@ -130,6 +134,10 @@ class EqualWeightDiscretiser(Discretiser):
         self.cut_points = self._clean_cut_points(cut_points)
 
         return self
+
+    def _get_max_number_of_bins(self):
+
+        return self.n
 
 
 class QuantileDiscretiser(Discretiser):
@@ -219,3 +227,7 @@ class QuantileDiscretiser(Discretiser):
         check_condition(all(quantiles_array <= 1), "all quantiles <= 1")
 
         return tuple(quantiles_array)
+
+    def _get_max_number_of_bins(self):
+
+        return len(self.quantiles)
