@@ -101,6 +101,15 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
 
         pass
 
+    def _get_actual_number_of_bins(self):
+        """Method to return the actual number of bins based off cut_points
+        after the fit method has been run.
+        """
+
+        check_is_fitted(self, "cut_points")
+
+        return len(self.cut_points) - 1
+
 
 class EqualWidthDiscretiser(Discretiser):
     def __init__(self, variable, n=10):
