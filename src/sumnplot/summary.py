@@ -121,14 +121,14 @@ class ColumnSummariser:
         if self.to_summarise_divide_column is not None:
             check_columns_in_df(X, [self.to_summarise_divide_column])
 
-        if sample_weight is not None and len(X) != len(sample_weight):
-            raise ValueError("X and sample_weight have different numbers of rows")
-
-        if len(sample_weight.shape) == 2:
-            if sample_weight.shape[1] > 1:
-                raise ValueError("sample_weight has more than one column")
-        elif len(sample_weight.shape) > 2:
-            raise ValueError("sample_weight has more than two dimensions")
+        if sample_weight is not None:
+            if len(X) != len(sample_weight):
+                raise ValueError("X and sample_weight have different numbers of rows")
+            if len(sample_weight.shape) == 2:
+                if sample_weight.shape[1] > 1:
+                    raise ValueError("sample_weight has more than one column")
+            elif len(sample_weight.shape) > 2:
+                raise ValueError("sample_weight has more than two dimensions")
 
         results = {}
 
