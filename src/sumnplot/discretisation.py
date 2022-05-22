@@ -89,15 +89,18 @@ class Discretiser(TransformerMixin, BaseEstimator):
         return cat
 
     @staticmethod
-    def _clean_quantiles(quantiles):
+    def _clean_quantiles(quantiles: tuple) -> tuple:
+        """Quantiles are converted back and forth between tuple type - which works with
+        sklearn estimators as an input argument.
+        """
 
-        quantiles = np.array(quantiles)
-        quantiles = np.unique(np.sort(np.append(quantiles, [0, 1])))
+        quantiles_array = np.array(quantiles)
+        quantiles_array = np.unique(np.sort(np.append(quantiles_array, [0, 1])))
 
-        check_condition(np.all(quantiles >= 0), "all quantiles >= 0")
-        check_condition(np.all(quantiles <= 1), "all quantiles <= 1")
+        check_condition(np.all(quantiles_array >= 0), "all quantiles >= 0")
+        check_condition(np.all(quantiles_array <= 1), "all quantiles <= 1")
 
-        return quantiles
+        return tuple(quantiles_array)
 
 
 class EqualWidthDiscretiser(Discretiser):
@@ -144,11 +147,11 @@ class EqualWeightDiscretiser(Discretiser):
 
 
 class QuantileDiscretiser(Discretiser):
-    def __init__(self, variable, quantiles=np.linspace(0, 1, 11)):
+    def __init__(self, variable, quantiles=tuple(np.linspace(0, 1, 11))):
 
         super().__init__(variable=variable)
 
-        check_type(quantiles, [np.ndarray, list], "quantiles")
+        check_type(quantiles, [tuple], "quantiles")
         self.quantiles = self._clean_quantiles(quantiles)
 
     def fit(self, X, y=None):
@@ -162,11 +165,11 @@ class QuantileDiscretiser(Discretiser):
 
 
 class WeightedQuantileDiscretiser(Discretiser):
-    def __init__(self, variable, quantiles=np.linspace(0, 1, 11)):
+    def __init__(self, variable, quantiles=tuple(np.linspace(0, 1, 11))):
 
         super().__init__(variable=variable)
 
-        check_type(quantiles, [np.ndarray, list], "quantiles")
+        check_type(quantiles, [tuple], "quantiles")
         self.quantiles = self._clean_quantiles(quantiles)
 
     def fit(self, X, y=None, sample_weight=None):
