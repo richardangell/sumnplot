@@ -12,21 +12,19 @@ def check_type(
     if not.
     """
 
-    if type(expected_types) is not tuple:
+    if type(expected_types) is tuple:
 
-        raise TypeError("expected_types must be a tuple when passing multiple types")
+        if not all([type(expected_type) is type for expected_type in expected_types]):
+
+            raise TypeError("all elements in expected_types must be types")
 
     else:
 
-        if type(expected_types) is not type:
+        if not type(expected_types) is type:
 
             raise TypeError("expected_types must be a type when passing a single type")
 
-    if not all([type(expected_type) is type for expected_type in expected_types]):
-
-        raise TypeError("all elements in expected_types must be types")
-
-    if isinstance(obj, expected_types):
+    if not isinstance(obj, expected_types):
 
         raise TypeError(
             f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
