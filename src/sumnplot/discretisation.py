@@ -88,20 +88,6 @@ class Discretiser(TransformerMixin, BaseEstimator):
 
         return cat
 
-    @staticmethod
-    def _clean_quantiles(quantiles: tuple) -> tuple:
-        """Quantiles are converted back and forth between tuple type - which works with
-        sklearn estimators as an input argument.
-        """
-
-        quantiles_array = np.array(quantiles)
-        quantiles_array = np.unique(np.sort(np.append(quantiles_array, [0, 1])))
-
-        check_condition(np.all(quantiles_array >= 0), "all quantiles >= 0")
-        check_condition(np.all(quantiles_array <= 1), "all quantiles <= 1")
-
-        return tuple(quantiles_array)
-
 
 class EqualWidthDiscretiser(Discretiser):
     def __init__(self, variable, n=10):
@@ -136,7 +122,7 @@ class EqualWeightDiscretiser(Discretiser):
 
         super().fit(X, y)
 
-        cut_points = WeightedQuantileDiscretiser._compute_weighted_quantile(
+        cut_points = QuantileDiscretiser._compute_weighted_quantile(
             values=X[self.variable],
             quantiles=np.array(np.linspace(start=0, stop=1, num=self.n + 1)),
             sample_weight=sample_weight,
@@ -147,24 +133,6 @@ class EqualWeightDiscretiser(Discretiser):
 
 
 class QuantileDiscretiser(Discretiser):
-    def __init__(self, variable, quantiles=tuple(np.linspace(0, 1, 11))):
-
-        super().__init__(variable=variable)
-
-        check_type(quantiles, [tuple], "quantiles")
-        self.quantiles = self._clean_quantiles(quantiles)
-
-    def fit(self, X, y=None):
-
-        super().fit(X, y)
-
-        cut_points = np.quantile(a=X[self.variable], q=self.quantiles)
-        self.cut_points = self._clean_cut_points(cut_points)
-
-        return self
-
-
-class WeightedQuantileDiscretiser(Discretiser):
     def __init__(self, variable, quantiles=tuple(np.linspace(0, 1, 11))):
 
         super().__init__(variable=variable)
@@ -237,3 +205,17 @@ class WeightedQuantileDiscretiser(Discretiser):
         weighted_quantiles /= np.sum(sample_weight)
 
         return np.interp(quantiles, weighted_quantiles, values)
+
+    @staticmethod
+    def _clean_quantiles(quantiles: tuple) -> tuple:
+        """Quantiles are converted back and forth between tuple type - which works with
+        sklearn estimators as an input argument.
+        """
+
+        quantiles_array = np.array(quantiles)
+        quantiles_array = np.unique(np.sort(np.append(quantiles_array, [0, 1])))
+
+        check_condition(np.all(quantiles_array >= 0), "all quantiles >= 0")
+        check_condition(np.all(quantiles_array <= 1), "all quantiles <= 1")
+
+        return tuple(quantiles_array)
