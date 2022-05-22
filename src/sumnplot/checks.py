@@ -7,7 +7,10 @@ from typing import Any, Type, List, Union, Tuple
 
 
 def check_type(
-    obj: Any, expected_types: Union[Type, Tuple[Type]], obj_name: str
+    obj: Any,
+    expected_types: Union[Type, Tuple[Union[Type, Type[abc.ABCMeta]]]],
+    obj_name: str,
+    none_allowed: bool = False,
 ) -> None:
     """Function to check object is of given types and raise a TypeError
     if not.
@@ -30,11 +33,17 @@ def check_type(
 
             raise TypeError("expected_types must be a type when passing a single type")
 
-    if not isinstance(obj, expected_types):
+    if obj is None and not none_allowed:
 
-        raise TypeError(
-            f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
-        )
+        raise TypeError(f"{obj_name} is None and not is not allowed")
+
+    elif obj is not None:
+
+        if not isinstance(obj, expected_types):
+
+            raise TypeError(
+                f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
+            )
 
 
 def check_condition(condition: bool, error_message_text: str):
