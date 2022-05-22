@@ -1,6 +1,7 @@
 """Module for simple reusable checks."""
 
 import pandas as pd
+import abc
 
 from typing import Any, Type, List, Union, Tuple
 
@@ -14,13 +15,18 @@ def check_type(
 
     if type(expected_types) is tuple:
 
-        if not all([type(expected_type) is type for expected_type in expected_types]):
+        if not all(
+            [
+                type(expected_type) in [type, abc.ABCMeta]
+                for expected_type in expected_types
+            ]
+        ):
 
             raise TypeError("all elements in expected_types must be types")
 
     else:
 
-        if not type(expected_types) is type:
+        if not type(expected_types) in [type, abc.ABCMeta]:
 
             raise TypeError("expected_types must be a type when passing a single type")
 
