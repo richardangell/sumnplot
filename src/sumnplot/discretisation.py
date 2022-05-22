@@ -12,7 +12,7 @@ class Discretiser(TransformerMixin, BaseEstimator):
 
     def __init__(self, variable):
 
-        check_type(variable, [str], "variable")
+        check_type(variable, str, "variable")
         self.variable = variable
 
     def fit(self, X, y=None):
@@ -69,8 +69,8 @@ class Discretiser(TransformerMixin, BaseEstimator):
             Categorical variable (pandas category type) with null categorical level added.
         """
 
-        check_type(categorical_variable, [pd.Series], "categorical_variable")
-        check_type(null_category_name, [str], "null_category_name")
+        check_type(categorical_variable, pd.Series, "categorical_variable")
+        check_type(null_category_name, str, "null_category_name")
 
         check_condition(
             is_categorical_dtype(categorical_variable),
@@ -94,7 +94,7 @@ class EqualWidthDiscretiser(Discretiser):
 
         super().__init__(variable=variable)
 
-        check_type(n, [int], "n")
+        check_type(n, int, "n")
         self.n = n
 
     def fit(self, X, y=None):
@@ -115,7 +115,7 @@ class EqualWeightDiscretiser(Discretiser):
 
         super().__init__(variable=variable)
 
-        check_type(n, [int], "n")
+        check_type(n, int, "n")
         self.n = n
 
     def fit(self, X, y=None, sample_weight=None):
@@ -137,7 +137,7 @@ class QuantileDiscretiser(Discretiser):
 
         super().__init__(variable=variable)
 
-        check_type(quantiles, [tuple], "quantiles")
+        check_type(quantiles, tuple, "quantiles")
         self.quantiles = self._clean_quantiles(quantiles)
 
     def fit(self, X, y=None, sample_weight=None):

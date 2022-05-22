@@ -13,9 +13,9 @@ def dataset_values_summary(
 ) -> pd.DataFrame:
     """Function to produce summaries of values in a DataFrame."""
 
-    check_type(df, [pd.DataFrame], "df")
-    check_type(max_values, [int], "max_values")
-    check_type(summary_values, [int], "summary_values")
+    check_type(df, pd.DataFrame, "df")
+    check_type(max_values, int, "max_values")
+    check_type(summary_values, int, "summary_values")
 
     check_condition(max_values > 0, "max_values > 0")
     check_condition(summary_values > 0, "summary_values > 0")
