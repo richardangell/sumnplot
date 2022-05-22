@@ -17,7 +17,7 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
         self.variable = variable
 
     @abstractmethod
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, sample_weight=None):
 
         pass
 
@@ -119,7 +119,7 @@ class EqualWidthDiscretiser(Discretiser):
         check_type(n, int, "n")
         self.n = n
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, sample_weight=None):
 
         check_columns_in_df(X, [self.variable])
 
