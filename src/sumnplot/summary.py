@@ -226,7 +226,7 @@ class ColumnSummariser:
                 for old, new in zip(to_summarise_columns, to_summarise_columns_labels)
             }
 
-            summary_values.rename(columns=renaming_dict, index=0)
+            summary_values.rename(columns=renaming_dict, level=0, inplace=True)
 
         return summary_values
 
