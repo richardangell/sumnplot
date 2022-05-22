@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from abc import ABC, abstractmethod
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from pandas.api.types import is_categorical_dtype
@@ -7,7 +8,7 @@ from pandas.api.types import is_categorical_dtype
 from .checks import check_type, check_condition, check_columns_in_df
 
 
-class Discretiser(TransformerMixin, BaseEstimator):
+class Discretiser(ABC, TransformerMixin, BaseEstimator):
     """Class implementing different discretisation methods."""
 
     def __init__(self, variable):
@@ -15,9 +16,10 @@ class Discretiser(TransformerMixin, BaseEstimator):
         check_type(variable, str, "variable")
         self.variable = variable
 
+    @abstractmethod
     def fit(self, X, y=None):
 
-        check_columns_in_df(X, [self.variable])
+        pass
 
     def transform(self, X):
         """Cut variable in X at cut_points."""
@@ -88,6 +90,17 @@ class Discretiser(TransformerMixin, BaseEstimator):
 
         return cat
 
+    @abstractmethod
+    def _get_max_number_of_bins(self):
+        """Method to return the maximum number of bins possible for the give
+        variable.
+
+        Note, the actual number may be lower once calculated on a given dataset
+        because the cut points may not be unique.
+        """
+
+        pass
+
 
 class EqualWidthDiscretiser(Discretiser):
     def __init__(self, variable, n=10):
@@ -99,7 +112,7 @@ class EqualWidthDiscretiser(Discretiser):
 
     def fit(self, X, y=None):
 
-        super().fit(X, y)
+        check_columns_in_df(X, [self.variable])
 
         variable_min = X[self.variable].min()
         variable_max = X[self.variable].max()
@@ -124,7 +137,7 @@ class EqualWeightDiscretiser(Discretiser):
 
     def fit(self, X, y=None, sample_weight=None):
 
-        super().fit(X, y)
+        check_columns_in_df(X, [self.variable])
 
         cut_points = QuantileDiscretiser._compute_weighted_quantile(
             values=X[self.variable],
@@ -150,7 +163,7 @@ class QuantileDiscretiser(Discretiser):
 
     def fit(self, X, y=None, sample_weight=None):
 
-        super().fit(X, y)
+        check_columns_in_df(X, [self.variable])
 
         cut_points = self._compute_weighted_quantile(
             values=X[self.variable],
