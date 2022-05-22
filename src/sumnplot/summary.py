@@ -140,6 +140,7 @@ class ColumnSummariser:
                 by_column=by_column,
                 discretiser=discretiser,
                 to_summarise_columns_labels=self.to_summarise_columns_labels,
+                to_summarise_divide_column=self.to_summarise_divide_column,
                 sample_weight=sample_weight,
             )
 
@@ -211,14 +212,26 @@ class ColumnSummariser:
                 if column != to_summarise_divide_column
             ]
 
-            for non_divide_by_column in non_divide_by_columns:
+            for column_no, column in enumerate(summary_values.columns):
 
-                summary_values[non_divide_by_column] = (
-                    summary_values[non_divide_by_column]
-                    / summary_values[to_summarise_divide_column]
-                )
+                if column[0] in non_divide_by_columns:
 
-        # if no labels are available just use the column names
+                    summary_values[column] = (
+                        summary_values[column]
+                        / summary_values[(to_summarise_divide_column, "sum")]
+                    )
+
+                    summary_values.columns.values[column_no] = (
+                        summary_values.columns.values[column_no][0],
+                        "mean",
+                    )
+
+            # create new index on the DataFrame, otherwise changing the values directly
+            # doesn't seem to flow through
+            summary_values.columns = pd.MultiIndex.from_tuples(
+                summary_values.columns.values.tolist()
+            )
+
         if to_summarise_columns_labels is not None:
 
             renaming_dict = {
