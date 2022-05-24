@@ -26,6 +26,7 @@ class ColumnSummariser:
         discretiser: Optional[Discretiser] = None,
         discretiser_kwargs: Optional[dict] = None,
         discretisers: Optional[List[Union[Discretiser, str]]] = None,
+        second_by_column: Optional[Union[Discretiser, str]] = None,
         to_summarise_columns_labels: Optional[List[str]] = None,
         to_summarise_divide_column: Optional[str] = None,
     ):
@@ -35,6 +36,9 @@ class ColumnSummariser:
         check_type(discretiser, abc.ABCMeta, "discretiser", none_allowed=True)
         check_type(discretiser_kwargs, dict, "discretiser_kwargs", none_allowed=True)
         check_type(discretisers, list, "discretisers", none_allowed=True)
+        check_type(
+            second_by_column, (str, Discretiser), "second_by_column", none_allowed=True
+        )
         check_type(
             to_summarise_columns_labels,
             list,
@@ -82,6 +86,8 @@ class ColumnSummariser:
 
         self.discretiser = discretiser
         self.discretiser_kwargs = discretiser_kwargs
+
+        self.second_by_column = second_by_column
 
         if type(discretisers) is list:
 
@@ -134,6 +140,12 @@ class ColumnSummariser:
         if self.to_summarise_divide_column is not None:
             check_columns_in_df(X, [self.to_summarise_divide_column])
 
+        if self.second_by_column is not None:
+            if type(self.second_by_column) is str:
+                check_columns_in_df(X, [self.second_by_column])
+            elif isinstance(self.second_by_column, Discretiser):
+                check_columns_in_df(X, [self.second_by_column.variable])
+
         if sample_weight is not None:
             if len(X) != len(sample_weight):
                 raise ValueError("X and sample_weight have different numbers of rows")
@@ -159,6 +171,7 @@ class ColumnSummariser:
                 to_summarise_columns_labels=self.to_summarise_columns_labels,
                 to_summarise_divide_column=self.to_summarise_divide_column,
                 sample_weight=sample_weight,
+                second_by_column=self.second_by_column,
             )
 
         return results
@@ -171,6 +184,7 @@ class ColumnSummariser:
         to_summarise_columns_labels: List[str] = None,
         to_summarise_divide_column: str = None,
         sample_weight=None,
+        second_by_column: Optional[Union[str, Discretiser]] = None,
     ):
         """Function to summarise `to_summarise_columns` in `df` by `by_column`.
 
@@ -188,9 +202,19 @@ class ColumnSummariser:
             df, by_column, sample_weight
         )
 
+        groupby_columns = [groupby_column]
+
+        if second_by_column is not None:
+
+            second_groupby_column = ColumnSummariser._prepare_groupby_column(
+                df, second_by_column, sample_weight
+            )
+
+            groupby_columns.append(second_groupby_column)
+
         summary_functions = {column: ["sum"] for column in to_summarise_columns}
 
-        summary_values = df.groupby(groupby_column).agg(summary_functions)
+        summary_values = df.groupby(groupby_columns).agg(summary_functions)
 
         # divide through other to_summarise_column by to_summarise_divide_column
         if to_summarise_divide_column is not None:
