@@ -13,7 +13,7 @@ from sklearn.exceptions import NotFittedError
 from .discretisation import Discretiser
 from .checks import check_type, check_condition, check_columns_in_df
 
-from typing import List
+from typing import List, Optional
 
 
 class ColumnSummariser:
@@ -157,6 +157,66 @@ class ColumnSummariser:
         sample_weight=None,
     ):
 
+        groupby_column = ColumnSummariser._prepare_groupby_column(
+            df, by_column, discretiser, sample_weight
+        )
+
+        summary_functions = {column: ["sum"] for column in to_summarise_columns}
+
+        summary_values = df.groupby(groupby_column).agg(summary_functions)
+
+        # divide through other to_summarise_column by to_summarise_divide_column
+        if to_summarise_divide_column is not None:
+
+            non_divide_by_columns = [
+                column
+                for column in to_summarise_columns
+                if column != to_summarise_divide_column
+            ]
+
+            for column_no, column in enumerate(summary_values.columns):
+
+                if column[0] in non_divide_by_columns:
+
+                    summary_values[column] = (
+                        summary_values[column]
+                        / summary_values[(to_summarise_divide_column, "sum")]
+                    )
+
+                    summary_values.columns.values[column_no] = (
+                        summary_values.columns.values[column_no][0],
+                        "mean",
+                    )
+
+            # create new index on the DataFrame, otherwise changing the values directly
+            # doesn't seem to flow through
+            summary_values.columns = pd.MultiIndex.from_tuples(
+                summary_values.columns.values.tolist()
+            )
+
+        if to_summarise_columns_labels is not None:
+
+            renaming_dict = {
+                old: new
+                for old, new in zip(to_summarise_columns, to_summarise_columns_labels)
+            }
+
+            summary_values.rename(columns=renaming_dict, level=0, inplace=True)
+
+        return summary_values
+
+    @staticmethod
+    def _prepare_groupby_column(
+        df: pd.DataFrame,
+        by_column: str,
+        discretiser: Optional[Discretiser],
+        sample_weight=None,
+    ) -> pd.Series:
+        """Method to return column to group by - original column if input is
+        categorical, if by_column is numeric then it is bucketed with
+        discretiser.
+        """
+
         if (
             is_object_dtype(df[by_column])
             | is_bool_dtype(df[by_column])
@@ -205,49 +265,7 @@ class ColumnSummariser:
 
             raise TypeError(f"unexpected type for by_column; {df[by_column].dtype}")
 
-        summary_functions = {column: ["sum"] for column in to_summarise_columns}
-
-        summary_values = df.groupby(groupby_column).agg(summary_functions)
-
-        # divide through other to_summarise_column by to_summarise_divide_column
-        if to_summarise_divide_column is not None:
-
-            non_divide_by_columns = [
-                column
-                for column in to_summarise_columns
-                if column != to_summarise_divide_column
-            ]
-
-            for column_no, column in enumerate(summary_values.columns):
-
-                if column[0] in non_divide_by_columns:
-
-                    summary_values[column] = (
-                        summary_values[column]
-                        / summary_values[(to_summarise_divide_column, "sum")]
-                    )
-
-                    summary_values.columns.values[column_no] = (
-                        summary_values.columns.values[column_no][0],
-                        "mean",
-                    )
-
-            # create new index on the DataFrame, otherwise changing the values directly
-            # doesn't seem to flow through
-            summary_values.columns = pd.MultiIndex.from_tuples(
-                summary_values.columns.values.tolist()
-            )
-
-        if to_summarise_columns_labels is not None:
-
-            renaming_dict = {
-                old: new
-                for old, new in zip(to_summarise_columns, to_summarise_columns_labels)
-            }
-
-            summary_values.rename(columns=renaming_dict, level=0, inplace=True)
-
-        return summary_values
+        return groupby_column
 
 
 def dataset_values_summary(
