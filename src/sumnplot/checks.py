@@ -8,7 +8,7 @@ from typing import Any, Type, List, Union, Tuple
 
 def check_type(
     obj: Any,
-    expected_types: Union[Type, Tuple[Union[Type, Type[abc.ABCMeta]]]],
+    expected_types: Union[Type, Tuple[Union[Type, Type[abc.ABCMeta]], ...]],
     obj_name: str,
     none_allowed: bool = False,
 ) -> None:

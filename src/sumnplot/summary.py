@@ -13,7 +13,7 @@ from sklearn.exceptions import NotFittedError
 from .discretisation import Discretiser
 from .checks import check_type, check_condition, check_columns_in_df
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 class ColumnSummariser:
@@ -22,16 +22,16 @@ class ColumnSummariser:
     def __init__(
         self,
         to_summarise_columns: List[str],
-        by_columns: List[str],
-        discretiser: Discretiser = None,
-        discretiser_kwargs: dict = None,
-        discretisers: List[Discretiser] = None,
-        to_summarise_columns_labels: List[str] = None,
-        to_summarise_divide_column: str = None,
+        by_columns: Optional[List[str]] = None,
+        discretiser: Optional[Discretiser] = None,
+        discretiser_kwargs: Optional[dict] = None,
+        discretisers: Optional[List[Union[Discretiser, str]]] = None,
+        to_summarise_columns_labels: Optional[List[str]] = None,
+        to_summarise_divide_column: Optional[str] = None,
     ):
 
         check_type(to_summarise_columns, list, "to_summarise_columns")
-        check_type(by_columns, list, "by_columns")
+        check_type(by_columns, list, "by_columns", none_allowed=True)
         check_type(discretiser, abc.ABCMeta, "discretiser", none_allowed=True)
         check_type(discretiser_kwargs, dict, "discretiser_kwargs", none_allowed=True)
         check_type(discretisers, list, "discretisers", none_allowed=True)
@@ -60,36 +60,47 @@ class ColumnSummariser:
                     "to_summarise_divide_column not in to_summarise_columns"
                 )
 
-        if discretiser is None and discretisers is None:
-            raise ValueError("either discretiser or discretisers")
+        if discretisers is None and discretiser is None:
+            raise ValueError(
+                "either discretisers or discretiser (and by_columns) must be specified"
+            )
+
+        if discretisers is None and by_columns is None:
+            raise ValueError(
+                "either discretisers or by_columns (and discretiser) must be specified"
+            )
+
+        if by_columns is not None and discretiser is None:
+            raise ValueError("by_columns and discretiser must be specified together")
+
+        if by_columns is None and discretiser is not None:
+            raise ValueError("by_columns and discretiser must be specified together")
 
         self.to_summarise_columns = to_summarise_columns
-        self.by_columns = by_columns
         self.to_summarise_columns_labels = to_summarise_columns_labels
         self.to_summarise_divide_column = to_summarise_divide_column
 
+        self.discretiser = discretiser
+        self.discretiser_kwargs = discretiser_kwargs
+
         if type(discretisers) is list:
 
-            if len(discretisers) != len(by_columns):
-                raise ValueError("by_columns and discretisers have different lengths")
+            by_columns = []
 
-            for discretiser_no, (discretiser, by_column) in enumerate(
-                zip(discretisers, by_columns)
-            ):
+            for discretiser_no, discretiser_ in enumerate(discretisers):
 
-                check_type(discretiser, Discretiser, f"discretisers[{discretiser_no}]")
+                check_type(
+                    discretiser_, (str, Discretiser), f"discretisers[{discretiser_no}]"
+                )
 
-                if not discretiser.variable == by_column:
-                    raise ValueError(
-                        f"mismatch in variable ordering at index {discretiser_no} between discretisers and by_columns"
-                    )
+                if type(discretiser_) is str:
+                    by_columns.append(discretiser_)
+                elif isinstance(discretiser_, Discretiser):
+                    by_columns.append(discretiser_.variable)
 
             self.discretisers = discretisers
 
-        elif discretiser is not None:
-
-            self.discretiser = discretiser
-            self.discretiser_kwargs = discretiser_kwargs
+        elif discretiser is not None and by_columns is not None:
 
             initialised_discretisers = []
 
@@ -113,6 +124,8 @@ class ColumnSummariser:
 
             self.discretisers = initialised_discretisers
 
+        self.by_columns = by_columns
+
     def summarise_columns(self, X, sample_weight=None):
 
         check_columns_in_df(X, self.to_summarise_columns)
@@ -132,13 +145,17 @@ class ColumnSummariser:
 
         results = {}
 
-        for by_column, discretiser in zip(self.by_columns, self.discretisers):
+        for by_column in self.discretisers:
 
-            results[by_column] = self._summarise_column(
+            if type(by_column) is str:
+                by_column_name = by_column
+            else:
+                by_column_name = by_column.variable
+
+            results[by_column_name] = self._summarise_column(
                 df=X,
                 to_summarise_columns=self.to_summarise_columns,
                 by_column=by_column,
-                discretiser=discretiser,
                 to_summarise_columns_labels=self.to_summarise_columns_labels,
                 to_summarise_divide_column=self.to_summarise_divide_column,
                 sample_weight=sample_weight,
@@ -150,15 +167,25 @@ class ColumnSummariser:
     def _summarise_column(
         df: pd.DataFrame,
         to_summarise_columns: List[str],
-        by_column: str,
-        discretiser: Discretiser = None,
+        by_column: Union[str, Discretiser],
         to_summarise_columns_labels: List[str] = None,
         to_summarise_divide_column: str = None,
         sample_weight=None,
     ):
+        """Function to summarise `to_summarise_columns` in `df` by `by_column`.
+
+        Parameters
+        ----------
+        by_column : str or Discretiser
+            Either the column name to summarise by in the case of a categorical
+            column or the Discretiser object to bucketed a numeric column.
+
+        """
+
+        check_type(by_column, (str, Discretiser), "by_column")
 
         groupby_column = ColumnSummariser._prepare_groupby_column(
-            df, by_column, discretiser, sample_weight
+            df, by_column, sample_weight
         )
 
         summary_functions = {column: ["sum"] for column in to_summarise_columns}
@@ -208,8 +235,7 @@ class ColumnSummariser:
     @staticmethod
     def _prepare_groupby_column(
         df: pd.DataFrame,
-        by_column: str,
-        discretiser: Optional[Discretiser],
+        by_column: Union[str, Discretiser],
         sample_weight=None,
     ) -> pd.Series:
         """Method to return column to group by - original column if input is
@@ -217,33 +243,43 @@ class ColumnSummariser:
         discretiser.
         """
 
+        if type(by_column) is str:
+
+            by_column_name = by_column
+            discretiser = None
+
+        elif isinstance(by_column, Discretiser):
+
+            by_column_name = by_column.variable
+            discretiser = by_column
+
         if (
-            is_object_dtype(df[by_column])
-            | is_bool_dtype(df[by_column])
-            | is_categorical_dtype(df[by_column])
+            is_object_dtype(df[by_column_name])
+            | is_bool_dtype(df[by_column_name])
+            | is_categorical_dtype(df[by_column_name])
         ):
 
-            groupby_column = df[by_column]
+            groupby_column = df[by_column_name]
 
-        elif is_numeric_dtype(df[by_column]):
+        elif is_numeric_dtype(df[by_column_name]):
 
             if discretiser is None:
 
                 raise TypeError(
-                    f"discretiser is None for {by_column} but column is numeric"
+                    f"discretiser is None for {by_column_name} but column is numeric"
                 )
 
             max_bins = discretiser._get_max_number_of_bins()
 
-            if df[by_column].nunique(dropna=False) <= max_bins:
+            if df[by_column_name].nunique(dropna=False) <= max_bins:
 
-                if df[by_column].isnull().sum() > 0:
+                if df[by_column_name].isnull().sum() > 0:
 
-                    groupby_column = df[by_column].astype(str)
+                    groupby_column = df[by_column_name].astype(str)
 
                 else:
 
-                    groupby_column = df[by_column]
+                    groupby_column = df[by_column_name]
 
             else:
 
@@ -263,7 +299,9 @@ class ColumnSummariser:
 
         else:
 
-            raise TypeError(f"unexpected type for by_column; {df[by_column].dtype}")
+            raise TypeError(
+                f"unexpected type for by_column; {df[by_column_name].dtype}"
+            )
 
         return groupby_column
 
