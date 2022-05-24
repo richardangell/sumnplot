@@ -151,7 +151,7 @@ class ColumnSummariser:
         df: pd.DataFrame,
         to_summarise_columns: List[str],
         by_column: str,
-        discretiser: Discretiser,
+        discretiser: Discretiser = None,
         to_summarise_columns_labels: List[str] = None,
         to_summarise_divide_column: str = None,
         sample_weight=None,
@@ -166,6 +166,12 @@ class ColumnSummariser:
             groupby_column = df[by_column]
 
         elif is_numeric_dtype(df[by_column]):
+
+            if discretiser is None:
+
+                raise TypeError(
+                    f"discretiser is None for {by_column} but column is numeric"
+                )
 
             max_bins = discretiser._get_max_number_of_bins()
 
