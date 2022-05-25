@@ -87,7 +87,7 @@ def plot_summarised_variable(
 
 def plot_summarised_variable_2way(
     summary_df,
-    weights,
+    axis_right,
     axis_left=None,
     bar_type="stacked",
     bars_percent=False,
@@ -152,7 +152,7 @@ def plot_summarised_variable_2way(
 
     # turn data into by_col x split_by_col table and fill in levels
     # with no weight (i.e. nulls) with 0
-    unstack_weights = summary_df[weights].unstack()
+    unstack_weights = summary_df[summary_df.columns[axis_right]].unstack()
     unstack_weights.fillna(0, inplace=True)
 
     if bars_percent:
@@ -163,7 +163,7 @@ def plot_summarised_variable_2way(
     split_levels = unstack_weights.columns.values
 
     unstack_weights.columns = [
-        "(" + split_by_col + " = " + str(x) + ") " + str(weights)
+        "(" + split_by_col + " = " + str(x) + ") " + str(summary_df.columns[axis_right])
         for x in unstack_weights.columns.values
     ]
 
