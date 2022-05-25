@@ -67,6 +67,9 @@ def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
     check_type(df, pd.DataFrame, "df")
     check_type(columns, list, "columns")
 
+    if len(columns) == 0:
+        raise ValueError("no columns specified in list")
+
     missing_columns = [
         column_name for column_name in columns if column_name not in df.columns.values
     ]
