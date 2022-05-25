@@ -60,7 +60,9 @@ def check_condition(condition: bool, error_message_text: str):
 
 
 def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
-    """Function to check that all specified columns are in a given DataFrame."""
+    """Function to check that all specified columns are in a given DataFrame
+    and raise a ValueError if not.
+    """
 
     check_type(df, pd.DataFrame, "df")
     check_type(columns, list, "columns")
