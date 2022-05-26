@@ -1,5 +1,8 @@
+"""Module for summarisation classes."""
+
 import pandas as pd
-import abc
+import numpy as np
+from abc import ABCMeta
 from copy import deepcopy
 from pandas.api.types import (
     is_numeric_dtype,
@@ -13,11 +16,74 @@ from sklearn.exceptions import NotFittedError
 from .discretisation import Discretiser
 from .checks import check_type, check_condition, check_columns_in_df
 
-from typing import List, Optional, Union
+from typing import List, Dict, Optional, Union
 
 
 class ColumnSummariser:
-    """"""
+    """Summarisation of columns in a DataFrame. The summarisation function
+    is sum by default. Averages can be calculated if the user specifies the
+    column to use as the divisor.
+
+    This class allows multiple (to_summarise_columns) columns to be specified
+    which will summarised by others columns (by_columns) or combinations of
+    columns (if second_by_column is also specified).
+
+    The user has the option to specify the columns to summarise by; either
+    using column names (by_columns) and a discretiser class from the
+    discretisation module (discretiser + discretiser_kwargs) or a list of
+    discretisers or column names - if different discretisation is to be
+    applied to different by columns.
+
+    The user can specify one of the columns to summarise (to_summarise_columns)
+    to divide the others by (to_summarise_divide_column).
+
+    Parameters
+    ----------
+    to_summarise_columns : List[str]
+        List of column name to summarise. These columns will be grouped by each
+        of the by_columns (and second_by_column, if specified) in turn and
+        summed.
+
+    by_columns : Optional[List[str]], default = None
+        List of columns to summarise by. If by_columns is not specified then
+        the discretisers argument must be used. If by_columns is specified then
+        discretiser (along with discretiser_kwargs optionally) must be
+        specified in order to set the discretiation method to apply to these
+        by columns.
+
+    discretiser : Optional[Discretiser], default = None
+        Discretiser class to use to bucket the columns to summarise by, if
+        by_columns is specified. The discretiser is initialised with
+        discretiser_kwargs if specified and with the current by column
+        name as the variable argument.
+
+    discretiser_kwargs : Optional[dict], default = None
+        A dictionary of keyword args passed into the initialisation of
+        discretiser for each by_column.
+
+    discretisers : Optional[List[Union[Discretiser, str]]], default = None
+        A list of column names (for categorical variables that do not need
+        discretising only) or Discretiser objects (for numerical variables)
+        that provide an alternative way to specify by_columns with different
+        discretisation methods applied to differnet columns. The discretisers
+        argument and by_columns/discretiser/discretiser_kwargs argument
+        combination are mutually exclusive.
+
+    second_by_column : Optional[Union[Discretiser, str]], default = None
+        Second column to summarise by. Only one second by column can be
+        specified. If it is, then for every by column, to_summarise_columns
+        are summed by the given by column AND second_by_column.
+
+    to_summarise_columns_labels : Optional[List[str]], default = None
+        Optional labels to replace the names of to_summarise_columns in the
+        summarised output.
+
+    to_summarise_divide_column : Optional[str] = None
+        One of the to_summarise_columns, the other variables in the
+        to_summarise_columns set will be divided by this column. This allows
+        averages to be calculated in the summary.
+
+    """
 
     def __init__(
         self,
@@ -29,11 +95,11 @@ class ColumnSummariser:
         second_by_column: Optional[Union[Discretiser, str]] = None,
         to_summarise_columns_labels: Optional[List[str]] = None,
         to_summarise_divide_column: Optional[str] = None,
-    ):
+    ) -> None:
 
         check_type(to_summarise_columns, list, "to_summarise_columns")
         check_type(by_columns, list, "by_columns", none_allowed=True)
-        check_type(discretiser, abc.ABCMeta, "discretiser", none_allowed=True)
+        check_type(discretiser, ABCMeta, "discretiser", none_allowed=True)
         check_type(discretiser_kwargs, dict, "discretiser_kwargs", none_allowed=True)
         check_type(discretisers, list, "discretisers", none_allowed=True)
         check_type(
@@ -87,7 +153,7 @@ class ColumnSummariser:
         self.discretiser = discretiser
         self.discretiser_kwargs = discretiser_kwargs
 
-        self.second_by_column = second_by_column
+        self.second_by_column: Optional[Union[Discretiser, str]] = second_by_column
 
         if type(discretisers) is list:
 
@@ -105,6 +171,7 @@ class ColumnSummariser:
                     by_columns.append(discretiser_.variable)
 
             self.discretisers = discretisers
+            self.by_columns = by_columns
 
         elif discretiser is not None and by_columns is not None:
 
@@ -129,10 +196,33 @@ class ColumnSummariser:
                 initialised_discretisers.append(initialised_discretiser)
 
             self.discretisers = initialised_discretisers
+            self.by_columns = by_columns
 
-        self.by_columns = by_columns
+    def summarise(
+        self,
+        X: pd.DataFrame,
+        sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
+    ) -> Dict[str, pd.DataFrame]:
+        """Summarise columns in X.
 
-    def summarise_columns(self, X, sample_weight=None):
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Data containing information to be summarised. Must contain
+            variables specified in the to_summarise_columns, by_columns
+            (if a column name), to_summarise_divide_column and second_by_column
+            (if a column name).
+
+        sample_weight : Optional[Union[pd.Series, np.ndarray]], default = None
+            Optional weights for each row in X.
+
+        Returns
+        -------
+        results : dict[str:pd.DataFrame]
+            Summarised variables in a dict where each key is the by column
+            name.
+
+        """
 
         check_columns_in_df(X, self.to_summarise_columns)
         check_columns_in_df(X, self.by_columns)
@@ -161,7 +251,7 @@ class ColumnSummariser:
 
             if type(by_column) is str:
                 by_column_name = by_column
-            else:
+            elif isinstance(by_column, Discretiser):
                 by_column_name = by_column.variable
 
             results[by_column_name] = self._summarise_column(
@@ -171,7 +261,7 @@ class ColumnSummariser:
                 to_summarise_columns_labels=self.to_summarise_columns_labels,
                 to_summarise_divide_column=self.to_summarise_divide_column,
                 sample_weight=sample_weight,
-                second_by_column=self.second_by_column,
+                second_by_column=self.second_by_column,  # type: ignore
             )
 
         return results
@@ -183,16 +273,48 @@ class ColumnSummariser:
         by_column: Union[str, Discretiser],
         to_summarise_columns_labels: List[str] = None,
         to_summarise_divide_column: str = None,
-        sample_weight=None,
-        second_by_column: Optional[Union[str, Discretiser]] = None,
-    ):
-        """Function to summarise `to_summarise_columns` in `df` by `by_column`.
+        sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
+        second_by_column: Optional[Union[Discretiser, str]] = None,
+    ) -> pd.DataFrame:
+        """Function to summarise to_summarise_columns in df by by_column and
+        second_by_column, if specified.
 
         Parameters
         ----------
+        df : pd.DataFrame
+            DataFrame with information to summarise.
+
+        to_summarise_columns : List[str]
+            List of column name to summarise. These columns will be grouped by each
+            of the by_columns (and second_by_column, if specified) in turn and
+            summed.
+
         by_column : str or Discretiser
             Either the column name to summarise by in the case of a categorical
             column or the Discretiser object to bucketed a numeric column.
+
+        to_summarise_columns_labels : Optional[List[str]], default = None
+            Optional labels to replace the names of to_summarise_columns in the
+            summarised output.
+
+        to_summarise_divide_column : Optional[str] = None
+            One of the to_summarise_columns, the other variables in the
+            to_summarise_columns set will be divided by this column. This allows
+            averages to be calculated in the summary.
+
+        sample_weight : Optional[Union[pd.Series, np.ndarray]], default = None
+            Optional weights for each row in X.
+
+        second_by_column : Optional[Union[Discretiser, str]], default = None
+            Second column to summarise by. Only one second by column can be
+            specified. If it is, then for every by column, to_summarise_columns
+            are summed by the given by column AND second_by_column.
+
+        Returns
+        -------
+        summary_values : pd.DataFrame
+            The to_summarise_columns summarised by by_column (and optionally
+            second_by_column).
 
         """
 
@@ -260,11 +382,33 @@ class ColumnSummariser:
     def _prepare_groupby_column(
         df: pd.DataFrame,
         by_column: Union[str, Discretiser],
-        sample_weight=None,
+        sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
     ) -> pd.Series:
-        """Method to return column to group by - original column if input is
-        categorical, if by_column is numeric then it is bucketed with
+        """Return column to group by given the input column type.
+
+        If the input column is categorical then the original columns is
+        returned. Otherwise if by_column is numeric then it is bucketed with
         discretiser.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame containing by_column to potentially discretise.
+
+        by_column : Union[str, Discretiser]
+            Either a categorical column name in df or a Discretiser object to
+            bucket a numeric column.
+
+        sample_weight : Optional[Union[pd.Series, np.ndarray]], default = None
+            Optional weights for each record in df.
+
+        Returns
+        -------
+        groupby_column : pd.Series
+            A Series containing categorical data. May be a numeric columns that
+            has been discretised or an input boolean, categorical or object
+            dtype.
+
         """
 
         if type(by_column) is str:
