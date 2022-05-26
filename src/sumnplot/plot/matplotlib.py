@@ -1,3 +1,5 @@
+"""Module for plotting summarised data with matplotlib."""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
