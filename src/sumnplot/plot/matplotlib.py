@@ -1,27 +1,38 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+
+from typing import List, Optional
+
+from ..checks import check_type, check_condition
 
 
 def plot_summarised_variable(
-    summary_df,
-    axis_right,
-    axis_left=None,
-    title=None,
-    figsize_h=14,
-    figsize_w=8,
-    legend=True,
+    summary_df: pd.DataFrame,
+    axis_right: int,
+    axis_left: Optional[List[int]] = None,
+    title: Optional[str] = None,
+    figsize_h: int = 14,
+    figsize_w: int = 8,
+    legend: bool = True,
 ):
-    """Plot a one way variable summary from summary stats.
-
-    This function should be used once a variable has been summarised.
+    """Produce one way summary plot from pre-summarised data.
 
     Parameters
     ----------
     summary_df : pd.DataFrame
-        DataFrame with summarised info to plot. Must contain a column with name specified by weights.
+        DataFrame with summarised info to plot.
+
+    axis_right : int
+        The index of the column in summary_df to plot on the right axis.
+        Typically this would be a weights column.
+
+    axis_left : Optional[List[int]], default = None
+        The index of the columns in summary_df to plot on the left axis.
+        Currently the maximum number of left axis columns supported is 5.
 
     title : str, default = None
-        Title of the plot. If None summary_df.index.name is used as the title.
+        Title for the plot. If None summary_df.index.name is used as the title.
 
     figsize_h : int, default = 14
         Height of plot figure, used in matplotlib.pylot.subplots figsize arg.
@@ -34,13 +45,44 @@ def plot_summarised_variable(
 
     """
 
-    if axis_left is None and axis_right is None:
-        raise ValueError("no columns to plot on either y axis specified")
+    LEFT_Y_AXIS_COLOURS = ["magenta", "forestgreen", "lime", "orangered", "dodgerblue"]
+
+    check_type(summary_df, pd.DataFrame, "summary_df")
+    check_type(axis_right, int, "axis_right")
+    check_type(axis_left, list, "axis_left", none_allowed=True)
+    check_type(title, str, "title", none_allowed=True)
+    check_type(figsize_h, int, "figsize_h", none_allowed=True)
+    check_type(figsize_w, int, "figsize_w", none_allowed=True)
+    check_type(legend, bool, "legend")
+
+    check_condition(
+        axis_right <= summary_df.shape[1] - 1,
+        f"only {summary_df.shape[1]} columns in summary_df but axis_right = {axis_right}",
+    )
+
+    if axis_left is not None:
+
+        if axis_right in axis_left:
+            raise ValueError(
+                f"column index {axis_right} specified for both right and left axes"
+            )
+
+        if len(axis_left) > len(LEFT_Y_AXIS_COLOURS):
+            raise ValueError(
+                f"only {len(LEFT_Y_AXIS_COLOURS)} plots supports for the left axis but {len(axis_left)} given"
+            )
+
+        for axis_left_no, axis_left_index in enumerate(axis_left):
+            check_type(axis_left_index, int, f"axis_left_index[{axis_left_no}]")
+            check_condition(
+                axis_left_index <= summary_df.shape[1] - 1,
+                f"only {summary_df.shape[1]} columns in summary_df but axis_left[{axis_left_no}] = {axis_left_index}",
+            )
 
     if title is None:
         title = summary_df.index.name
 
-    fig, ax1 = plt.subplots(figsize=(figsize_h, figsize_w))
+    _, ax1 = plt.subplots(figsize=(figsize_h, figsize_w))
 
     # plot bin counts on 1st axis
     ax1.bar(
@@ -53,8 +95,6 @@ def plot_summarised_variable(
     plt.xticks(np.arange(summary_df.shape[0]), summary_df.index, rotation=270)
 
     ax2 = ax1.twinx()
-
-    LEFT_Y_AXIS_COLOURS = ["magenta", "forestgreen", "lime", "orangered", "dodgerblue"]
 
     if axis_left is not None:
 
@@ -86,23 +126,54 @@ def plot_summarised_variable(
 
 
 def plot_summarised_variable_2way(
-    summary_df,
-    axis_right,
-    axis_left=None,
-    bar_type="stacked",
-    bars_percent=False,
-    title=None,
-    figsize_h=14,
-    figsize_w=8,
-    legend=True,
-    pdf=None,
+    summary_df: pd.DataFrame,
+    axis_right: int,
+    axis_left: Optional[List[int]] = None,
+    bar_type: Optional[str] = "stacked",
+    bars_percent: Optional[bool] = False,
+    title: Optional[str] = None,
+    figsize_h: int = 14,
+    figsize_w: int = 8,
+    legend: bool = True,
 ):
-    """Plot a two way variable summary from summary stats.
+    """Produce one way summary plot from pre-summarised data.
 
-    This function should be used once a variable has been summarised.
+    Parameters
+    ----------
+    summary_df : pd.DataFrame
+        DataFrame with summarised info to plot.
+
+    axis_right : int
+        The index of the column in summary_df to plot on the right axis.
+        Typically this would be a weights column.
+
+    axis_left : Optional[List[int]], default = None
+        The index of the columns in summary_df to plot on the left axis.
+        Currently only 3 left axis lines are supported.
+
+    bar_type : Optional[str], default = "stacked"
+        Type of bars to plot on the right axis. Must be either "stacked" or
+        "side_by_side".
+
+    bars_percent : Optional[bool], default = False
+        Should bars on the right axis be plotted as percentage of total within
+        each bar?
+
+    title : str, default = None
+        Title for the plot. If None summary_df.index.name is used as the title.
+
+    figsize_h : int, default = 14
+        Height of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    figsize_w : int, default = 8
+        Width of plot figure, used in matplotlib.pylot.subplots figsize arg.
+
+    legend : bool, default = True
+        Should a legend be added to the plot?
+
     """
 
-    bin_colours = [
+    BIN_COLOURS = [
         "gold",
         "khaki",
         "goldenrod",
@@ -112,7 +183,7 @@ def plot_summarised_variable_2way(
         "y",
     ]
 
-    left_axis_colours = [
+    LEFT_AXIS_COLOURS = [
         [
             "magenta",
             "m",
@@ -142,13 +213,52 @@ def plot_summarised_variable_2way(
         ],
     ]
 
+    check_type(summary_df, pd.DataFrame, "summary_df")
+    check_type(axis_right, int, "axis_right")
+    check_type(axis_left, list, "axis_left", none_allowed=True)
+    check_type(bar_type, str, "bar_type", none_allowed=True)
+    check_type(bars_percent, bool, "bars_percent", none_allowed=True)
+    check_type(title, str, "title", none_allowed=True)
+    check_type(figsize_h, int, "figsize_h", none_allowed=True)
+    check_type(figsize_w, int, "figsize_w", none_allowed=True)
+    check_type(legend, bool, "legend")
+
+    check_condition(
+        axis_right <= summary_df.shape[1] - 1,
+        f"only {summary_df.shape[1]} columns in summary_df but axis_right = {axis_right}",
+    )
+
+    if axis_left is not None:
+
+        if axis_right in axis_left:
+            raise ValueError(
+                f"column index {axis_right} specified for both right and left axes"
+            )
+
+        if len(axis_left) > len(LEFT_AXIS_COLOURS):
+            raise ValueError(
+                f"only {len(LEFT_AXIS_COLOURS)} plots supported for the left axis but {len(axis_left)} given"
+            )
+
+        for axis_left_no, axis_left_index in enumerate(axis_left):
+            check_type(axis_left_index, int, f"axis_left_index[{axis_left_no}]")
+            check_condition(
+                axis_left_index <= summary_df.shape[1] - 1,
+                f"only {summary_df.shape[1]} columns in summary_df but axis_left[{axis_left_no}] = {axis_left_index}",
+            )
+
+    if len(summary_df.index.levels[1]) > len(BIN_COLOURS):
+        raise ValueError(
+            f"only {len(BIN_COLOURS)} levels supported for the second groupby column but {len(summary_df.index.levels[1])} given in summary_df"
+        )
+
     by_col = summary_df.index.names[0]
     split_by_col = summary_df.index.names[1]
 
     if title is None:
         title = f"{by_col} by {split_by_col}"
 
-    fig, ax1 = plt.subplots(figsize=(figsize_h, figsize_w))
+    _, ax1 = plt.subplots(figsize=(figsize_h, figsize_w))
 
     # turn data into by_col x split_by_col table and fill in levels
     # with no weight (i.e. nulls) with 0
@@ -162,10 +272,17 @@ def plot_summarised_variable_2way(
 
     split_levels = unstack_weights.columns.values
 
-    unstack_weights.columns = [
-        "(" + split_by_col + " = " + str(x) + ") " + str(summary_df.columns[axis_right])
-        for x in unstack_weights.columns.values
-    ]
+    unstack_weights.columns = pd.Index(
+        [
+            "("
+            + split_by_col
+            + " = "
+            + str(x)
+            + ") "
+            + str(summary_df.columns[axis_right])
+            for x in unstack_weights.columns.values
+        ]
+    )
 
     if bar_type == "stacked":
 
@@ -181,7 +298,7 @@ def plot_summarised_variable_2way(
             ax1.bar(
                 x=np.arange(unstack_weights.shape[0]),
                 height=heights,
-                color=bin_colours[i],
+                color=BIN_COLOURS[i],
                 bottom=top_bins,
                 label=unstack_weights.columns.values[i],
             )
@@ -207,7 +324,7 @@ def plot_summarised_variable_2way(
                 unstack_weights.loc[:, unstack_weights.columns.values[i]].reset_index(
                     drop=True
                 ),
-                color=bin_colours[i],
+                color=BIN_COLOURS[i],
                 width=bar_width,
                 label=unstack_weights.columns.values[i],
             )
@@ -226,7 +343,7 @@ def plot_summarised_variable_2way(
 
     else:
 
-        raise ValueError("unexpected value for bar_type; " + bar_type)
+        raise ValueError(f"unexpected value for bar_type; {bar_type}")
 
     ax2 = ax1.twinx()
 
@@ -238,15 +355,17 @@ def plot_summarised_variable_2way(
                 summary_df.columns[axis_left_column_index]
             ].unstack()
 
-            unstacked_left_axis_column.columns = [
-                "("
-                + split_by_col
-                + " = "
-                + str(x)
-                + ") "
-                + str(summary_df.columns[axis_left_column_index])
-                for x in unstacked_left_axis_column.columns.values
-            ]
+            unstacked_left_axis_column.columns = pd.Index(
+                [
+                    "("
+                    + split_by_col
+                    + " = "
+                    + str(x)
+                    + ") "
+                    + str(summary_df.columns[axis_left_column_index])
+                    for x in unstacked_left_axis_column.columns.values
+                ]
+            )
 
             for i in range(unstacked_left_axis_column.shape[1]):
 
@@ -263,7 +382,7 @@ def plot_summarised_variable_2way(
                     ]
                     .reset_index(drop=True)
                     .dropna(),
-                    color=left_axis_colours[column_no][i],
+                    color=LEFT_AXIS_COLOURS[column_no][i],
                     linestyle="-",
                     marker="D",
                     label=summary_df.columns[axis_left_column_index],
