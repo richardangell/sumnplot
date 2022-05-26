@@ -475,8 +475,33 @@ class ColumnSummariser:
 
 
 class DataFrameValueCounter:
+    """Summarisation of values in a DataFrame.
+
+    A value_counts operation is peformed for each column of interest with a
+    maximum number of values kept per column. If the number of unique values
+    in a column exceeds this number then .
+
+    Paremeters
+    ----------
+    columns : Optional[List], default = None
+        Columns to summarise with value_counts. If not specified then all
+        columns are used.
+
+    max_values : int, default = 50
+        Maximum number of value counts to keep per column.
+
+    summary_values : int, default = 5
+        If the number of unique values in a column exceeds max_values then only
+        then top, middle and bottom summary_values are kept in the value_counts
+        output.
+
+    """
+
     def __init__(
-        self, columns: List = None, max_values: int = 50, summary_values: int = 5
+        self,
+        columns: Optional[List] = None,
+        max_values: int = 50,
+        summary_values: int = 5,
     ) -> None:
 
         check_type(columns, list, "columns", none_allowed=True)
@@ -491,6 +516,19 @@ class DataFrameValueCounter:
         self.summary_values = summary_values
 
     def summarise(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Summarise input DataFrame.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame containing columns specified in the columns attribute.
+
+        Returns
+        -------
+        columns_summary_all : pd.DataFrame
+            Value counts results for all columns concatenated along axis 1.
+
+        """
 
         check_type(df, pd.DataFrame, "df")
 
@@ -515,6 +553,30 @@ class DataFrameValueCounter:
     ) -> pd.DataFrame:
         """Function to return value_counts for a sinlge column in df resized to
         max_values rows.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame containing column.
+
+        column : str
+            Column to summarise.
+
+        max_values : int, default = 50
+            Maximum number of value counts to keep per column.
+
+        summary_values : int, default = 5
+            If the number of unique values in a column exceeds max_values then only
+            then top, middle and bottom summary_values are kept in the value_counts
+            output.
+
+        Returns
+        -------
+        value_counts_resize : pd.DataFrame
+            Output from pd.Series.value_counts resized to have max_values,
+            either by padding with null rows are taking top, middle and
+            bottom summary_values of the value counts.
+
         """
 
         value_counts = self._get_column_values(df[column])
@@ -526,10 +588,24 @@ class DataFrameValueCounter:
         return value_counts_resize
 
     def _get_column_values(
-        self, column: pd.Series, ascending: bool = True
+        self, column: pd.Series, ascending: Optional[bool] = True
     ) -> pd.DataFrame:
         """Run a value_counts on pandas Series and return the results sorted by index
         with the index as a column in the output.
+
+        Parameters
+        ----------
+        column : pd.Series
+            Column to summarise with value_counts.
+
+        ascending : Optional[bool], default = True
+            Order to sort value counts.
+
+        Returns
+        -------
+        value_counts : pd.DataFrame
+            Output from pd.Series.value_counts with columns renamed.
+
         """
 
         value_counts = (
@@ -552,6 +628,25 @@ class DataFrameValueCounter:
         containing None. Otherwise if n > max_values then the first, middle and
         last summary_values rows are selected and similarly padded with None
         value rows.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Output from pd.Series.value_counts for a single column.
+
+        max_values : int, default = 50
+            Maximum number of value counts to keep per column.
+
+        summary_values : int, default = 5
+            If the number of unique values in a column exceeds max_values then only
+            then top, middle and bottom summary_values are kept in the value_counts
+            output.
+
+        Returns
+        -------
+        df_resized : pd.DataFrame
+            Resize value_counts output.
+
         """
 
         n = df.shape[0]
@@ -602,4 +697,6 @@ class DataFrameValueCounter:
                 dfs_to_concat.insert(0, pad_row)
                 dfs_to_concat.insert(0, bottom_rows)
 
-            return pd.concat(dfs_to_concat, axis=0).reset_index(drop=True)
+            df_resized = pd.concat(dfs_to_concat, axis=0).reset_index(drop=True)
+
+            return df_resized
