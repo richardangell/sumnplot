@@ -12,8 +12,19 @@ def check_type(
     obj_name: str,
     none_allowed: bool = False,
 ) -> None:
-    """Function to check object is of given types and raise a TypeError
-    if not.
+    """Function to check object is of given types and raise a TypeError if not.
+
+    Parameters
+    ----------
+    obj : Any
+        Any object to check the type of.
+
+    expected_types : Union[Type, Tuple[Union[Type, Type[abc.ABCMeta]], ...]]
+        Expected type or tuple of expected types of obj.
+
+    none_allowed : bool = False
+        Is None an allowed value for obj?
+
     """
 
     if type(expected_types) is tuple:
@@ -49,6 +60,15 @@ def check_type(
 def check_condition(condition: bool, error_message_text: str):
     """Check that condition (which evaluates to a bool) is True and raise a
     ValueError if not.
+
+    Parameters
+    ----------
+    condition : bool
+        Condition that evaluates to bool, to check.
+
+    error_message_text : str
+        Message to print in ValueError if condition does not evalute to True.
+
     """
 
     check_type(condition, bool, "condition")
@@ -62,6 +82,15 @@ def check_condition(condition: bool, error_message_text: str):
 def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
     """Function to check that all specified columns are in a given DataFrame
     and raise a ValueError if not.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Condition that evaluates to bool, to check.
+
+    columns : List
+        List of columns that must appear in df.
+
     """
 
     check_type(df, pd.DataFrame, "df")
