@@ -4,7 +4,7 @@
 ![Read the Docs](https://img.shields.io/readthedocs/sumnplot)
 ![GitHub](https://img.shields.io/github/license/richardangell/sumnplot)
 ![GitHub last commit](https://img.shields.io/github/last-commit/richardangell/sumnplot)
-![Build](https://github.com/richardangell/sumnplot/actions/workflows/build-test.yml/badge.svg?branch=main)
+![Build](https://github.com/richardangell/sumnplot/actions/workflows/run_pre-commit.yml/badge.svg?branch=main)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/richardangell/sumnplot/HEAD?labpath=demo)
 
 ## Introduction
