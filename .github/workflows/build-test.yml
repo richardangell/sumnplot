@@ -29,21 +29,10 @@ jobs:
         pip install "flit>=3.2,<4"
         flit install --deps=all
 
-    - name: Lint with flake8
-      if: always()    
+    - name: Run pre-commit
       run: |
-        flake8 .
-
-    - name: mypy
-      if: always()    
-      run: |
-        mypy src/sumnplot/ --ignore-missing-imports --scripts-are-modules
-
-    - name: Lint with black
-      if: always()    
-      run: |
-        black --version
-        black --check .
+        pre-commit install
+        pre-commit run --from-ref origin/HEAD --to-ref HEAD
 
     - name: Run Bandit tests
       if: always()
