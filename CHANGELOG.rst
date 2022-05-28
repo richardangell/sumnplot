@@ -16,6 +16,15 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
+0.3.1.dev0 (unreleased)
+-----------------------
+
+Fixed
+^^^^^
+
+- Fix conda env file for mybinder.org not specifying where to install sumnplot from (now installed from pypi)
+
+
 0.3.0 (2022-05-28) Revamp and release package `#3 <https://github.com/richardangell/sumnplot/pull/3>`_
 ------------------------------------------------------------------------------------------------------
 
