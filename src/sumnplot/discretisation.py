@@ -415,8 +415,8 @@ class QuantileDiscretiser(Discretiser):
         """
 
         values = np.array(values)
-        quantiles = np.array(quantiles)
-        quantiles = np.unique(np.sort(np.append(quantiles, [0, 1])))
+        quantiles_ = np.array(quantiles)
+        quantiles_ = np.unique(np.sort(np.append(quantiles_, [0, 1])))
 
         if sample_weight is None:
             sample_weight = np.ones(len(values))
@@ -431,7 +431,7 @@ class QuantileDiscretiser(Discretiser):
         weighted_quantiles = np.cumsum(sample_weight) - 0.5 * sample_weight
         weighted_quantiles /= np.sum(sample_weight)
 
-        interpolated_quantiles = np.interp(quantiles, weighted_quantiles, values)
+        interpolated_quantiles = np.interp(quantiles_, weighted_quantiles, values)
 
         return interpolated_quantiles
 
