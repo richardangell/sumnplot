@@ -1,10 +1,10 @@
 # (Super simple) Summarisation and Plotting
 
-![PyPI](https://img.shields.io/pypi/v/pitci?color=success&style=flat)
-![Read the Docs](https://img.shields.io/readthedocs/pitci)
-![GitHub](https://img.shields.io/github/license/richardangell/pitci)
-![GitHub last commit](https://img.shields.io/github/last-commit/richardangell/pitci)
-![Build](https://github.com/richardangell/pitci/actions/workflows/build-test.yml/badge.svg?branch=main)
+![PyPI](https://img.shields.io/pypi/v/sumnplot?color=success&style=flat)
+![Read the Docs](https://img.shields.io/readthedocs/sumnplot)
+![GitHub](https://img.shields.io/github/license/richardangell/sumnplot)
+![GitHub last commit](https://img.shields.io/github/last-commit/richardangell/sumnplot)
+![Build](https://github.com/richardangell/sumnplot/actions/workflows/build-test.yml/badge.svg?branch=main)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/richardangell/sumnplot/HEAD?labpath=demo)
 
 ## Introduction
