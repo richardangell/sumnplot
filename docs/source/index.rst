@@ -1,3 +1,6 @@
+(Super simple) Summarisation and Plotting
+=========================================
+
 Welcome to sumnplot's documentation!
 ====================================
 
