@@ -387,7 +387,7 @@ def plot_summarised_variable_2way(
                     color=LEFT_AXIS_COLOURS[column_no][i],
                     linestyle="-",
                     marker="D",
-                    label=summary_df.columns[axis_left_column_index],
+                    label=unstacked_left_axis_column.columns.values[i],
                 )
 
     if legend:
