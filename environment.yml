@@ -1,0 +1,8 @@
+# this conda environment file is only used by mybinder.org to create the python
+# environment for use there
+name: example-environment
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - sumnplot
