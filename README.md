@@ -22,6 +22,7 @@ from sumnplot.plot.matplotlib import plot_summarised_variable_2way
 
 ```python
 X, y = load_diabetes(return_X_y=True, as_frame=True)
+X["s1"] = X["s1"] - X["s1"].min()
 ```
 
 ```python
@@ -30,10 +31,10 @@ two_way_summary = ColumnSummariser._summarise_column(
     to_summarise_columns=["s1", "s2", "s3"],
     to_summarise_columns_labels=["obs", "p1", "p2"],
     to_summarise_divide_column="s1",
-    by_column=sp.discretisation.QuantileDiscretiser(
+    by_column=QuantileDiscretiser(
         variable="age", quantiles=(0, 0.25, 0.5, 0.75, 1.0)
     ),
-    second_by_column=sp.discretisation.QuantileDiscretiser(
+    second_by_column=QuantileDiscretiser(
         variable="bmi", quantiles=(0, 0.33, 0.66, 1.0)
     ),
 )
