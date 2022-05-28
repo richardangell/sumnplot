@@ -294,7 +294,7 @@ class EqualWeightDiscretiser(Discretiser):
 
         cut_points = QuantileDiscretiser._compute_weighted_quantile(
             values=X[self.variable],
-            quantiles=np.array(np.linspace(start=0, stop=1, num=self.n + 1)),
+            quantiles=tuple(np.linspace(start=0, stop=1, num=self.n + 1)),
             sample_weight=sample_weight,
         )
         self.cut_points = self._clean_cut_points(cut_points)
