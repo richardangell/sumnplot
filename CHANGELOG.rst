@@ -16,7 +16,7 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
-0.3.0 (2022-05-27) Revamp and release package `#3 <https://github.com/richardangell/sumnplot/pull/3>`_
+0.3.0 (2022-05-28) Revamp and release package `#3 <https://github.com/richardangell/sumnplot/pull/3>`_
 ------------------------------------------------------------------------------------------------------
 
 Added
