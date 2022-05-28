@@ -34,4 +34,12 @@ jobs:
       run: |
         echo $BRANCH_SHA
 
-      
+    - name: Get branch2 sha
+      run: |
+        echo "BRANCH_SHA2=$(echo $(git show-ref refs/remotes/$GITHUB_REF --hash))" >> $GITHUB_ENV
+    - name: Print branch sha
+      run: |
+        echo $GITHUB_REF
+        echo $BRANCH_SHA2     
+
+        
