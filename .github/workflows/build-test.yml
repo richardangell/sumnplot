@@ -48,7 +48,7 @@ jobs:
     - name: Run Bandit tests
       if: always()
       run: |
-        bandit -r sumnplot -f html -o bandit-test-results.html
+        bandit -r src/sumnplot -f html -o bandit-test-results.html
 
     - name: Upload bandit test results
       if: always()
