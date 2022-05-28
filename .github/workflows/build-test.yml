@@ -29,6 +29,13 @@ jobs:
         pip install "flit>=3.2,<4"
         flit install --deps=all
 
+    - name: Get origin HEAD sha
+      run: echo "ORIGIN_HEAD_SHA=$(echo git show-ref origin/main --hash)" >> $GITHUB_ENV
+
+    - name: Test
+      run: echo $ORIGIN_HEAD_SHA
+
+
     - name: Run pre-commit
       run: |
         pre-commit install
