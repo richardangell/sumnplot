@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-        
+
     - name: Get HEAD sha
       run: |
         echo "HEAD_SHA=$(echo $(git show-ref origin/main --hash))" >> $GITHUB_ENV
@@ -29,7 +29,7 @@ jobs:
 
     - name: Get branch sha
       run: |
-        echo "BRANCH_SHA=$(echo $(git show-ref origin/${GITHUB_REF} --hash))" >> $GITHUB_ENV
+        echo "BRANCH_SHA=$(echo $(git rev-parse HEAD))" >> $GITHUB_ENV
     - name: Print branch sha
       run: |
         echo $BRANCH_SHA
