@@ -20,28 +20,21 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Get HEAD sha
-      run: |
-        echo "HEAD_SHA=$(echo $(git show-ref origin/main --hash))" >> $GITHUB_ENV
-    - name: Print branch sha
-      run: |
-        echo $HEAD_SHA
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
 
-    - name: Get branch sha
+    - name: Install dependencies
       run: |
-        echo "BRANCH_SHA=$(echo $(git rev-parse HEAD))" >> $GITHUB_ENV
-    - name: Print branch sha
-      run: |
-        echo $BRANCH_SHA
+        python -m pip install --upgrade pip
+        pip install "flit>=3.2,<4"
+        flit install --deps=all
 
-    - name: Print git diff 1
+    - name: Run pre-commit
       run: |
-        echo $(git diff --name-only origin/main origin/${GITHUB_HEAD_REF})
-
-    - name: Print git diff 1
-      run: |
-        echo $(git diff --name-only $HEAD_SHA $BRANCH_SHA)
+        pre-commit install
+        pre-commit run --from-ref origin/main --to-ref origin/${GITHUB_HEAD_REF}
 
 
-
-        
+          
