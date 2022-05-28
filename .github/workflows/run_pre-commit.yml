@@ -34,11 +34,14 @@ jobs:
       run: |
         echo $BRANCH_SHA
 
-    - name: Get branch2 sha
+    - name: Print git diff 1
       run: |
-        echo "BRANCH_SHA2=$(echo $(git show-ref $GITHUB_REF --hash))" >> $GITHUB_ENV
-    - name: Print branch sha
+        echo $(git diff --name-only origin/main origin/${GITHUB_HEAD_REF})
+
+    - name: Print git diff 1
       run: |
-        echo $BRANCH_SHA2     
+        echo $(git diff --name-only $HEAD_SHA $BRANCH_SHA)
+
+
 
         
