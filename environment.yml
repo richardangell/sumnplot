@@ -1,0 +1,11 @@
+# this conda environment file is only used by mybinder.org to create the python
+# environment for use there
+name: example-environment
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - numpy>=1.18.1
+  - pandas>=1.0.0
+  - scikit-learn>=1.0
+  - matplotlib>=3.1.3
