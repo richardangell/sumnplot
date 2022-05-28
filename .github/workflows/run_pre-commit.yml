@@ -34,7 +34,7 @@ jobs:
     - name: Run pre-commit
       run: |
         pre-commit install
-        pre-commit run --from-ref origin/main --to-ref origin/${GITHUB_HEAD_REF}
+        pre-commit run --from-ref origin/main --to-ref origin/${GITHUB_HEAD_REF} --verbose
 
 
           
