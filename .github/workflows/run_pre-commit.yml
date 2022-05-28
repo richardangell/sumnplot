@@ -1,0 +1,26 @@
+# This workflow will install the package and dependencies, lint and run bandit
+# with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python package build and test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+
+    - name: Get origin HEAD sha
+      run: echo "ORIGIN_HEAD_SHA=$(echo $(git show-ref origin/main --hash))" >> $GITHUB_ENV
+
+    - name: Test
+      run: echo $ORIGIN_HEAD_SHA
