@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Get branch sha
       run: |
-        echo git show-ref main --hash
+        echo $(git show-ref main --hash)
 
 
       
