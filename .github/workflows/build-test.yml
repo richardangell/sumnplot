@@ -37,7 +37,7 @@ jobs:
     - name: mypy
       if: always()    
       run: |
-        mypy src/sumnplot/
+        mypy src/sumnplot/ --ignore-missing-imports --scripts-are-modules
 
     - name: Lint with black
       if: always()    
