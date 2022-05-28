@@ -21,7 +21,9 @@ jobs:
         fetch-depth: 0
     - name: Get branch sha
       run: |
-        echo $(git show-ref main --hash)
-
+        echo "HEAD_SHA=$(echo $(git show-ref main --hash))" >> $GITHUB_ENV
+    - name: Print branch sha
+      run: |
+        echo $HEAD_SHA
 
       
