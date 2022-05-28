@@ -18,9 +18,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-
-    - name: Get origin HEAD sha
-      run: echo "ORIGIN_HEAD_SHA=$(echo $(git show-ref origin/main --hash))" >> $GITHUB_ENV
-
     - name: Test
-      run: echo $ORIGIN_HEAD_SHA
+      run: echo $GITHUB_REF
+
+    - name: Test2
+      run: echo $GITHUB_SHA
+
+    - name: Get branch sha
+      run: echo "BRANCH_SHA=$(git show-ref "$GITHUB_REF"--hash)" >> $GITHUB_ENV
+
+    - name: Test3
+      run: echo $BRANCH_SHA
+
+      
