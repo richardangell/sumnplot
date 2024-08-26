@@ -326,9 +326,11 @@ class ColumnSummariser:
 
             groupby_columns.append(second_groupby_column)
 
-        summary_functions = {column: "sum" for column in to_summarise_columns}
+        summary_functions = {column: ["sum"] for column in to_summarise_columns}
 
-        summary_values = df.groupby(groupby_columns).agg(summary_functions)
+        summary_values = df.groupby(groupby_columns, observed=False).agg(
+            summary_functions  # type: ignore[arg-type]
+        )
 
         # divide through other to_summarise_column by to_summarise_divide_column
         if to_summarise_divide_column is not None:

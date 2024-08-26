@@ -96,7 +96,7 @@ def plot_summarised_variable(
         np.arange(summary_df.shape[0]),
         summary_df[summary_df.columns[axis_right]].reset_index(drop=True),
         color="gold",
-        label=summary_df.columns[axis_right],
+        label=summary_df.index.values,
     )
 
     plt.xticks(np.arange(summary_df.shape[0]), summary_df.index, rotation=270)
