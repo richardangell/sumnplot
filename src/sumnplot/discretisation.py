@@ -1,18 +1,21 @@
 """Module for discretisation classes."""
 
-import pandas as pd
-import numpy as np
 from abc import ABC, abstractmethod
-from sklearn.base import TransformerMixin, BaseEstimator
-from sklearn.utils.validation import check_is_fitted
-from pandas.api.types import is_categorical_dtype
+from typing import Optional, Tuple, Union
 
-from typing import Optional, Union, Tuple
+import numpy as np
+import pandas as pd
+from numpy.typing import ArrayLike, NDArray
+from sklearn.base import (  # type: ignore[import-not-found]
+    BaseEstimator,
+    TransformerMixin,
+)
+from sklearn.utils.validation import check_is_fitted  # type: ignore[import-not-found]
 
-from .checks import check_type, check_condition, check_columns_in_df
+from .checks import check_columns_in_df, check_condition, check_type
 
 
-class Discretiser(ABC, TransformerMixin, BaseEstimator):
+class Discretiser(ABC, TransformerMixin, BaseEstimator):  # type: ignore[no-any-unimported]
     """Abstract base class for different discretisation methods.
 
     This abstract base class is a transformer compatible with
@@ -26,27 +29,25 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
     """
 
     def __init__(self, variable: str) -> None:
-
         check_type(variable, str, "variable")
         self.variable = variable
 
     @abstractmethod
     def fit(
         self,
-        X: pd.DataFrame,
+        X: pd.DataFrame,  # noqa: N803
         y: Optional[pd.Series] = None,
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
-    ) -> None:
+    ) -> "Discretiser":
         """Calculate cut points for given discretisation approach.
 
         The cut_points attribute should be set by this method.
-        """
 
+        """
         pass
 
-    def transform(self, X: pd.DataFrame) -> pd.Series:
-        """Cut variable in X at cut_points. This function uses the pd.cut
-        method.
+    def transform(self, X: pd.DataFrame) -> pd.Series:  # noqa: N803
+        """Cut variable in X at cut_points. This function uses the pd.cut method.
 
         A specific null category is added on the cut output.
 
@@ -62,7 +63,6 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
             Discretised variable.
 
         """
-
         check_is_fitted(self, "cut_points")
         check_columns_in_df(X, [self.variable])
 
@@ -78,29 +78,30 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
         return variable_cut
 
     @staticmethod
-    def _clean_cut_points(cut_points: np.ndarray) -> np.ndarray:
-        """Clean provided cut points for discretisation by removing null values
-        and returning unique values.
+    def _clean_cut_points(cut_points: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Remove null values and returning unique values.
 
         Parameters
         ----------
-        cut_points : np.ndarray
+        cut_points : NDArray[np.float64]
             Array of cut points that define where a particular column should be
             split to discretise it.
 
         Returns
         -------
-        cleaned_cut_points : np.ndarray
+        cleaned_cut_points : NDArray[np.float64]
             Array of the unique cut points input to the function, with any null
             values also removed.
 
         """
-
-        cleaned_cut_points = np.unique(cut_points[~np.isnan(cut_points)])
+        cleaned_cut_points: NDArray[np.float64] = np.unique(
+            cut_points[~np.isnan(cut_points)]
+        )
 
         if len(cleaned_cut_points) <= 1:
             raise ValueError(
-                f"only 1 cut point after cleaning {cleaned_cut_points} - before cleaning {cut_points}"
+                f"only 1 cut point after cleaning {cleaned_cut_points} "
+                f"- before cleaning {cut_points}"
             )
 
         return cleaned_cut_points
@@ -109,8 +110,7 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
     def _add_null_category(
         categorical_variable: pd.Series, null_category_name: str = "Null"
     ) -> pd.Series:
-        """Function to add new categorical level to categorical variable and
-        set NAs to this category.
+        """Add new categorical level to categorical and set NAs to this category.
 
         Parameters
         ----------
@@ -127,18 +127,20 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
             level added.
 
         """
-
         check_type(categorical_variable, pd.Series, "categorical_variable")
         check_type(null_category_name, str, "null_category_name")
 
         check_condition(
-            is_categorical_dtype(categorical_variable),
+            isinstance(categorical_variable.dtype, pd.CategoricalDtype),
             f"categorical_variable ({categorical_variable.name}) is categorical dtype",
         )
 
         check_condition(
             null_category_name not in categorical_variable.cat.categories,
-            f"null_category_name ({null_category_name}) not already in categorical_variable ({categorical_variable.name}) categories",
+            (
+                f"null_category_name ({null_category_name}) not already in "
+                f"categorical_variable ({categorical_variable.name}) categories"
+            ),
         )
 
         cat = categorical_variable.cat.add_categories([null_category_name])
@@ -148,19 +150,17 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
         return cat
 
     @abstractmethod
-    def _get_max_number_of_bins(self):
-        """Method to return the maximum number of bins possible for the given
-        variable.
+    def _get_max_number_of_bins(self) -> int:
+        """Return the maximum number of bins possible for the given variable.
 
-        Note, the actual number may be lower once calculated on a given dataset
-        because the cut points may not be unique.
+        Note, the actual number may be lower once calculated on a given dataset because
+        the cut points may not be unique.
+
         """
-
         pass
 
     def _get_actual_number_of_bins(self) -> int:
-        """Method to return the actual number of bins based off cut_points
-        after the fit method has been run.
+        """Return the actual number of bins based off cut_points after fit.
 
         Returns
         -------
@@ -168,7 +168,6 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):
             Actual number of bins variable has been cut into.
 
         """
-
         check_is_fitted(self, "cut_points")
 
         return len(self.cut_points) - 1
@@ -191,7 +190,6 @@ class EqualWidthDiscretiser(Discretiser):
     """
 
     def __init__(self, variable: str, n: int = 10) -> None:
-
         super().__init__(variable=variable)
 
         check_type(n, int, "n")
@@ -199,10 +197,10 @@ class EqualWidthDiscretiser(Discretiser):
 
     def fit(
         self,
-        X: pd.DataFrame,
+        X: pd.DataFrame,  # noqa: N803
         y: Optional[pd.Series] = None,
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
-    ):
+    ) -> "EqualWidthDiscretiser":
         """Calculate cut points on the input data X.
 
         Cut points are equally spaced across the range of the variable. The
@@ -222,7 +220,6 @@ class EqualWidthDiscretiser(Discretiser):
             Optional, sample weights for each record in X.
 
         """
-
         check_columns_in_df(X, [self.variable])
 
         variable_min = X[self.variable].min()
@@ -234,10 +231,7 @@ class EqualWidthDiscretiser(Discretiser):
         return self
 
     def _get_max_number_of_bins(self) -> int:
-        """Return the maximum number of bins possible for the given
-        variable.
-        """
-
+        """Return the maximum number of bins possible for the given variable."""
         return self.n
 
 
@@ -258,7 +252,6 @@ class EqualWeightDiscretiser(Discretiser):
     """
 
     def __init__(self, variable: str, n: int = 10):
-
         super().__init__(variable=variable)
 
         check_type(n, int, "n")
@@ -266,10 +259,10 @@ class EqualWeightDiscretiser(Discretiser):
 
     def fit(
         self,
-        X: pd.DataFrame,
+        X: pd.DataFrame,  # noqa: N803
         y: Optional[pd.Series] = None,
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
-    ):
+    ) -> "EqualWeightDiscretiser":
         """Calculate cut points on the input data X.
 
         Cut points are chosen so each of the n buckets contains an equal amount
@@ -289,7 +282,6 @@ class EqualWeightDiscretiser(Discretiser):
             Optional, sample weights for each record in X.
 
         """
-
         check_columns_in_df(X, [self.variable])
 
         cut_points = QuantileDiscretiser._compute_weighted_quantile(
@@ -303,7 +295,6 @@ class EqualWeightDiscretiser(Discretiser):
 
     def _get_max_number_of_bins(self) -> int:
         """Return the maximum number of bins possible for variable."""
-
         return self.n
 
 
@@ -326,10 +317,9 @@ class QuantileDiscretiser(Discretiser):
 
     def __init__(
         self,
-        variable,
+        variable: str,
         quantiles: Tuple[Union[int, float], ...] = tuple(np.linspace(0, 1, 11)),
     ) -> None:
-
         super().__init__(variable=variable)
 
         check_type(quantiles, tuple, "quantiles")
@@ -337,10 +327,10 @@ class QuantileDiscretiser(Discretiser):
 
     def fit(
         self,
-        X: pd.DataFrame,
+        X: pd.DataFrame,  # noqa: N803
         y: Optional[pd.Series] = None,
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
-    ):
+    ) -> "QuantileDiscretiser":
         """Calculate cut points on the input data X.
 
         Cut points are (potentially weighted) quantiles specified when
@@ -360,7 +350,6 @@ class QuantileDiscretiser(Discretiser):
             Optional, sample weights for each record in X.
 
         """
-
         check_columns_in_df(X, [self.variable])
 
         cut_points = self._compute_weighted_quantile(
@@ -374,11 +363,11 @@ class QuantileDiscretiser(Discretiser):
 
     @staticmethod
     def _compute_weighted_quantile(
-        values: np.ndarray,
+        values: ArrayLike,
         quantiles: tuple,
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
         values_sorted: bool = False,
-    ):
+    ) -> NDArray[np.float64]:
         """Funtion to calculate weighted percentiles.
 
         Code modified from the answer given by users Alleo & Max Ghenis on
@@ -409,11 +398,10 @@ class QuantileDiscretiser(Discretiser):
 
         Returns
         -------
-        interpolated_quantiles : np.array
+        interpolated_quantiles : np.ndarray
             Computed (weighted) quantiles.
 
         """
-
         values = np.array(values)
         quantiles_ = np.array(quantiles)
         quantiles_ = np.unique(np.sort(np.append(quantiles_, [0, 1])))
@@ -437,10 +425,9 @@ class QuantileDiscretiser(Discretiser):
 
     @staticmethod
     def _clean_quantiles(
-        quantiles: Tuple[Union[int, float], ...]
+        quantiles: Tuple[Union[int, float], ...],
     ) -> Tuple[Union[int, float], ...]:
-        """Clean input quantiles by ensuring 0 and 1 are included, they are
-        sorted and unique.
+        """Ensure 0 and 1 are included, sort and return unique values.
 
         Note, quantiles are converted back and forth between a tuple a
         np.ndarray. This is so the transformer is compatible with scikit-learn
@@ -457,7 +444,6 @@ class QuantileDiscretiser(Discretiser):
             Sorted, unique quantiles.
 
         """
-
         quantiles_array = np.array(quantiles)
         quantiles_array = np.unique(np.sort(np.append(quantiles_array, [0, 1])))
 
@@ -470,5 +456,4 @@ class QuantileDiscretiser(Discretiser):
 
     def _get_max_number_of_bins(self) -> int:
         """Return the maximum number of bins possible for variable."""
-
         return len(self.quantiles)

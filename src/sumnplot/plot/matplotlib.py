@@ -1,12 +1,14 @@
 """Module for plotting summarised data with matplotlib."""
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
 from typing import List, Optional
 
-from ..checks import check_type, check_condition
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+from ..checks import check_condition, check_type
+
+LEFT_Y_AXIS_COLOURS = ["magenta", "forestgreen", "lime", "orangered", "dodgerblue"]
 
 
 def plot_summarised_variable(
@@ -17,7 +19,7 @@ def plot_summarised_variable(
     figsize_h: int = 14,
     figsize_w: int = 8,
     legend: bool = True,
-):
+) -> None:
     """Produce one way summary plot from pre-summarised data.
 
     Parameters
@@ -46,9 +48,6 @@ def plot_summarised_variable(
         Should a legend be added to the plot?
 
     """
-
-    LEFT_Y_AXIS_COLOURS = ["magenta", "forestgreen", "lime", "orangered", "dodgerblue"]
-
     check_type(summary_df, pd.DataFrame, "summary_df")
     check_type(axis_right, int, "axis_right")
     check_type(axis_left, list, "axis_left", none_allowed=True)
@@ -59,11 +58,13 @@ def plot_summarised_variable(
 
     check_condition(
         axis_right <= summary_df.shape[1] - 1,
-        f"only {summary_df.shape[1]} columns in summary_df but axis_right = {axis_right}",
+        (
+            f"only {summary_df.shape[1]} columns in summary_df but "
+            f"axis_right = {axis_right}"
+        ),
     )
 
     if axis_left is not None:
-
         if axis_right in axis_left:
             raise ValueError(
                 f"column index {axis_right} specified for both right and left axes"
@@ -71,14 +72,18 @@ def plot_summarised_variable(
 
         if len(axis_left) > len(LEFT_Y_AXIS_COLOURS):
             raise ValueError(
-                f"only {len(LEFT_Y_AXIS_COLOURS)} plots supports for the left axis but {len(axis_left)} given"
+                f"only {len(LEFT_Y_AXIS_COLOURS)} plots supports for the left "
+                f"axis but {len(axis_left)} given"
             )
 
         for axis_left_no, axis_left_index in enumerate(axis_left):
             check_type(axis_left_index, int, f"axis_left_index[{axis_left_no}]")
             check_condition(
                 axis_left_index <= summary_df.shape[1] - 1,
-                f"only {summary_df.shape[1]} columns in summary_df but axis_left[{axis_left_no}] = {axis_left_index}",
+                (
+                    f"only {summary_df.shape[1]} columns in summary_df but "
+                    f"axis_left[{axis_left_no}] = {axis_left_index}"
+                ),
             )
 
     if title is None:
@@ -91,7 +96,7 @@ def plot_summarised_variable(
         np.arange(summary_df.shape[0]),
         summary_df[summary_df.columns[axis_right]].reset_index(drop=True),
         color="gold",
-        label=summary_df.columns[axis_right],
+        label=summary_df.index.values,
     )
 
     plt.xticks(np.arange(summary_df.shape[0]), summary_df.index, rotation=270)
@@ -99,9 +104,7 @@ def plot_summarised_variable(
     ax2 = ax1.twinx()
 
     if axis_left is not None:
-
         for column_no, left_axis_column_index in enumerate(axis_left):
-
             ax2.plot(
                 summary_df[summary_df.columns[left_axis_column_index]]
                 .reset_index(drop=True)
@@ -117,14 +120,53 @@ def plot_summarised_variable(
             )
 
     if legend:
-
         ax1.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 
         if axis_left is not None:
-
             ax2.legend(bbox_to_anchor=(1.05, 0.94), loc=2, borderaxespad=0.0)
 
     plt.title(title, fontsize=20)
+
+
+BIN_COLOURS = [
+    "gold",
+    "khaki",
+    "goldenrod",
+    "darkkhaki",
+    "darkgoldenrod",
+    "olive",
+    "y",
+]
+
+LEFT_AXIS_COLOURS = [
+    [
+        "magenta",
+        "m",
+        "orchid",
+        "mediumvioletred",
+        "deeppink",
+        "darkmagenta",
+        "darkviolet",
+    ],
+    [
+        "forestgreen",
+        "darkgreen",
+        "seagreen",
+        "green",
+        "darkseagreen",
+        "g",
+        "mediumseagreen",
+    ],
+    [
+        "lime",
+        "limegreen",
+        "greenyellow",
+        "lawngreen",
+        "chartreuse",
+        "lightgreen",
+        "springgreen",
+    ],
+]
 
 
 def plot_summarised_variable_2way(
@@ -137,7 +179,7 @@ def plot_summarised_variable_2way(
     figsize_h: int = 14,
     figsize_w: int = 8,
     legend: bool = True,
-):
+) -> None:
     """Produce one way summary plot from pre-summarised data.
 
     Parameters
@@ -174,47 +216,6 @@ def plot_summarised_variable_2way(
         Should a legend be added to the plot?
 
     """
-
-    BIN_COLOURS = [
-        "gold",
-        "khaki",
-        "goldenrod",
-        "darkkhaki",
-        "darkgoldenrod",
-        "olive",
-        "y",
-    ]
-
-    LEFT_AXIS_COLOURS = [
-        [
-            "magenta",
-            "m",
-            "orchid",
-            "mediumvioletred",
-            "deeppink",
-            "darkmagenta",
-            "darkviolet",
-        ],
-        [
-            "forestgreen",
-            "darkgreen",
-            "seagreen",
-            "green",
-            "darkseagreen",
-            "g",
-            "mediumseagreen",
-        ],
-        [
-            "lime",
-            "limegreen",
-            "greenyellow",
-            "lawngreen",
-            "chartreuse",
-            "lightgreen",
-            "springgreen",
-        ],
-    ]
-
     check_type(summary_df, pd.DataFrame, "summary_df")
     check_type(axis_right, int, "axis_right")
     check_type(axis_left, list, "axis_left", none_allowed=True)
@@ -227,11 +228,13 @@ def plot_summarised_variable_2way(
 
     check_condition(
         axis_right <= summary_df.shape[1] - 1,
-        f"only {summary_df.shape[1]} columns in summary_df but axis_right = {axis_right}",
+        (
+            f"only {summary_df.shape[1]} columns in summary_df but "
+            f"axis_right = {axis_right}"
+        ),
     )
 
     if axis_left is not None:
-
         if axis_right in axis_left:
             raise ValueError(
                 f"column index {axis_right} specified for both right and left axes"
@@ -239,19 +242,27 @@ def plot_summarised_variable_2way(
 
         if len(axis_left) > len(LEFT_AXIS_COLOURS):
             raise ValueError(
-                f"only {len(LEFT_AXIS_COLOURS)} plots supported for the left axis but {len(axis_left)} given"
+                f"only {len(LEFT_AXIS_COLOURS)} plots supported for the left axis "
+                f"but {len(axis_left)} given"
             )
 
         for axis_left_no, axis_left_index in enumerate(axis_left):
             check_type(axis_left_index, int, f"axis_left_index[{axis_left_no}]")
             check_condition(
                 axis_left_index <= summary_df.shape[1] - 1,
-                f"only {summary_df.shape[1]} columns in summary_df but axis_left[{axis_left_no}] = {axis_left_index}",
+                (
+                    f"only {summary_df.shape[1]} columns in summary_df but "
+                    f"axis_left[{axis_left_no}] = {axis_left_index}"
+                ),
             )
+
+    if not isinstance(summary_df.index, pd.MultiIndex):
+        raise ValueError("summary_df should be a 2-way summary")
 
     if len(summary_df.index.levels[1]) > len(BIN_COLOURS):
         raise ValueError(
-            f"only {len(BIN_COLOURS)} levels supported for the second groupby column but {len(summary_df.index.levels[1])} given in summary_df"
+            f"only {len(BIN_COLOURS)} levels supported for the second groupby "
+            f"column but {len(summary_df.index.levels[1])} given in summary_df"
         )
 
     by_col = summary_df.index.names[0]
@@ -287,12 +298,10 @@ def plot_summarised_variable_2way(
     )
 
     if bar_type == "stacked":
-
         top_bins = np.zeros(unstack_weights.shape[0])
 
         # plot bin counts on 1st axis
         for i in range(unstack_weights.shape[1]):
-
             heights = unstack_weights.loc[
                 :, unstack_weights.columns.values[i]
             ].reset_index(drop=True)
@@ -311,16 +320,14 @@ def plot_summarised_variable_2way(
             np.arange(unstack_weights.shape[0]), unstack_weights.index, rotation=270
         )
 
-        x_ticket_offset = 0
+        x_ticket_offset = 0.0
 
     elif bar_type == "side_by_side":
-
         bar_width = 0.8 / unstack_weights.shape[1]
 
-        x_offset = 0
+        x_offset = 0.0
 
         for i in range(unstack_weights.shape[1]):
-
             ax1.bar(
                 np.arange(unstack_weights.shape[0]) + x_offset,
                 unstack_weights.loc[:, unstack_weights.columns.values[i]].reset_index(
@@ -344,15 +351,12 @@ def plot_summarised_variable_2way(
         )
 
     else:
-
         raise ValueError(f"unexpected value for bar_type; {bar_type}")
 
     ax2 = ax1.twinx()
 
     if axis_left is not None:
-
         for column_no, axis_left_column_index in enumerate(axis_left):
-
             unstacked_left_axis_column = summary_df[
                 summary_df.columns[axis_left_column_index]
             ].unstack()
@@ -370,7 +374,6 @@ def plot_summarised_variable_2way(
             )
 
             for i in range(unstacked_left_axis_column.shape[1]):
-
                 ax2.plot(
                     unstacked_left_axis_column.loc[
                         :, unstacked_left_axis_column.columns.values[i]
@@ -391,11 +394,9 @@ def plot_summarised_variable_2way(
                 )
 
     if legend:
-
         ax1.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 
         if axis_left is not None:
-
             plt.legend(
                 bbox_to_anchor=(1.05, (0.94 - (0.03 * len(split_levels)))),
                 loc=2,

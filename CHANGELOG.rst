@@ -3,7 +3,7 @@ Changelog
 
 This changelog follows the great advice from https://keepachangelog.com/.
 
-Each section will have a title of the format ``X.Y.Z (YYYY-MM-DD)`` giving the version of the package and the date of release of that version. Unreleased changes i.e. those that have been merged into master (e.g. with a .dev suffix) but which are not yet in a new release (on PyPI) are added to the changelog but with the title ``X.Y.Z (unreleased)``. Unreleased sections can be combined when they are released and the date of release added to the title.
+Each section will have a title of the format ``X.Y.Z (YYYY-MM-DD)`` giving the version of the package and the date of release of that version. Unreleased changes i.e. those that have been merged into main (e.g. with a .dev suffix) but which are not yet in a new release (on PyPI) are added to the changelog but with the title ``X.Y.Z (unreleased)``. Unreleased sections can be combined when they are released and the date of release added to the title.
 
 Subsections for each version can be one of the following;
 
@@ -16,8 +16,15 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
-0.3.1.dev0 (unreleased)
+0.4.0 (unreleased)
 -----------------------
+
+Changed
+^^^^^^^
+
+- Bumped minimum required dependency versions
+  * ``pandas``: ``2.2.0``
+  * ``scikit-learn``: ``1.5.0``
 
 Fixed
 ^^^^^
@@ -25,8 +32,8 @@ Fixed
 - Fix conda env file for mybinder.org not specifying where to install sumnplot from (now installed from pypi)
 
 
-0.3.0 (2022-05-28) Revamp and release package `#3 <https://github.com/richardangell/sumnplot/pull/3>`_
-------------------------------------------------------------------------------------------------------
+0.3.0 (2022-05-28) 
+------------------
 
 Added
 ^^^^^
