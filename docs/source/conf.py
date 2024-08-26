@@ -1,3 +1,5 @@
+"""Configuration file for the Sphinx documentation builder."""
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -13,6 +15,8 @@
 import os
 import sys
 
+import sumnplot
+
 sys.path.insert(0, os.path.abspath("../../src"))
 
 
@@ -21,12 +25,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "sumnplot"
 copyright = "2021, Richard Angell"
 author = "Richard Angell"
-
-# The full version, including alpha/beta/rc tags
-import sumnplot
-
 release = sumnplot.__version__
-
 
 # -- General configuration ---------------------------------------------------
 

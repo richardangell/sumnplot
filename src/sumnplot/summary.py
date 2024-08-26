@@ -1,28 +1,28 @@
 """Module for summarisation classes."""
 
-import pandas as pd
-import numpy as np
 from abc import ABCMeta
 from copy import deepcopy
+from typing import Dict, List, Optional, Union
+
+import numpy as np
+import pandas as pd
 from pandas.api.types import (
+    is_bool_dtype,
     is_numeric_dtype,
     is_object_dtype,
-    is_bool_dtype,
-    is_categorical_dtype,
 )
-from sklearn.utils.validation import check_is_fitted
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import NotFittedError  # type: ignore[import-not-found]
+from sklearn.utils.validation import check_is_fitted  # type: ignore[import-not-found]
 
+from .checks import check_columns_in_df, check_condition, check_type
 from .discretisation import Discretiser
-from .checks import check_type, check_condition, check_columns_in_df
-
-from typing import List, Dict, Optional, Union
 
 
 class ColumnSummariser:
-    """Summarisation of columns in a DataFrame. The summarisation function
-    is sum by default. Averages can be calculated if the user specifies the
-    column to use as the divisor.
+    """Summarisation of columns in a DataFrame.
+
+    The summarisation function is sum by default. Averages can be calculated
+    if the user specifies the column to use as the divisor.
 
     This class allows multiple (to_summarise_columns) columns to be specified
     which will summarised by others columns (by_columns) or combinations of
@@ -96,7 +96,6 @@ class ColumnSummariser:
         to_summarise_columns_labels: Optional[List[str]] = None,
         to_summarise_divide_column: Optional[str] = None,
     ) -> None:
-
         check_type(to_summarise_columns, list, "to_summarise_columns")
         check_type(by_columns, list, "by_columns", none_allowed=True)
         check_type(discretiser, ABCMeta, "discretiser", none_allowed=True)
@@ -118,17 +117,19 @@ class ColumnSummariser:
             none_allowed=True,
         )
 
-        if to_summarise_columns_labels is not None:
-            if len(to_summarise_columns_labels) != len(to_summarise_columns):
-                raise ValueError(
-                    "to_summarise_columns and to_summarise_columns_labels are different lengths"
-                )
+        if to_summarise_columns_labels is not None and len(
+            to_summarise_columns_labels
+        ) != len(to_summarise_columns):
+            raise ValueError(
+                "to_summarise_columns and to_summarise_columns_labels "
+                "are different lengths"
+            )
 
-        if to_summarise_divide_column is not None:
-            if to_summarise_divide_column not in to_summarise_columns:
-                raise ValueError(
-                    "to_summarise_divide_column not in to_summarise_columns"
-                )
+        if (
+            to_summarise_divide_column is not None
+            and to_summarise_divide_column not in to_summarise_columns
+        ):
+            raise ValueError("to_summarise_divide_column not in to_summarise_columns")
 
         if discretisers is None and discretiser is None:
             raise ValueError(
@@ -156,11 +157,9 @@ class ColumnSummariser:
         self.second_by_column: Optional[Union[Discretiser, str]] = second_by_column
 
         if type(discretisers) is list:
-
             by_columns = []
 
             for discretiser_no, discretiser_ in enumerate(discretisers):
-
                 check_type(
                     discretiser_, (str, Discretiser), f"discretisers[{discretiser_no}]"
                 )
@@ -174,11 +173,9 @@ class ColumnSummariser:
             self.by_columns = by_columns
 
         elif discretiser is not None and by_columns is not None:
-
             initialised_discretisers = []
 
             for by_column in by_columns:
-
                 if discretiser_kwargs is not None:
                     initialisation_kwargs = deepcopy(discretiser_kwargs)
                 else:
@@ -200,7 +197,7 @@ class ColumnSummariser:
 
     def summarise(
         self,
-        X: pd.DataFrame,
+        X: pd.DataFrame,  # noqa: N803
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
     ) -> Dict[str, pd.DataFrame]:
         """Summarise columns in X.
@@ -223,7 +220,6 @@ class ColumnSummariser:
             name.
 
         """
-
         check_columns_in_df(X, self.to_summarise_columns)
         check_columns_in_df(X, self.by_columns)
 
@@ -248,7 +244,6 @@ class ColumnSummariser:
         results = {}
 
         for by_column in self.discretisers:
-
             if type(by_column) is str:
                 by_column_name = by_column
             elif isinstance(by_column, Discretiser):
@@ -271,13 +266,12 @@ class ColumnSummariser:
         df: pd.DataFrame,
         to_summarise_columns: List[str],
         by_column: Union[str, Discretiser],
-        to_summarise_columns_labels: List[str] = None,
-        to_summarise_divide_column: str = None,
+        to_summarise_columns_labels: Optional[List[str]] = None,
+        to_summarise_divide_column: Optional[str] = None,
         sample_weight: Optional[Union[pd.Series, np.ndarray]] = None,
         second_by_column: Optional[Union[Discretiser, str]] = None,
     ) -> pd.DataFrame:
-        """Function to summarise to_summarise_columns in df by by_column and
-        second_by_column, if specified.
+        """Summarise to_summarise_columns in df by by_column and second_by_column.
 
         Parameters
         ----------
@@ -317,7 +311,6 @@ class ColumnSummariser:
             second_by_column).
 
         """
-
         check_type(by_column, (str, Discretiser), "by_column")
 
         groupby_column = ColumnSummariser._prepare_groupby_column(
@@ -327,20 +320,18 @@ class ColumnSummariser:
         groupby_columns = [groupby_column]
 
         if second_by_column is not None:
-
             second_groupby_column = ColumnSummariser._prepare_groupby_column(
                 df, second_by_column, sample_weight
             )
 
             groupby_columns.append(second_groupby_column)
 
-        summary_functions = {column: ["sum"] for column in to_summarise_columns}
+        summary_functions = {column: "sum" for column in to_summarise_columns}
 
         summary_values = df.groupby(groupby_columns).agg(summary_functions)
 
         # divide through other to_summarise_column by to_summarise_divide_column
         if to_summarise_divide_column is not None:
-
             non_divide_by_columns = [
                 column
                 for column in to_summarise_columns
@@ -348,9 +339,7 @@ class ColumnSummariser:
             ]
 
             for column_no, column in enumerate(summary_values.columns):
-
                 if column[0] in non_divide_by_columns:
-
                     summary_values[column] = (
                         summary_values[column]
                         / summary_values[(to_summarise_divide_column, "sum")]
@@ -368,11 +357,7 @@ class ColumnSummariser:
             )
 
         if to_summarise_columns_labels is not None:
-
-            renaming_dict = {
-                old: new
-                for old, new in zip(to_summarise_columns, to_summarise_columns_labels)
-            }
+            renaming_dict = dict(zip(to_summarise_columns, to_summarise_columns_labels))
 
             summary_values.rename(columns=renaming_dict, level=0, inplace=True)
 
@@ -410,29 +395,23 @@ class ColumnSummariser:
             dtype.
 
         """
-
         if type(by_column) is str:
-
             by_column_name = by_column
             discretiser = None
 
         elif isinstance(by_column, Discretiser):
-
             by_column_name = by_column.variable
             discretiser = by_column
 
         if (
             is_object_dtype(df[by_column_name])
             | is_bool_dtype(df[by_column_name])
-            | is_categorical_dtype(df[by_column_name])
+            | isinstance(df[by_column_name].dtype, pd.CategoricalDtype)
         ):
-
             groupby_column = df[by_column_name]
 
         elif is_numeric_dtype(df[by_column_name]):
-
             if discretiser is None:
-
                 raise TypeError(
                     f"discretiser is None for {by_column_name} but column is numeric"
                 )
@@ -440,33 +419,26 @@ class ColumnSummariser:
             max_bins = discretiser._get_max_number_of_bins()
 
             if df[by_column_name].nunique(dropna=False) <= max_bins:
-
                 if df[by_column_name].isnull().sum() > 0:
-
                     groupby_column = df[by_column_name].astype(str)
 
                 else:
-
                     groupby_column = df[by_column_name]
 
             else:
-
                 # if the discretiser is already fitted just run transform
                 try:
-
                     check_is_fitted(discretiser, "cut_points")
 
                     groupby_column = discretiser.transform(X=df)
 
                 # otherwise, if it is not fitted run both fit and transform
                 except NotFittedError:
-
                     groupby_column = discretiser.fit_transform(
                         X=df, sample_weight=sample_weight
                     )
 
         else:
-
             raise TypeError(
                 f"unexpected type for by_column; {df[by_column_name].dtype}"
             )
@@ -503,7 +475,6 @@ class DataFrameValueCounter:
         max_values: int = 50,
         summary_values: int = 5,
     ) -> None:
-
         check_type(columns, list, "columns", none_allowed=True)
         check_type(max_values, int, "max_values")
         check_type(summary_values, int, "summary_values")
@@ -529,7 +500,6 @@ class DataFrameValueCounter:
             Value counts results for all columns concatenated along axis 1.
 
         """
-
         check_type(df, pd.DataFrame, "df")
 
         if self.columns is None:
@@ -551,8 +521,7 @@ class DataFrameValueCounter:
     def _summarise_column_value_counts(
         self, df: pd.DataFrame, column: str, max_values: int, summary_values: int
     ) -> pd.DataFrame:
-        """Function to return value_counts for a sinlge column in df resized to
-        max_values rows.
+        """Return value_counts for a sinlge column in df resized to max_values rows.
 
         Parameters
         ----------
@@ -578,7 +547,6 @@ class DataFrameValueCounter:
             bottom summary_values of the value counts.
 
         """
-
         value_counts = self._get_column_values(df[column])
 
         value_counts_resize = self._resize_column_value_counts(
@@ -588,10 +556,11 @@ class DataFrameValueCounter:
         return value_counts_resize
 
     def _get_column_values(
-        self, column: pd.Series, ascending: Optional[bool] = True
+        self, column: pd.Series, ascending: bool = True
     ) -> pd.DataFrame:
-        """Run a value_counts on pandas Series and return the results sorted by index
-        with the index as a column in the output.
+        """Run a value_counts on pandas Series and return the results sorted by index.
+
+        The index is a column in the output.
 
         Parameters
         ----------
@@ -607,22 +576,22 @@ class DataFrameValueCounter:
             Output from pd.Series.value_counts with columns renamed.
 
         """
-
         value_counts = (
             column.value_counts(dropna=False)
             .sort_index(ascending=ascending)
             .reset_index()
         )
 
-        value_counts.columns = [column.name + "_value", column.name + "_count"]
+        value_counts.columns = pd.Index(
+            [f"{column.name}_value", f"{column.name}_count"]
+        )
 
         return value_counts
 
     def _resize_column_value_counts(
         self, df: pd.DataFrame, max_values: int, summary_values: int
     ) -> pd.DataFrame:
-        """Function to resize the output the results of value_counts() to be
-        max_values rows.
+        """Resize the output the results of value_counts() to be max_values rows.
 
         If n (number rows of df) < max_values then df is padded with rows
         containing None. Otherwise if n > max_values then the first, middle and
@@ -648,19 +617,15 @@ class DataFrameValueCounter:
             Resize value_counts output.
 
         """
-
         n = df.shape[0]
 
         if n == max_values:
-
             return df.reset_index(drop=True)
 
         else:
-
             pad_row = pd.DataFrame({df.columns[0]: [None], df.columns[1]: [None]})
 
             if n < max_values:
-
                 extra_rows = max_values - n
 
                 dfs_to_concat = [pad_row] * extra_rows
@@ -668,7 +633,6 @@ class DataFrameValueCounter:
                 dfs_to_concat.insert(0, df)
 
             else:
-
                 dfs_to_concat = []
 
                 bottom_rows = df.loc[0 : (summary_values - 1)].copy()
@@ -683,13 +647,7 @@ class DataFrameValueCounter:
 
                 extra_pad_rows = max_values - (3 * summary_values + 2)
 
-                if extra_pad_rows > 0:
-
-                    dfs_to_concat = [pad_row] * extra_pad_rows
-
-                else:
-
-                    dfs_to_concat = []
+                dfs_to_concat = [pad_row] * extra_pad_rows if extra_pad_rows > 0 else []
 
                 dfs_to_concat.insert(0, top_rows)
                 dfs_to_concat.insert(0, pad_row)

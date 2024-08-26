@@ -1,7 +1,4 @@
-"""(Super simple) Summarisation and Plotting - sumnplot"""
+"""Super simple summarisation and plotting."""
 
+from . import checks, discretisation, plot, summary
 from ._version import __version__
-from . import plot
-from . import checks
-from . import discretisation
-from . import summary

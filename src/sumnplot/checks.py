@@ -1,9 +1,9 @@
 """Module for simple reusable checks."""
 
-import pandas as pd
 import abc
+from typing import Any, List, Tuple, Type, Union
 
-from typing import Any, Type, List, Union, Tuple
+import pandas as pd
 
 
 def check_type(
@@ -12,7 +12,7 @@ def check_type(
     obj_name: str,
     none_allowed: bool = False,
 ) -> None:
-    """Function to check object is of given types and raise a TypeError if not.
+    """Check object is of given types and raise a TypeError if not.
 
     Parameters
     ----------
@@ -26,40 +26,30 @@ def check_type(
         Is None an allowed value for obj?
 
     """
-
     if type(expected_types) is tuple:
-
         if not all(
-            [
-                type(expected_type) in [type, abc.ABCMeta]
-                for expected_type in expected_types
-            ]
+            type(expected_type) in [type, abc.ABCMeta]
+            for expected_type in expected_types
         ):
-
             raise TypeError("all elements in expected_types must be types")
 
     else:
-
-        if not type(expected_types) in [type, abc.ABCMeta]:
-
+        if type(expected_types) not in [type, abc.ABCMeta]:
             raise TypeError("expected_types must be a type when passing a single type")
 
     if obj is None and not none_allowed:
-
         raise TypeError(f"{obj_name} is None and not is not allowed")
 
-    elif obj is not None:
-
-        if not isinstance(obj, expected_types):
-
-            raise TypeError(
-                f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
-            )
+    elif obj is not None and not isinstance(obj, expected_types):
+        raise TypeError(
+            f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
+        )
 
 
-def check_condition(condition: bool, error_message_text: str):
-    """Check that condition (which evaluates to a bool) is True and raise a
-    ValueError if not.
+def check_condition(condition: bool, error_message_text: str) -> None:
+    """Check condition (which evaluates to a bool) is True.
+
+    Raises a ValueError if the condition if not True.
 
     Parameters
     ----------
@@ -70,18 +60,17 @@ def check_condition(condition: bool, error_message_text: str):
         Message to print in ValueError if condition does not evalute to True.
 
     """
-
     check_type(condition, bool, "condition")
     check_type(error_message_text, str, "error_message_text")
 
     if not condition:
-
         raise ValueError(f"condition: [{error_message_text}] not met")
 
 
 def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
-    """Function to check that all specified columns are in a given DataFrame
-    and raise a ValueError if not.
+    """Check that all specified columns are in a given DataFrame.
+
+    Raises a ValueError if any columns missing from df.
 
     Parameters
     ----------
@@ -92,7 +81,6 @@ def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
         List of columns that must appear in df.
 
     """
-
     check_type(df, pd.DataFrame, "df")
     check_type(columns, list, "columns")
 
@@ -104,7 +92,6 @@ def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
     ]
 
     if len(missing_columns) > 0:
-
         raise ValueError(
             f"the following columns are missing from df; {missing_columns}"
         )
