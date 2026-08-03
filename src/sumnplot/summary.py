@@ -102,7 +102,10 @@ class ColumnSummariser:
         check_type(discretiser_kwargs, dict, "discretiser_kwargs", none_allowed=True)
         check_type(discretisers, list, "discretisers", none_allowed=True)
         check_type(
-            second_by_column, (str, Discretiser), "second_by_column", none_allowed=True
+            second_by_column,
+            (str, Discretiser),
+            "second_by_column",
+            none_allowed=True,
         )
         check_type(
             to_summarise_columns_labels,
@@ -118,11 +121,11 @@ class ColumnSummariser:
         )
 
         if to_summarise_columns_labels is not None and len(
-            to_summarise_columns_labels
+            to_summarise_columns_labels,
         ) != len(to_summarise_columns):
             raise ValueError(
                 "to_summarise_columns and to_summarise_columns_labels "
-                "are different lengths"
+                "are different lengths",
             )
 
         if (
@@ -133,12 +136,12 @@ class ColumnSummariser:
 
         if discretisers is None and discretiser is None:
             raise ValueError(
-                "either discretisers or discretiser (and by_columns) must be specified"
+                "either discretisers or discretiser (and by_columns) must be specified",
             )
 
         if discretisers is None and by_columns is None:
             raise ValueError(
-                "either discretisers or by_columns (and discretiser) must be specified"
+                "either discretisers or by_columns (and discretiser) must be specified",
             )
 
         if by_columns is not None and discretiser is None:
@@ -161,7 +164,9 @@ class ColumnSummariser:
 
             for discretiser_no, discretiser_ in enumerate(discretisers):
                 check_type(
-                    discretiser_, (str, Discretiser), f"discretisers[{discretiser_no}]"
+                    discretiser_,
+                    (str, Discretiser),
+                    f"discretisers[{discretiser_no}]",
                 )
 
                 if type(discretiser_) is str:
@@ -314,14 +319,18 @@ class ColumnSummariser:
         check_type(by_column, (str, Discretiser), "by_column")
 
         groupby_column = ColumnSummariser._prepare_groupby_column(
-            df, by_column, sample_weight
+            df,
+            by_column,
+            sample_weight,
         )
 
         groupby_columns = [groupby_column]
 
         if second_by_column is not None:
             second_groupby_column = ColumnSummariser._prepare_groupby_column(
-                df, second_by_column, sample_weight
+                df,
+                second_by_column,
+                sample_weight,
             )
 
             groupby_columns.append(second_groupby_column)
@@ -329,7 +338,7 @@ class ColumnSummariser:
         summary_functions = {column: ["sum"] for column in to_summarise_columns}
 
         summary_values = df.groupby(groupby_columns, observed=False).agg(
-            summary_functions  # type: ignore[arg-type]
+            summary_functions,  # type: ignore[arg-type]
         )
 
         # divide through other to_summarise_column by to_summarise_divide_column
@@ -355,7 +364,7 @@ class ColumnSummariser:
             # create new index on the DataFrame, otherwise changing the values directly
             # doesn't seem to flow through
             summary_values.columns = pd.MultiIndex.from_tuples(
-                summary_values.columns.values.tolist()
+                summary_values.columns.values.tolist(),
             )
 
         if to_summarise_columns_labels is not None:
@@ -415,7 +424,7 @@ class ColumnSummariser:
         elif is_numeric_dtype(df[by_column_name]):
             if discretiser is None:
                 raise TypeError(
-                    f"discretiser is None for {by_column_name} but column is numeric"
+                    f"discretiser is None for {by_column_name} but column is numeric",
                 )
 
             max_bins = discretiser._get_max_number_of_bins()
@@ -437,12 +446,13 @@ class ColumnSummariser:
                 # otherwise, if it is not fitted run both fit and transform
                 except NotFittedError:
                     groupby_column = discretiser.fit_transform(
-                        X=df, sample_weight=sample_weight
+                        X=df,
+                        sample_weight=sample_weight,
                     )
 
         else:
             raise TypeError(
-                f"unexpected type for by_column; {df[by_column_name].dtype}"
+                f"unexpected type for by_column; {df[by_column_name].dtype}",
             )
 
         return groupby_column
@@ -511,7 +521,10 @@ class DataFrameValueCounter:
 
         columns_summary = [
             self._summarise_column_value_counts(
-                df, col, self.max_values, self.summary_values
+                df,
+                col,
+                self.max_values,
+                self.summary_values,
             )
             for col in self.columns
         ]
@@ -521,7 +534,11 @@ class DataFrameValueCounter:
         return columns_summary_all
 
     def _summarise_column_value_counts(
-        self, df: pd.DataFrame, column: str, max_values: int, summary_values: int
+        self,
+        df: pd.DataFrame,
+        column: str,
+        max_values: int,
+        summary_values: int,
     ) -> pd.DataFrame:
         """Return value_counts for a sinlge column in df resized to max_values rows.
 
@@ -552,13 +569,17 @@ class DataFrameValueCounter:
         value_counts = self._get_column_values(df[column])
 
         value_counts_resize = self._resize_column_value_counts(
-            value_counts, max_values, summary_values
+            value_counts,
+            max_values,
+            summary_values,
         )
 
         return value_counts_resize
 
     def _get_column_values(
-        self, column: pd.Series, ascending: bool = True
+        self,
+        column: pd.Series,
+        ascending: bool = True,
     ) -> pd.DataFrame:
         """Run a value_counts on pandas Series and return the results sorted by index.
 
@@ -585,13 +606,16 @@ class DataFrameValueCounter:
         )
 
         value_counts.columns = pd.Index(
-            [f"{column.name}_value", f"{column.name}_count"]
+            [f"{column.name}_value", f"{column.name}_count"],
         )
 
         return value_counts
 
     def _resize_column_value_counts(
-        self, df: pd.DataFrame, max_values: int, summary_values: int
+        self,
+        df: pd.DataFrame,
+        max_values: int,
+        summary_values: int,
     ) -> pd.DataFrame:
         """Resize the output the results of value_counts() to be max_values rows.
 
@@ -624,39 +648,38 @@ class DataFrameValueCounter:
         if n == max_values:
             return df.reset_index(drop=True)
 
+        pad_row = pd.DataFrame({df.columns[0]: [None], df.columns[1]: [None]})
+
+        if n < max_values:
+            extra_rows = max_values - n
+
+            dfs_to_concat = [pad_row] * extra_rows
+
+            dfs_to_concat.insert(0, df)
+
         else:
-            pad_row = pd.DataFrame({df.columns[0]: [None], df.columns[1]: [None]})
+            dfs_to_concat = []
 
-            if n < max_values:
-                extra_rows = max_values - n
+            bottom_rows = df.loc[0 : (summary_values - 1)].copy()
 
-                dfs_to_concat = [pad_row] * extra_rows
+            mid_row = n // 2
+            below_mid_row = mid_row - (summary_values // 2)
 
-                dfs_to_concat.insert(0, df)
+            middle_rows = df.loc[
+                below_mid_row : (below_mid_row + summary_values)
+            ].copy()
+            top_rows = df.loc[(n - summary_values) :].copy()
 
-            else:
-                dfs_to_concat = []
+            extra_pad_rows = max_values - (3 * summary_values + 2)
 
-                bottom_rows = df.loc[0 : (summary_values - 1)].copy()
+            dfs_to_concat = [pad_row] * extra_pad_rows if extra_pad_rows > 0 else []
 
-                mid_row = n // 2
-                below_mid_row = mid_row - (summary_values // 2)
+            dfs_to_concat.insert(0, top_rows)
+            dfs_to_concat.insert(0, pad_row)
+            dfs_to_concat.insert(0, middle_rows)
+            dfs_to_concat.insert(0, pad_row)
+            dfs_to_concat.insert(0, bottom_rows)
 
-                middle_rows = df.loc[
-                    below_mid_row : (below_mid_row + summary_values)
-                ].copy()
-                top_rows = df.loc[(n - summary_values) :].copy()
+        df_resized = pd.concat(dfs_to_concat, axis=0).reset_index(drop=True)
 
-                extra_pad_rows = max_values - (3 * summary_values + 2)
-
-                dfs_to_concat = [pad_row] * extra_pad_rows if extra_pad_rows > 0 else []
-
-                dfs_to_concat.insert(0, top_rows)
-                dfs_to_concat.insert(0, pad_row)
-                dfs_to_concat.insert(0, middle_rows)
-                dfs_to_concat.insert(0, pad_row)
-                dfs_to_concat.insert(0, bottom_rows)
-
-            df_resized = pd.concat(dfs_to_concat, axis=0).reset_index(drop=True)
-
-            return df_resized
+        return df_resized

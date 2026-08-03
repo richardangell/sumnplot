@@ -67,13 +67,13 @@ def plot_summarised_variable(
     if axis_left is not None:
         if axis_right in axis_left:
             raise ValueError(
-                f"column index {axis_right} specified for both right and left axes"
+                f"column index {axis_right} specified for both right and left axes",
             )
 
         if len(axis_left) > len(LEFT_Y_AXIS_COLOURS):
             raise ValueError(
                 f"only {len(LEFT_Y_AXIS_COLOURS)} plots supports for the left "
-                f"axis but {len(axis_left)} given"
+                f"axis but {len(axis_left)} given",
             )
 
         for axis_left_no, axis_left_index in enumerate(axis_left):
@@ -237,13 +237,13 @@ def plot_summarised_variable_2way(
     if axis_left is not None:
         if axis_right in axis_left:
             raise ValueError(
-                f"column index {axis_right} specified for both right and left axes"
+                f"column index {axis_right} specified for both right and left axes",
             )
 
         if len(axis_left) > len(LEFT_AXIS_COLOURS):
             raise ValueError(
                 f"only {len(LEFT_AXIS_COLOURS)} plots supported for the left axis "
-                f"but {len(axis_left)} given"
+                f"but {len(axis_left)} given",
             )
 
         for axis_left_no, axis_left_index in enumerate(axis_left):
@@ -262,7 +262,7 @@ def plot_summarised_variable_2way(
     if len(summary_df.index.levels[1]) > len(BIN_COLOURS):
         raise ValueError(
             f"only {len(BIN_COLOURS)} levels supported for the second groupby "
-            f"column but {len(summary_df.index.levels[1])} given in summary_df"
+            f"column but {len(summary_df.index.levels[1])} given in summary_df",
         )
 
     by_col = summary_df.index.names[0]
@@ -294,7 +294,7 @@ def plot_summarised_variable_2way(
             + ") "
             + str(summary_df.columns[axis_right])
             for x in unstack_weights.columns.values
-        ]
+        ],
     )
 
     if bar_type == "stacked":
@@ -303,7 +303,8 @@ def plot_summarised_variable_2way(
         # plot bin counts on 1st axis
         for i in range(unstack_weights.shape[1]):
             heights = unstack_weights.loc[
-                :, unstack_weights.columns.values[i]
+                :,
+                unstack_weights.columns.values[i],
             ].reset_index(drop=True)
 
             ax1.bar(
@@ -317,7 +318,9 @@ def plot_summarised_variable_2way(
             top_bins = top_bins + heights
 
         plt.xticks(
-            np.arange(unstack_weights.shape[0]), unstack_weights.index, rotation=270
+            np.arange(unstack_weights.shape[0]),
+            unstack_weights.index,
+            rotation=270,
         )
 
         x_ticket_offset = 0.0
@@ -331,7 +334,7 @@ def plot_summarised_variable_2way(
             ax1.bar(
                 np.arange(unstack_weights.shape[0]) + x_offset,
                 unstack_weights.loc[:, unstack_weights.columns.values[i]].reset_index(
-                    drop=True
+                    drop=True,
                 ),
                 color=BIN_COLOURS[i],
                 width=bar_width,
@@ -370,20 +373,22 @@ def plot_summarised_variable_2way(
                     + ") "
                     + str(summary_df.columns[axis_left_column_index])
                     for x in unstacked_left_axis_column.columns.values
-                ]
+                ],
             )
 
             for i in range(unstacked_left_axis_column.shape[1]):
                 ax2.plot(
                     unstacked_left_axis_column.loc[
-                        :, unstacked_left_axis_column.columns.values[i]
+                        :,
+                        unstacked_left_axis_column.columns.values[i],
                     ]
                     .reset_index(drop=True)
                     .dropna()
                     .index
                     + x_ticket_offset,
                     unstacked_left_axis_column.loc[
-                        :, unstacked_left_axis_column.columns.values[i]
+                        :,
+                        unstacked_left_axis_column.columns.values[i],
                     ]
                     .reset_index(drop=True)
                     .dropna(),

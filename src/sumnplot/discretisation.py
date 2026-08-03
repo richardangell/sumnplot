@@ -44,7 +44,6 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):  # type: ignore[no-any-
         The cut_points attribute should be set by this method.
 
         """
-        pass
 
     def transform(self, X: pd.DataFrame) -> pd.Series:  # noqa: N803
         """Cut variable in X at cut_points. This function uses the pd.cut method.
@@ -95,20 +94,21 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):  # type: ignore[no-any-
 
         """
         cleaned_cut_points: NDArray[np.float64] = np.unique(
-            cut_points[~np.isnan(cut_points)]
+            cut_points[~np.isnan(cut_points)],
         )
 
         if len(cleaned_cut_points) <= 1:
             raise ValueError(
                 f"only 1 cut point after cleaning {cleaned_cut_points} "
-                f"- before cleaning {cut_points}"
+                f"- before cleaning {cut_points}",
             )
 
         return cleaned_cut_points
 
     @staticmethod
     def _add_null_category(
-        categorical_variable: pd.Series, null_category_name: str = "Null"
+        categorical_variable: pd.Series,
+        null_category_name: str = "Null",
     ) -> pd.Series:
         """Add new categorical level to categorical and set NAs to this category.
 
@@ -157,7 +157,6 @@ class Discretiser(ABC, TransformerMixin, BaseEstimator):  # type: ignore[no-any-
         the cut points may not be unique.
 
         """
-        pass
 
     def _get_actual_number_of_bins(self) -> int:
         """Return the actual number of bins based off cut_points after fit.

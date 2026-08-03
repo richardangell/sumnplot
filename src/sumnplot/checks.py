@@ -40,9 +40,9 @@ def check_type(
     if obj is None and not none_allowed:
         raise TypeError(f"{obj_name} is None and not is not allowed")
 
-    elif obj is not None and not isinstance(obj, expected_types):
+    if obj is not None and not isinstance(obj, expected_types):
         raise TypeError(
-            f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
+            f"{obj_name} is not in expected types {expected_types}, got {type(obj)}",
         )
 
 
@@ -93,5 +93,5 @@ def check_columns_in_df(df: pd.DataFrame, columns: List) -> None:
 
     if len(missing_columns) > 0:
         raise ValueError(
-            f"the following columns are missing from df; {missing_columns}"
+            f"the following columns are missing from df; {missing_columns}",
         )
