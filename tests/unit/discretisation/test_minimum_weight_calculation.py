@@ -9,7 +9,7 @@ from sumnplot.discretisation.minimum_weight_calculation import (
     ThresholdCrossingError,
     threshold_crossing_minimum_weight,
 )
-from sumnplot.exceptions import MissingColumnError
+from sumnplot.exceptions import MissingColumnError, NumericColumnError
 
 
 def test_missing_values_column_exception() -> None:
@@ -40,6 +40,38 @@ def test_missing_weights_column_exception() -> None:
             df,
             column="f0",
             weights="missing_w",
+            min_weight=1,
+        )
+
+
+def test_non_numeric_values_column_exception() -> None:
+    """Test that NumericColumnError is raised when the values column is not numeric."""
+    df = pl.DataFrame({"f0": ["a", "b", "c"], "w": [1, 1, 1]})
+
+    with pytest.raises(
+        NumericColumnError,
+        match=re.escape("Column 'f0' must be a numeric dtype."),
+    ):
+        threshold_crossing_minimum_weight(
+            df,
+            column="f0",
+            weights="w",
+            min_weight=1,
+        )
+
+
+def test_non_numeric_weights_column_exception() -> None:
+    """Test that NumericColumnError is raised when the weights column is not numeric."""
+    df = pl.DataFrame({"f0": [1, 2, 3], "w": ["a", "b", "c"]})
+
+    with pytest.raises(
+        NumericColumnError,
+        match=re.escape("Column 'w' must be a numeric dtype."),
+    ):
+        threshold_crossing_minimum_weight(
+            df,
+            column="f0",
+            weights="w",
             min_weight=1,
         )
 
