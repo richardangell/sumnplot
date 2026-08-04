@@ -10,7 +10,12 @@ weight is not neatly divisible into the total weight).
 
 import polars as pl
 
-from sumnplot.exceptions import MissingColumnError, NumericColumnError, SumNPlotError
+from sumnplot.exceptions import (
+    MissingColumnError,
+    NullsInColumnError,
+    NumericColumnError,
+    SumNPlotError,
+)
 
 
 class ThresholdCrossingError(SumNPlotError):
@@ -39,6 +44,14 @@ def threshold_crossing_minimum_weight(
         A list of column values where the cumulative weight crosses the min_weight
         threshold.
 
+    Raises:
+        MissingColumnError : If the specified column or weights column is not found in
+            the DataFrame.
+        NumericColumnError : If the specified column or weights column is not numeric.
+        NullsInColumnError : If the specified column or weights column contains null
+            values.
+        ThresholdCrossingError : If the min_weight is less than or equal to 0.
+
     """
     if column not in df.columns:
         raise MissingColumnError(column)
@@ -51,6 +64,12 @@ def threshold_crossing_minimum_weight(
 
     if not df.get_column(weights).dtype.is_numeric():
         raise NumericColumnError(weights)
+
+    if df.get_column(column).has_nulls():
+        raise NullsInColumnError(column)
+
+    if df.get_column(weights).has_nulls():
+        raise NullsInColumnError(weights)
 
     if min_weight <= 0:
         msg = "min_weight must be greater than 0."

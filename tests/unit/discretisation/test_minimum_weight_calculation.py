@@ -9,7 +9,11 @@ from sumnplot.discretisation.minimum_weight_calculation import (
     ThresholdCrossingError,
     threshold_crossing_minimum_weight,
 )
-from sumnplot.exceptions import MissingColumnError, NumericColumnError
+from sumnplot.exceptions import (
+    MissingColumnError,
+    NullsInColumnError,
+    NumericColumnError,
+)
 
 
 def test_missing_values_column_exception() -> None:
@@ -67,6 +71,38 @@ def test_non_numeric_weights_column_exception() -> None:
     with pytest.raises(
         NumericColumnError,
         match=re.escape("Column 'w' must be a numeric dtype."),
+    ):
+        threshold_crossing_minimum_weight(
+            df,
+            column="f0",
+            weights="w",
+            min_weight=1,
+        )
+
+
+def test_nulls_in_values_column_exception() -> None:
+    """Test that NullsInColumnError is raised when the values column contains nulls."""
+    df = pl.DataFrame({"f0": [1, None, 3], "w": [1, 1, 1]})
+
+    with pytest.raises(
+        NullsInColumnError,
+        match=re.escape("Column 'f0' contains null values."),
+    ):
+        threshold_crossing_minimum_weight(
+            df,
+            column="f0",
+            weights="w",
+            min_weight=1,
+        )
+
+
+def test_nulls_in_weights_column_exception() -> None:
+    """Test that NullsInColumnError is raised when the weights column contains nulls."""
+    df = pl.DataFrame({"f0": [1, 2, 3], "w": [1, None, 1]})
+
+    with pytest.raises(
+        NullsInColumnError,
+        match=re.escape("Column 'w' contains null values."),
     ):
         threshold_crossing_minimum_weight(
             df,
