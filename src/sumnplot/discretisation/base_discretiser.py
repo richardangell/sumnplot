@@ -1,0 +1,130 @@
+"""Base discretiser abstract base class."""
+
+from abc import ABC, abstractmethod
+
+import polars as pl
+
+from sumnplot.exceptions import MissingColumnError, NumericColumnError, SumNPlotError
+
+
+class BaseDiscretiserError(SumNPlotError):
+    """Exception raised for errors in the BaseDiscretiser."""
+
+
+def generate_cut_expr(
+    *,
+    column: str,
+    breaks: list[int | float],
+    labels: list[str] | None = None,
+    new_name: str | None = None,
+) -> pl.Expr:
+    """Generate a polars expression to discretise a column into bins.
+
+    Args:
+        column : The name of the column to discretise.
+        breaks : The break points for discretisation.
+        labels : The labels for the bins. If None, the bin indices will be used.
+        new_name : The name of the new column to be created. If None, the original
+            column name will be used.
+
+    Returns:
+        The polars expression that can be used to discretise the column.
+
+    """
+    return (
+        pl.col(column)
+        .cut(breaks=breaks, labels=labels, include_breaks=False)
+        .alias(new_name if new_name is not None else column)
+    )
+
+
+class BaseDiscretiser(ABC):
+    """Abstract base class for discretisers."""
+
+    column: str
+    weights: str
+    min_weight_proportion: float
+    new_name: str | None
+    _breaks: list[int | float] | None
+
+    @property
+    def breaks(self) -> list[int | float] | None:
+        """Get the calculated cut points for discretisation."""
+        return self._breaks
+
+    @breaks.setter
+    def breaks(self, value: list[int | float] | None) -> None:
+        """Set the calculated cut points for discretisation.
+
+        Remove duplicates and ensures the cut points are sorted in ascending order.
+
+        """
+        if isinstance(value, list):
+            value = list(set(value))
+            value = sorted(value)
+
+        self._breaks = value
+
+    @abstractmethod
+    def fit(self, df: pl.DataFrame) -> "BaseDiscretiser":
+        """Calculate the cut points for discretisation.
+
+        Cut points should be calculated using the provided data and stored in the
+        instance for later use.
+
+        Args:
+            df : The polars DataFrame containing the column to calculate cut points for.
+
+        """
+        ...
+
+    def get_cut_expr(self) -> pl.Expr:
+        """Generate a polars expression to discretise a column into bins.
+
+        Constructs the expression using the column, breaks and new_name attributes of
+        the instance.
+
+        Returns:
+            A polars expression that can be used to discretise the column.
+
+        Raises:
+            BaseDiscretiserError : If the cut points have not been calculated.
+
+        """
+        if self.breaks is None:
+            msg = (
+                "Break points have not been calculated. "
+                "Please call the `fit` method first."
+            )
+            raise BaseDiscretiserError(msg)
+
+        return generate_cut_expr(
+            column=self.column,
+            breaks=self.breaks,
+            new_name=self.new_name,
+        )
+
+    def transform(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Discretise column in the DataFrame using the calculated cut points.
+
+        Args:
+            df : The polars DataFrame containing the column to discretise.
+
+        Returns:
+            A new polars DataFrame with the discretised column added.
+
+        Raises:
+            BaseDiscretiserError : If the cut points have not been calculated.
+            MissingColumnError : If the specified column is not found in the DataFrame.
+            NumericColumnError : If the specified column is not numeric.
+
+        """
+        if self.column not in df.columns:
+            raise MissingColumnError(self.column)
+
+        if not df.get_column(self.column).dtype.is_numeric():
+            raise NumericColumnError(self.column)
+
+        cut_expr = self.get_cut_expr()
+
+        return df.with_columns(cut_expr)

@@ -1,5 +1,7 @@
 """Exception to be raised in the sumnplot package."""
 
+from typing import Any
+
 
 class SumNPlotError(Exception):
     """Base class for exceptions in the sumnplot package."""
@@ -32,4 +34,19 @@ class NullsInColumnError(SumNPlotError):
         """Initialise the NullsInColumnError with the column name containing nulls."""
         self.column = column
         self.message = f"Column '{column}' contains null values."
+        super().__init__(self.message)
+
+
+class InvalidArgumentError(SumNPlotError):
+    """Raised when an argument value is invalid."""
+
+    def __init__(self, argument: str, value: Any, conditions: list[str]) -> None:  # noqa: ANN401
+        """Initialise the InvalidArgumentError with the argument name and message."""
+        self.argument = argument
+        self.value = value
+        self.conditions = conditions
+        self.message = (
+            f"Invalid value for argument '{argument}': {value}. "
+            f"The following conditions were not met: {', '.join(conditions)}."
+        )
         super().__init__(self.message)
