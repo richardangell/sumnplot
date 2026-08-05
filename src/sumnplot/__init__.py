@@ -2,7 +2,7 @@
 
 import importlib.metadata
 
-from . import checks, discretisation, plot, summary
+from sumnplot import checks, discretisation, plot
 
 __version__ = importlib.metadata.version("sumnplot")
 
@@ -11,5 +11,4 @@ __all__ = [
     "checks",
     "discretisation",
     "plot",
-    "summary",
 ]
