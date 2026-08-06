@@ -1,6 +1,6 @@
 """Summarisation module."""
 
-from sumnplot.summarisation.fill_out_summary_table import (
+from sumnplot.summarisation.ensure_all_level_combinations_populated import (
     ensure_all_level_combinations_populated,
 )
 from sumnplot.summarisation.group_by_weighted_average import (

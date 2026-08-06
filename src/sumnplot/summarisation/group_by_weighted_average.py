@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     import polars as pl
 
 from sumnplot.exceptions import MissingColumnError
-from sumnplot.summarisation.fill_out_summary_table import (
+from sumnplot.summarisation.ensure_all_level_combinations_populated import (
     ensure_all_level_combinations_populated,
 )
 from sumnplot.summarisation.weighted_average import get_weighted_average_expressions

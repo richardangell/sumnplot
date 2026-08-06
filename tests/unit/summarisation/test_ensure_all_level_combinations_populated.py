@@ -5,7 +5,7 @@ import pytest
 from polars.testing import assert_frame_equal
 
 from sumnplot.exceptions import MissingColumnError
-from sumnplot.summarisation.fill_out_summary_table import (
+from sumnplot.summarisation.ensure_all_level_combinations_populated import (
     _cross,
     ensure_all_level_combinations_populated,
 )
