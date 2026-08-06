@@ -55,11 +55,14 @@ class TestEnsureAllLevelCombinationsPopulated:
         ]
 
         assert len(raised_exceptions) == 1
-        assert all(isinstance(e, MissingColumnError) for e in raised_exceptions)
+        raised_exception = raised_exceptions[0]
+        assert isinstance(raised_exception, MissingColumnError)
+        assert raised_exception.message == expected_messages[0]
 
-        assert raised_exceptions[0].message == expected_messages[0]
-
-    def test_column_missing_from_both_dataframe_inputs_exception(self):
+    def test_column_missing_from_both_dataframe_inputs_exception(
+        self,
+        subtests: pytest.Subtests,
+    ):
         """Test ExceptionGroup is raised when groupby column missing from DataFrames."""
         full_df = pl.DataFrame({"A": [1, 2], "B": ["x", "y"]})
         summary_df = pl.DataFrame({"A": [1, 2], "B": ["x", "x"], "value": [10, 30]})
@@ -82,12 +85,17 @@ class TestEnsureAllLevelCombinationsPopulated:
         ]
 
         assert len(raised_exceptions) == 2
-        assert all(isinstance(e, MissingColumnError) for e in raised_exceptions)
 
-        assert raised_exceptions[0].message == expected_messages[0]
-        assert raised_exceptions[1].message == expected_messages[1]
+        for i in range(2):
+            with subtests.test(f"Exception {i}"):
+                exception = raised_exceptions[i]
+                assert isinstance(exception, MissingColumnError)
+                assert exception.message == expected_messages[i]
 
-    def test_multiple_columns_missing_from_both_dataframe_inputs_exception(self):
+    def test_multiple_columns_missing_from_both_dataframe_inputs_exception(
+        self,
+        subtests: pytest.Subtests,
+    ):
         """Test ExceptionGroup is raised when groupby column missing from DataFrames."""
         full_df = pl.DataFrame({"A": [1, 2], "B": ["x", "y"], "D": [True, False]})
         summary_df = pl.DataFrame({"A": [1, 2], "B": ["x", "x"], "value": [10, 30]})
@@ -111,17 +119,17 @@ class TestEnsureAllLevelCombinationsPopulated:
         ]
 
         assert len(raised_exceptions) == 3
-        assert all(isinstance(e, MissingColumnError) for e in raised_exceptions)
 
-        assert raised_exceptions[0].message == expected_messages[0]
-        assert raised_exceptions[1].message == expected_messages[1]
-        assert raised_exceptions[2].message == expected_messages[2]
+        for i in range(3):
+            with subtests.test(f"Exception {i}"):
+                exception = raised_exceptions[i]
+                assert isinstance(exception, MissingColumnError)
+                assert exception.message == expected_messages[i]
 
     def test_all_levels_already_populated(self):
         """Test original summary_df returned when all combinations are present.
 
-        The original summary_df is returned unchanged, it is not returned in sorted
-        order.
+        The original summary_df is returned, but sorted by the groupby columns.
 
         """
         full_df = pl.DataFrame({"A": [1, 2], "B": ["x", "y"]})
@@ -138,7 +146,7 @@ class TestEnsureAllLevelCombinationsPopulated:
             value_columns=value_columns,
         )
 
-        assert_frame_equal(result, summary_df)
+        assert_frame_equal(result, summary_df.sort(by=groupby_columns))
 
     def test_missing_combinations_are_filled(self):
         """Test missing combinations are filled with default values.

@@ -67,7 +67,7 @@ def ensure_all_level_combinations_populated(
         col_dtype = full_df.get_column(col).dtype
 
         if isinstance(col_dtype, pl.Enum):
-            unique_values = col_dtype.categories
+            unique_values = col_dtype.categories.alias(col).cast(col_dtype)
         else:
             unique_values = full_df.select(col).unique().to_series()
 
@@ -76,14 +76,14 @@ def ensure_all_level_combinations_populated(
     all_combinations = _cross(groupby_cols_unique_levels)
 
     df_filled = all_combinations.join(
-        summary_df,
+        other=summary_df,
         on=groupby_columns,
         how="left",
         validate="1:1",
     )
 
     if df_filled.height == all_combinations.height == summary_df.height:
-        return summary_df
+        return summary_df.sort(by=groupby_columns)
 
     # Fill missing values in the value columns with their respective default values
     df_filled = df_filled.with_columns(

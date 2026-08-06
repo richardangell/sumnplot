@@ -92,7 +92,7 @@ class EqualWeightDiscretiser(BaseDiscretiser):
             df=df_without_nulls,
             column=self.column,
             weights=self.weights,
-            min_weight=self.min_weight_proportion * total_weight,
+            min_weight=self.min_weight_proportion * total_weight,  # pyright: ignore[reportOperatorIssue]
         )
 
         return self
