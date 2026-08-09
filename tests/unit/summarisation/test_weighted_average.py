@@ -4,8 +4,8 @@ import polars as pl
 import pytest
 
 from sumnplot.summarisation.weighted_average import (
+    get_sum_weight_expr,
     get_weighted_average_expr,
-    get_weighted_average_expressions,
 )
 
 
@@ -33,11 +33,14 @@ def test_get_weighted_average_expr(simple_data: pl.DataFrame):
 
 def test_get_weighted_average_expressions(simple_data: pl.DataFrame):
     """Test the generation of both weighted average and weight sum expressions."""
-    weighted_avg_expr, weight_sum_expr = get_weighted_average_expressions(
+    weighted_avg_expr = get_weighted_average_expr(
         column="value",
         weights="weight",
-        weighted_average_name="weighted_avg",
-        weight_sum_name="weight_sum",
+        new_name="weighted_avg",
+    )
+    weight_sum_expr = get_sum_weight_expr(
+        weights="weight",
+        new_name="weight_sum",
     )
 
     result = simple_data.select(weighted_avg_expr, weight_sum_expr)

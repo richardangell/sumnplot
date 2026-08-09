@@ -6,11 +6,18 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import polars as pl
 
-from sumnplot.exceptions import MissingColumnError
+from sumnplot.exceptions import MissingColumnError, SumNPlotError
 from sumnplot.summarisation.ensure_all_level_combinations_populated import (
     ensure_all_level_combinations_populated,
 )
-from sumnplot.summarisation.weighted_average import get_weighted_average_expressions
+from sumnplot.summarisation.weighted_average import (
+    get_sum_weight_expr,
+    get_weighted_average_expr,
+)
+
+
+class GroupByWeightedAverageError(SumNPlotError):
+    """Base class for errors in the group_by_weighted_average function."""
 
 
 @dataclass(frozen=True)
@@ -69,16 +76,26 @@ def group_by_weighted_average(
         exception_group_msg = "Missing columns"
         raise ExceptionGroup(exception_group_msg, column_errors)
 
-    agg_expressions: list[pl.Expr] = []
-    for response in responses:
-        agg_expressions.extend(
-            get_weighted_average_expressions(
-                column=response.response,
-                weights=response.weight,
-                weighted_average_name=None,
-                weight_sum_name=None,
-            ),
+    if len(set(responses)) != len(responses):
+        msg = (
+            "Duplicate responses found in the responses list. "
+            "Please ensure all columns are unique."
         )
+        raise GroupByWeightedAverageError(msg)
+
+    deduped_weights = []
+    for response in responses:
+        if response.weight not in deduped_weights:
+            deduped_weights.append(response.weight)
+
+    agg_expressions: list[pl.Expr] = []
+
+    for response_weight in responses:
+        agg_expressions.append(
+            get_weighted_average_expr(response_weight.response, response_weight.weight),
+        )
+    for weight in deduped_weights:
+        agg_expressions.append(get_sum_weight_expr(weight))
 
     summary = df.group_by(groupby_columns).agg(agg_expressions)
 

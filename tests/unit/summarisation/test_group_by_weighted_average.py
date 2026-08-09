@@ -1,11 +1,14 @@
 """Unit tests for the group_by_weighted_average function."""
 
+import re
+
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
 from sumnplot.exceptions import MissingColumnError
 from sumnplot.summarisation.group_by_weighted_average import (
+    GroupByWeightedAverageError,
     ResponseWeight,
     group_by_weighted_average,
 )
@@ -103,6 +106,25 @@ def sample_data_with_mixed_group_by_columns() -> pl.DataFrame:
     )
 
 
+@pytest.fixture
+def sample_data_with_multiple_responses() -> pl.DataFrame:
+    """Create a sample DataFrame with multiple response columns.
+
+    This data has 3 responses and 2 weights, with 2 groupby columns.
+
+    """
+    return pl.DataFrame(
+        {
+            "group": ["A", "A", "B", "B"],
+            "value1": [10, 20, 30, 40],
+            "weight1": [1, 2, 1, 3],
+            "value2": [100, 200, 300, 400],
+            "weight2": [2, 1, 3, 1],
+            "value3": [10, 20, 30, 40],
+        },
+    )
+
+
 def test_missing_group_by_columns_exception(sample_data: pl.DataFrame):
     """Test that ExceptionGroup is raised for missing groupby columns."""
     groupby_columns = ["group", "missing_col"]
@@ -156,6 +178,28 @@ def test_missing_response_weight_columns_exception(
             exception = raised_exceptions[i]
             assert isinstance(exception, MissingColumnError)
             assert exception.message == expected_exception_messages[i]
+
+
+def test_duplicate_responses_exception(sample_data: pl.DataFrame):
+    """Test that GroupByWeightedAverageError is raised for duplicate responses."""
+    groupby_columns = ["group"]
+    responses = [
+        ResponseWeight(response="value", weight="weight"),
+        ResponseWeight(response="value", weight="weight"),
+    ]
+
+    with pytest.raises(
+        GroupByWeightedAverageError,
+        match=re.escape(
+            "Duplicate responses found in the responses list. "
+            "Please ensure all columns are unique.",
+        ),
+    ):
+        group_by_weighted_average(
+            sample_data,
+            groupby_columns=groupby_columns,
+            responses=responses,
+        )
 
 
 def test_output_single_groupby_column(sample_data: pl.DataFrame):
@@ -372,6 +416,41 @@ def test_three_way_group_by(sample_data_with_mixed_group_by_columns: pl.DataFram
     ).with_columns(
         pl.col("group").cast(pl.Enum(["A", "B", "C"])),
         pl.col("group2").cast(pl.Categorical),
+    )
+
+    assert_frame_equal(result, expected)
+
+
+def test_multiple_responses(sample_data_with_multiple_responses: pl.DataFrame):
+    """Test the output of group_by_weighted_average with multiple response columns.
+
+    In this example the combination ("B", "Y") is not present in the input DataFrame,
+    but it should be included in the output with a weight sum of 0 and a null weighted
+    average.
+
+    """
+    groupby_columns = ["group"]
+    responses = [
+        ResponseWeight(response="value1", weight="weight1"),
+        ResponseWeight(response="value2", weight="weight2"),
+        ResponseWeight(response="value3", weight="weight2"),
+    ]
+
+    result = group_by_weighted_average(
+        sample_data_with_multiple_responses,
+        groupby_columns=groupby_columns,
+        responses=responses,
+    )
+
+    expected = pl.DataFrame(
+        {
+            "group": ["A", "B"],
+            "value1": [50 / 3, 150 / 4],
+            "value2": [400 / 3, 1300 / 4],
+            "value3": [40 / 3, 130 / 4],
+            "weight1": [3, 4],
+            "weight2": [3, 4],
+        },
     )
 
     assert_frame_equal(result, expected)
