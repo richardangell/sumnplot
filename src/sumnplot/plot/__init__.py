@@ -1,3 +1,7 @@
 """Simple plotting functionality."""
 
-from . import matplotlib
+from sumnplot.plot import altair
+
+__all__ = [
+    "altair",
+]
