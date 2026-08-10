@@ -4,6 +4,8 @@ import altair as alt
 import polars as pl
 from altair import FacetChart, LayerChart
 
+from sumnplot.exceptions import MissingColumnError
+
 BAR_COLOUR = "#ffa500"
 LINE_COLOURS = [
     "#ff1493",
@@ -49,7 +51,9 @@ def produce_one_way_summary_plot(
     x_axis_column: str,
     left_y_axis_column: str,
     right_y_axis_columns: list[str] | None = None,
-    chart_width: int = 600,
+    chart_width: int | None = 600,
+    chart_height: int | None = 400,
+    bar_opacity: float = 0.5,
 ) -> LayerChart | FacetChart:
     """Output an Altair chart one-way summary of pre-summarised data.
 
@@ -63,16 +67,37 @@ def produce_one_way_summary_plot(
             axis. Plotted as line is specified, if not specified then no lines are
             plotted on the chart.
         chart_width : The width of the chart in pixels.
+        chart_height : The height of the chart in pixels.
+        bar_opacity : The opacity of the bars in the chart, between 0 and 1.
 
     Returns:
         The Altair chart containing bars and optionally multiple lines, sharing an
         x axis with lines on the right y axis and bars on the left y axis.
 
+    Raises:
+        ExceptionGroup : If any of the specified columns are not present in the input
+            df argument then an ExceptionGroup is raised containing a
+            MissingColumnError for each missing column.
+
     """
+    column_errors = []
+    if x_axis_column not in df.columns:
+        column_errors.append(MissingColumnError(x_axis_column))
+    if left_y_axis_column not in df.columns:
+        column_errors.append(MissingColumnError(left_y_axis_column))
+    if right_y_axis_columns:
+        for col in right_y_axis_columns:
+            if col not in df.columns:
+                column_errors.append(MissingColumnError(col))
+
+    if column_errors:
+        msg = "Missing columns"
+        raise ExceptionGroup(msg, column_errors)
+
     tooltip_columns = (
-        [*right_y_axis_columns, left_y_axis_column]
+        [x_axis_column, *right_y_axis_columns, left_y_axis_column]
         if right_y_axis_columns
-        else [left_y_axis_column]
+        else [x_axis_column, left_y_axis_column]
     )
 
     x_axis = alt.Chart(df).encode(
@@ -80,7 +105,7 @@ def produce_one_way_summary_plot(
         x=alt.X(f"{x_axis_column}:O", axis=alt.Axis(labelAngle=0, title=x_axis_column)),
     )
 
-    bar = x_axis.mark_bar(color=BAR_COLOUR, opacity=0.85).encode(
+    bar = x_axis.mark_bar(color=BAR_COLOUR, opacity=bar_opacity).encode(
         y=alt.Y(
             f"{left_y_axis_column}:Q",
             axis=alt.Axis(grid=False, title=left_y_axis_column),
@@ -100,7 +125,7 @@ def produce_one_way_summary_plot(
 
             y_values = alt.Y(
                 f"{right_y_axis_column}:Q",
-                axis=alt.Axis(grid=False, title="Response Scale"),
+                axis=alt.Axis(grid=True, title="Response Scale"),
                 scale=alt.Scale(domain=[right_y_min, right_y_max]),
             )
 
@@ -112,14 +137,15 @@ def produce_one_way_summary_plot(
 
         right_axis_lines = alt.layer(*line_marks)
 
-        chart = (
-            alt.layer(bar, right_axis_lines)
-            .resolve_scale(y="independent")
-            .properties(width=chart_width)
-            .interactive()
-        )
+        chart = alt.layer(bar, right_axis_lines).resolve_scale(y="independent")
 
     else:
-        chart = alt.layer(bar).properties(width=chart_width).interactive()
+        chart = alt.layer(bar)
 
-    return chart
+    properties = {}
+    if chart_width is not None:
+        properties["width"] = chart_width
+    if chart_height is not None:
+        properties["height"] = chart_height
+
+    return chart.properties(**properties)
