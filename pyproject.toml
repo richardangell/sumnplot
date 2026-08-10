@@ -11,8 +11,9 @@ repository = "https://github.com/richardangell/sumnplot"
 documentation = "https://sumnplot.readthedocs.io/en/latest/"
 requires-python = ">=3.12"
 dependencies = [
+    "altair>=6.2.2",
     "matplotlib>=3.9.2",
-    "pandas>=2.2.0",
+    "pandas>=3.0.5",
     "polars>=1.43.2",
     "scikit-learn>=1.5.0",
 ]
@@ -23,6 +24,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "jupyter>=1.1.1",
     "prek>=0.4.12",
     "pyrefly>=1.2.0",
     "pytest>=9.1.1",
@@ -77,6 +79,7 @@ select = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
     "S101",    # use of assert
+    "D104",    # missing docstring in public package
     "ANN201",  # missing return type for public function
     "INP001",  # implicit namespace package
     "TC002",   # move import to type-checking block

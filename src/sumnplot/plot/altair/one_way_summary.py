@@ -1,18 +1,58 @@
 """One-way summary plots using Altair."""
 
+from dataclasses import dataclass
+
 import altair as alt
 import polars as pl
 from altair import FacetChart, LayerChart
 
-from sumnplot.exceptions import MissingColumnError
+from sumnplot.exceptions import MissingColumnError, SumNPlotError
 
-BAR_COLOUR = "#ffa500"
-LINE_COLOURS = [
-    "#ff1493",
-    "#00ff00",
-    "#00ced1",
-    "#0000ff",
-]
+
+class ColourError(SumNPlotError):
+    """Raised when there is a problem with the colours specified for a plot."""
+
+
+@dataclass(frozen=True)
+class OneWaySummaryColours:
+    """Colours used in one-way summary plots."""
+
+    bar_colour: str
+    line_colours: tuple[str, ...] | None = None
+
+    def check_enough_line_colours(self, lines: list[str]) -> None:
+        """Check that there are enough line colours for the number of lines to plot.
+
+        Args:
+            lines : The list of lines to plot.
+
+        Raises:
+            ColourError : If there are not enough line colours specified for the number
+                of lines to plot.
+
+        """
+        if self.line_colours is None:
+            msg = "No line colours specified."
+            raise ColourError(msg)
+
+        if len(lines) > len(self.line_colours):
+            msg = (
+                f"Not enough line colours specified for {len(lines)} lines. "
+                f"Only {len(self.line_colours)} line colours specified."
+            )
+            raise ColourError(msg)
+
+
+DEFAULT_COLOURS = OneWaySummaryColours(
+    bar_colour="#ffa500",
+    line_colours=(
+        "#ff1493",
+        "#00ff00",
+        "#00ced1",
+        "#0000ff",
+        "#4b0082",
+    ),
+)
 
 
 def _determine_y_axis_range(
@@ -51,6 +91,7 @@ def produce_one_way_summary_plot(
     x_axis_column: str,
     left_y_axis_column: str,
     right_y_axis_columns: list[str] | None = None,
+    colours: OneWaySummaryColours = DEFAULT_COLOURS,
     chart_width: int | None = 600,
     chart_height: int | None = 400,
     bar_opacity: float = 0.5,
@@ -66,6 +107,8 @@ def produce_one_way_summary_plot(
         right_y_axis_columns : The names of the columns in df to plot on the right y
             axis. Plotted as line is specified, if not specified then no lines are
             plotted on the chart.
+        colours : The colours to use for the bars and lines in the chart. If not
+            specified then default colours are used.
         chart_width : The width of the chart in pixels.
         chart_height : The height of the chart in pixels.
         bar_opacity : The opacity of the bars in the chart, between 0 and 1.
@@ -105,7 +148,7 @@ def produce_one_way_summary_plot(
         x=alt.X(f"{x_axis_column}:O", axis=alt.Axis(labelAngle=0, title=x_axis_column)),
     )
 
-    bar = x_axis.mark_bar(color=BAR_COLOUR, opacity=bar_opacity).encode(
+    bar = x_axis.mark_bar(color=colours.bar_colour, opacity=bar_opacity).encode(
         y=alt.Y(
             f"{left_y_axis_column}:Q",
             axis=alt.Axis(grid=False, title=left_y_axis_column),
@@ -115,13 +158,15 @@ def produce_one_way_summary_plot(
     line_marks = []
 
     if right_y_axis_columns:
+        colours.check_enough_line_colours(right_y_axis_columns)
+
         right_y_min, right_y_max = _determine_y_axis_range(
             df=df,
             y_axis_columns=right_y_axis_columns,
         )
 
         for right_y_axis_index, right_y_axis_column in enumerate(right_y_axis_columns):
-            line_colour = LINE_COLOURS[right_y_axis_index]
+            line_colour = colours.line_colours[right_y_axis_index]
 
             y_values = alt.Y(
                 f"{right_y_axis_column}:Q",
