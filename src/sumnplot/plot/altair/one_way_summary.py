@@ -43,7 +43,7 @@ class OneWaySummaryColours:
             raise ColourError(msg)
 
 
-DEFAULT_COLOURS = OneWaySummaryColours(
+DEFAULT_ONE_WAY_PLOT_COLOURS = OneWaySummaryColours(
     bar_colour="#ffa500",
     line_colours=(
         "#ff1493",
@@ -92,7 +92,7 @@ def produce_one_way_summary_plot(
     left_y_axis_column: str,
     right_y_axis_columns: list[str] | None = None,
     title: str | None = None,
-    colours: OneWaySummaryColours = DEFAULT_COLOURS,
+    colours: OneWaySummaryColours = DEFAULT_ONE_WAY_PLOT_COLOURS,
     chart_width: int | None = 600,
     chart_height: int | None = 400,
     bar_opacity: float = 0.5,

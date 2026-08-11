@@ -8,7 +8,7 @@ import pytest
 from polars.testing import assert_frame_equal
 
 from sumnplot.plot.altair.one_way_summary import (
-    DEFAULT_COLOURS,
+    DEFAULT_ONE_WAY_PLOT_COLOURS,
     ColourError,
     OneWaySummaryColours,
     produce_one_way_summary_plot,
@@ -220,8 +220,8 @@ def _construct_expected_line_layer(
     lines = []
 
     for right_y_axis_index, right_y_axis_name in enumerate(right_y_axis_names):
-        assert DEFAULT_COLOURS.line_colours is not None
-        line_colour = DEFAULT_COLOURS.line_colours[right_y_axis_index]
+        assert DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours is not None
+        line_colour = DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours[right_y_axis_index]
 
         line = _construct_line_layer(
             type_="line",
@@ -302,7 +302,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
     _assert_chart_data(chart_dict, expected_df=sample_data)
 
     expected_bar_layer = _construct_expected_bar_layer(
-        colour=DEFAULT_COLOURS.bar_colour,
+        colour=DEFAULT_ONE_WAY_PLOT_COLOURS.bar_colour,
         opacity=opacity,
         x_axis_name="x_var",
         y_axis_name="w_col",
@@ -343,7 +343,7 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
     _assert_chart_data(chart_dict, expected_df=sample_data)
 
     expected_bar_layer = _construct_expected_bar_layer(
-        colour=DEFAULT_COLOURS.bar_colour,
+        colour=DEFAULT_ONE_WAY_PLOT_COLOURS.bar_colour,
         opacity=opacity,
         x_axis_name="x_var",
         y_axis_name="w_col",
@@ -396,7 +396,7 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
     _assert_chart_data(chart_dict, expected_df=sample_data)
 
     expected_bar_layer = _construct_expected_bar_layer(
-        colour=DEFAULT_COLOURS.bar_colour,
+        colour=DEFAULT_ONE_WAY_PLOT_COLOURS.bar_colour,
         opacity=opacity,
         x_axis_name="x_var",
         y_axis_name="w_col",
