@@ -1,6 +1,6 @@
 """Component tests for the one_way_summary module."""
 
-from typing import Literal
+from typing import Any, Literal
 
 import altair as alt
 import polars as pl
@@ -9,6 +9,8 @@ from polars.testing import assert_frame_equal
 
 from sumnplot.plot.altair.one_way_summary import (
     DEFAULT_COLOURS,
+    ColourError,
+    OneWaySummaryColours,
     produce_one_way_summary_plot,
 )
 
@@ -29,9 +31,21 @@ def sample_data() -> pl.DataFrame:
     )
 
 
+@pytest.fixture
+def sample_data_with_extra_columns(sample_data: pl.DataFrame) -> pl.DataFrame:
+    """Create a sample DataFrame with extra columns for testing."""
+    return sample_data.with_columns(
+        pl.col("f0").alias("f5"),
+        pl.col("f1").alias("f6"),
+        pl.col("f2").alias("f7"),
+        pl.col("f3").alias("f8"),
+        pl.col("f4").alias("f9"),
+    )
+
+
 def _assert_top_level_keys(
     chart_dict: dict,
-    **chart_specific_expected_keys: dict,
+    **chart_specific_expected_keys: dict[str, Any],
 ) -> None:
     """Assert that the top-level keys of the chart dictionary match the expected keys.
 
@@ -71,7 +85,9 @@ def _construct_expected_tooltip(
     """Create tooltip structure with x axis and y axis names for testing.
 
     The x-axis field is expected to be nominal type and the y-axis fields are
-    expected to be quantitative types.
+    expected to be quantitative types. The x axis field is expected to be the
+    first element in the tooltip list, followed by the y axis fields in the
+    order they are provided in the y_axis_names list.
 
     """
     tooltip = [{"field": x_axis_name, "type": "nominal"}]
@@ -91,7 +107,14 @@ def _construct_expected_bar_layer(
     y_axis_name: str,
     extra_tooltip_fields: list[str] | None = None,
 ) -> dict:
-    """Construct the expected bar layer dictionary for testing."""
+    """Construct the expected bar layer dictionary.
+
+    The bar layer has mark and encoding keys. The mark key contains the type of mark
+    (bar), the colour and opacity.
+
+    The encoding key contains the x and y axis encodings and the tooltip configuration.
+
+    """
     tooltip_fields = (
         [*extra_tooltip_fields, y_axis_name] if extra_tooltip_fields else [y_axis_name]
     )
@@ -130,13 +153,16 @@ def _construct_line_layer(
     colour: str,
     x_axis_name: str,
     y_axis_name: str,
+    left_y_axis_name: str,
     y_axis_label: str,
     y_axis_range: tuple[float, float],
     extra_tooltip_fields: list[str] | None = None,
 ) -> dict:
-    """Construct the either point or line layer on the right y axis."""
+    """Construct either point or line layer for the right y axis."""
     tooltip_fields = (
-        [y_axis_name, *extra_tooltip_fields] if extra_tooltip_fields else [y_axis_name]
+        [*extra_tooltip_fields, left_y_axis_name]
+        if extra_tooltip_fields
+        else [y_axis_name]
     )
     expected_tooltip = _construct_expected_tooltip(
         x_axis_name=x_axis_name,
@@ -173,6 +199,8 @@ def _construct_expected_line_layer(
     x_axis_name: str,
     left_y_axis_name: str,
     right_y_axis_names: list[str],
+    right_y_axis_range: tuple[float, float],
+    right_y_axis_label: str,
 ) -> dict:
     """Construct entire line layer.
 
@@ -183,6 +211,7 @@ def _construct_expected_line_layer(
     lines = []
 
     for right_y_axis_index, right_y_axis_name in enumerate(right_y_axis_names):
+        assert DEFAULT_COLOURS.line_colours is not None
         line_colour = DEFAULT_COLOURS.line_colours[right_y_axis_index]
 
         line = _construct_line_layer(
@@ -190,9 +219,10 @@ def _construct_expected_line_layer(
             colour=line_colour,
             x_axis_name=x_axis_name,
             y_axis_name=right_y_axis_name,
-            y_axis_label="Response Scale",
-            y_axis_range=(0.456, 0.504),
-            extra_tooltip_fields=[left_y_axis_name],
+            left_y_axis_name=left_y_axis_name,
+            y_axis_label=right_y_axis_label,
+            y_axis_range=right_y_axis_range,
+            extra_tooltip_fields=right_y_axis_names,
         )
 
         line_points = _construct_line_layer(
@@ -200,15 +230,39 @@ def _construct_expected_line_layer(
             colour=line_colour,
             x_axis_name=x_axis_name,
             y_axis_name=right_y_axis_name,
-            y_axis_label="Response Scale",
-            y_axis_range=(0.456, 0.504),
-            extra_tooltip_fields=[left_y_axis_name],
+            left_y_axis_name=left_y_axis_name,
+            y_axis_label=right_y_axis_label,
+            y_axis_range=right_y_axis_range,
+            extra_tooltip_fields=right_y_axis_names,
         )
 
         lines.append(line)
         lines.append(line_points)
 
     return {"layer": lines}
+
+
+def test_too_many_columns_for_line_colours_raises_exception(sample_data: pl.DataFrame):
+    """Test exception raised when more right y axis columns than line colours."""
+    colours = OneWaySummaryColours(
+        bar_colour="#000000",
+        line_colours=("#FF0000", "#00FF00"),  # Only 2 line colours specified
+    )
+
+    right_y_axis_columns = ["f0", "f1", "f2"]  # 3 right y axis columns
+
+    expected_message = (
+        "Not enough line colours specified for 3 lines. Only 2 line colours specified."
+    )
+
+    with pytest.raises(ColourError, match=expected_message):
+        produce_one_way_summary_plot(
+            sample_data,
+            x_axis_column="x_var",
+            left_y_axis_column="w_col",
+            right_y_axis_columns=right_y_axis_columns,
+            colours=colours,
+        )
 
 
 def test_bars_plot_only(sample_data: pl.DataFrame):
@@ -231,7 +285,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
 
     chart_dict = chart.to_dict()
 
-    _assert_top_level_keys(chart_dict, height=height, width=width)
+    _assert_top_level_keys(chart_dict, height=height, width=width)  # type: ignore[reportArgumentType]
     _assert_chart_data(chart_dict, expected_df=sample_data)
 
     expected_bar_layer = _construct_expected_bar_layer(
@@ -267,8 +321,8 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
 
     _assert_top_level_keys(
         chart_dict,
-        height=height,
-        width=width,
+        height=height,  # type: ignore[reportArgumentType]
+        width=width,  # type: ignore[reportArgumentType]
         resolve={"scale": {"y": "independent"}},
     )
     _assert_chart_data(chart_dict, expected_df=sample_data)
@@ -285,8 +339,98 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
         x_axis_name="x_var",
         left_y_axis_name="w_col",
         right_y_axis_names=["f0"],
+        right_y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
+        right_y_axis_label="Response Scale",
     )
 
     assert len(chart_dict["layer"]) == 2
     assert chart_dict["layer"][0] == expected_bar_layer
     assert chart_dict["layer"][1] == expected_line_layer
+
+
+def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
+    """Test that the function produces a bar plot and multiple line plots."""
+    opacity = 0.3
+    height = 200
+    width = 240
+
+    chart = produce_one_way_summary_plot(
+        sample_data,
+        x_axis_column="x_var",
+        left_y_axis_column="w_col",
+        right_y_axis_columns=["f0", "f1", "f2", "f3"],
+        chart_width=width,
+        chart_height=height,
+        bar_opacity=opacity,
+    )
+    assert chart is not None
+    assert isinstance(chart, alt.LayerChart)
+
+    chart_dict = chart.to_dict()
+
+    _assert_top_level_keys(
+        chart_dict,
+        height=height,  # type: ignore[reportArgumentType]
+        width=width,  # type: ignore[reportArgumentType]
+        resolve={"scale": {"y": "independent"}},
+    )
+    _assert_chart_data(chart_dict, expected_df=sample_data)
+
+    expected_bar_layer = _construct_expected_bar_layer(
+        colour=DEFAULT_COLOURS.bar_colour,
+        opacity=opacity,
+        x_axis_name="x_var",
+        y_axis_name="w_col",
+        extra_tooltip_fields=["f0", "f1", "f2", "f3"],
+    )
+
+    expected_line_layer = _construct_expected_line_layer(
+        x_axis_name="x_var",
+        left_y_axis_name="w_col",
+        right_y_axis_names=["f0", "f1", "f2", "f3"],
+        right_y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
+        right_y_axis_label="Response Scale",
+    )
+
+    assert len(chart_dict["layer"]) == 2
+    assert chart_dict["layer"][0] == expected_bar_layer
+    assert chart_dict["layer"][1] == expected_line_layer
+
+
+def test_many_lines_can_be_plot_as_long_as_colours_specified(
+    sample_data_with_extra_columns: pl.DataFrame,
+):
+    """Test that the function produces a bar plot and multiple line plots."""
+    colours = OneWaySummaryColours(
+        bar_colour="#000000",
+        line_colours=(
+            "#FF0000",
+            "#00FF00",
+            "#0000FF",
+            "#FFFF00",
+            "#FF00FF",
+            "#00FFFF",
+            "#800000",
+            "#008000",
+            "#000080",
+            "#808000",
+        ),
+    )
+
+    right_y_axis_columns = ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9"]
+
+    chart = produce_one_way_summary_plot(
+        sample_data_with_extra_columns,
+        x_axis_column="x_var",
+        left_y_axis_column="w_col",
+        right_y_axis_columns=right_y_axis_columns,
+        colours=colours,
+    )
+    assert chart is not None
+    assert isinstance(chart, alt.LayerChart)
+
+    chart_dict = chart.to_dict()
+
+    assert len(chart_dict["layer"]) == 2
+    assert chart_dict["layer"][1].keys() == {"layer"}
+    assert len(chart_dict["layer"][1]["layer"]) == 20  # 10 lines and 10 points
