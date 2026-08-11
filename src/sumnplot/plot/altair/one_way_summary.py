@@ -91,6 +91,7 @@ def produce_one_way_summary_plot(
     x_axis_column: str,
     left_y_axis_column: str,
     right_y_axis_columns: list[str] | None = None,
+    title: str | None = None,
     colours: OneWaySummaryColours = DEFAULT_COLOURS,
     chart_width: int | None = 600,
     chart_height: int | None = 400,
@@ -107,6 +108,8 @@ def produce_one_way_summary_plot(
         right_y_axis_columns : The names of the columns in df to plot on the right y
             axis. Plotted as line is specified, if not specified then no lines are
             plotted on the chart.
+        title : The title to display at the top of the chart. If not specified then
+            the name of the x_axis_column is used as the title.
         colours : The colours to use for the bars and lines in the chart. If not
             specified then default colours are used.
         chart_width : The width of the chart in pixels.
@@ -143,7 +146,9 @@ def produce_one_way_summary_plot(
         else [x_axis_column, left_y_axis_column]
     )
 
-    x_axis = alt.Chart(df).encode(
+    title_ = alt.TitleParams(title or x_axis_column, anchor="middle")
+
+    x_axis = alt.Chart(df, title=title_).encode(
         tooltip=tooltip_columns,
         x=alt.X(f"{x_axis_column}:O", axis=alt.Axis(labelAngle=0, title=x_axis_column)),
     )

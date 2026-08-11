@@ -105,6 +105,7 @@ def _construct_expected_bar_layer(
     opacity: float,
     x_axis_name: str,
     y_axis_name: str,
+    expected_title: str,
     extra_tooltip_fields: list[str] | None = None,
 ) -> dict:
     """Construct the expected bar layer dictionary.
@@ -142,9 +143,12 @@ def _construct_expected_bar_layer(
 
     expected_bar_mark = {"type": "bar", "color": colour, "opacity": opacity}
 
+    expected_title_ = {"anchor": "middle", "text": expected_title}
+
     return {
         "mark": expected_bar_mark,
         "encoding": expected_bar_encoding,
+        "title": expected_title_,
     }
 
 
@@ -156,6 +160,7 @@ def _construct_line_layer(
     left_y_axis_name: str,
     y_axis_label: str,
     y_axis_range: tuple[float, float],
+    expected_title: str,
     extra_tooltip_fields: list[str] | None = None,
 ) -> dict:
     """Construct either point or line layer for the right y axis."""
@@ -189,9 +194,12 @@ def _construct_line_layer(
 
     expected_line_mark = {"type": type_, "color": colour}
 
+    expected_title_ = {"anchor": "middle", "text": expected_title}
+
     return {
         "mark": expected_line_mark,
         "encoding": expected_line_encoding,
+        "title": expected_title_,
     }
 
 
@@ -201,6 +209,7 @@ def _construct_expected_line_layer(
     right_y_axis_names: list[str],
     right_y_axis_range: tuple[float, float],
     right_y_axis_label: str,
+    expected_title: str,
 ) -> dict:
     """Construct entire line layer.
 
@@ -222,6 +231,7 @@ def _construct_expected_line_layer(
             left_y_axis_name=left_y_axis_name,
             y_axis_label=right_y_axis_label,
             y_axis_range=right_y_axis_range,
+            expected_title=expected_title,
             extra_tooltip_fields=right_y_axis_names,
         )
 
@@ -233,6 +243,7 @@ def _construct_expected_line_layer(
             left_y_axis_name=left_y_axis_name,
             y_axis_label=right_y_axis_label,
             y_axis_range=right_y_axis_range,
+            expected_title=expected_title,
             extra_tooltip_fields=right_y_axis_names,
         )
 
@@ -270,12 +281,14 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
     opacity = 0.6
     height = 90
     width = 120
+    title = "Bars Only Summary Plot"
 
     chart = produce_one_way_summary_plot(
         sample_data,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=None,
+        title=title,
         chart_width=width,
         chart_height=height,
         bar_opacity=opacity,
@@ -293,6 +306,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
         opacity=opacity,
         x_axis_name="x_var",
         y_axis_name="w_col",
+        expected_title=title,
     )
 
     assert len(chart_dict["layer"]) == 1
@@ -310,6 +324,7 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=["f0"],
+        title=None,
         chart_width=width,
         chart_height=height,
         bar_opacity=opacity,
@@ -333,6 +348,7 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
         x_axis_name="x_var",
         y_axis_name="w_col",
         extra_tooltip_fields=["f0"],
+        expected_title="x_var",
     )
 
     expected_line_layer = _construct_expected_line_layer(
@@ -341,6 +357,7 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
         right_y_axis_names=["f0"],
         right_y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
         right_y_axis_label="Response Scale",
+        expected_title="x_var",
     )
 
     assert len(chart_dict["layer"]) == 2
@@ -353,12 +370,14 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
     opacity = 0.3
     height = 200
     width = 240
+    title = "Bar and Multiple Lines Summary Plot"
 
     chart = produce_one_way_summary_plot(
         sample_data,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=["f0", "f1", "f2", "f3"],
+        title=title,
         chart_width=width,
         chart_height=height,
         bar_opacity=opacity,
@@ -382,6 +401,7 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
         x_axis_name="x_var",
         y_axis_name="w_col",
         extra_tooltip_fields=["f0", "f1", "f2", "f3"],
+        expected_title=title,
     )
 
     expected_line_layer = _construct_expected_line_layer(
@@ -390,6 +410,7 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
         right_y_axis_names=["f0", "f1", "f2", "f3"],
         right_y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
         right_y_axis_label="Response Scale",
+        expected_title=title,
     )
 
     assert len(chart_dict["layer"]) == 2
