@@ -106,6 +106,7 @@ def _construct_expected_bar_layer(
     x_axis_name: str,
     y_axis_name: str,
     expected_title: str,
+    label_angle: int,
     extra_tooltip_fields: list[str] | None = None,
 ) -> dict:
     """Construct the expected bar layer dictionary.
@@ -125,7 +126,7 @@ def _construct_expected_bar_layer(
     )
 
     expected_x_axis = {
-        "axis": {"labelAngle": 0, "title": x_axis_name},
+        "axis": {"labelAngle": label_angle, "title": x_axis_name},
         "field": x_axis_name,
         "type": "ordinal",
     }
@@ -282,6 +283,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
     height = 90
     width = 120
     title = "Bars Only Summary Plot"
+    label_angle = 90
 
     chart = produce_one_way_summary_plot(
         sample_data,
@@ -292,6 +294,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
         chart_width=width,
         chart_height=height,
         bar_opacity=opacity,
+        x_axis_label_angle=label_angle,
     )
     assert chart is not None
     assert isinstance(chart, alt.LayerChart)
@@ -306,6 +309,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
         opacity=opacity,
         x_axis_name="x_var",
         y_axis_name="w_col",
+        label_angle=label_angle,
         expected_title=title,
     )
 
@@ -349,6 +353,7 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
         y_axis_name="w_col",
         extra_tooltip_fields=["f0"],
         expected_title="x_var",
+        label_angle=0,
     )
 
     expected_line_layer = _construct_expected_line_layer(
@@ -402,6 +407,7 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
         y_axis_name="w_col",
         extra_tooltip_fields=["f0", "f1", "f2", "f3"],
         expected_title=title,
+        label_angle=0,
     )
 
     expected_line_layer = _construct_expected_line_layer(

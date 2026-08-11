@@ -96,6 +96,7 @@ def produce_one_way_summary_plot(
     chart_width: int | None = 600,
     chart_height: int | None = 400,
     bar_opacity: float = 0.5,
+    x_axis_label_angle: int = 0,
 ) -> LayerChart | FacetChart:
     """Output an Altair chart one-way summary of pre-summarised data.
 
@@ -115,6 +116,7 @@ def produce_one_way_summary_plot(
         chart_width : The width of the chart in pixels.
         chart_height : The height of the chart in pixels.
         bar_opacity : The opacity of the bars in the chart, between 0 and 1.
+        x_axis_label_angle : The angle of the x axis labels in degrees.
 
     Returns:
         The Altair chart containing bars and optionally multiple lines, sharing an
@@ -150,7 +152,10 @@ def produce_one_way_summary_plot(
 
     x_axis = alt.Chart(df, title=title_).encode(
         tooltip=tooltip_columns,
-        x=alt.X(f"{x_axis_column}:O", axis=alt.Axis(labelAngle=0, title=x_axis_column)),
+        x=alt.X(
+            f"{x_axis_column}:O",
+            axis=alt.Axis(labelAngle=x_axis_label_angle, title=x_axis_column),
+        ),
     )
 
     bar = x_axis.mark_bar(color=colours.bar_colour, opacity=bar_opacity).encode(
