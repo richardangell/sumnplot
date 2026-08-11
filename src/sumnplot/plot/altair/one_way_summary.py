@@ -155,6 +155,7 @@ def produce_one_way_summary_plot(
         x=alt.X(
             f"{x_axis_column}:O",
             axis=alt.Axis(labelAngle=x_axis_label_angle, title=x_axis_column),
+            sort=None,
         ),
     )
 

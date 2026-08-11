@@ -129,6 +129,7 @@ def _construct_expected_bar_layer(
         "axis": {"labelAngle": label_angle, "title": x_axis_name},
         "field": x_axis_name,
         "type": "ordinal",
+        "sort": None,
     }
     expected_y_axis = {
         "axis": {"grid": False, "title": y_axis_name},
@@ -179,6 +180,7 @@ def _construct_line_layer(
         "axis": {"labelAngle": 0, "title": x_axis_name},
         "field": x_axis_name,
         "type": "ordinal",
+        "sort": None,
     }
     expected_y_axis = {
         "axis": {"grid": True, "title": y_axis_label},
