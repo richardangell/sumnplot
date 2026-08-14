@@ -42,6 +42,7 @@ indent-width = 4
 target-version = "py314"
 
 [tool.ruff.lint]
+exclude = ["docs/**"]
 select = [
     "E",     # pycodestyle
     "F",     # Pyflakes
@@ -89,3 +90,9 @@ select = [
     "TC002",   # move import to type-checking block
     "TC003",   # move import to type-checking block
 ]
+
+[tool.pyrefly]
+project-excludes = ["docs"]
+project-includes = ["src/**/*.py", "tests/**/*.py"]
+infer-with-first-use = true
+
