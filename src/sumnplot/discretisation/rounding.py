@@ -23,7 +23,7 @@ def _min_significance_to_differentiate_values(series: pl.Series) -> int:
     return int(-1 * differences.log10().floor().cast(pl.Int32).min())  # type: ignore[reportOperatorIssue]
 
 
-def determine_required_precision_to_retain_distinct_value(
+def determine_required_precision_to_keep_values_distinct(
     values: list[int | float],
 ) -> int | None:
     """Determine required precision to round values that keeps each distinct value.

@@ -8,14 +8,14 @@ import pytest
 from sumnplot.discretisation.rounding import (
     RoundingError,
     _min_significance_to_differentiate_values,
-    determine_required_precision_to_retain_distinct_value,
+    determine_required_precision_to_keep_values_distinct,
 )
 
 
 def test_exception_raised_for_empty_list():
     """Test that RoundingError is raised for empty input list."""
     with pytest.raises(RoundingError, match=re.escape("Input values list is empty.")):
-        determine_required_precision_to_retain_distinct_value([])
+        determine_required_precision_to_keep_values_distinct([])
 
 
 @pytest.mark.parametrize(
@@ -53,17 +53,17 @@ def test_exception_raised_for_empty_list():
         ),
     ],
 )
-def test_determine_required_precision_to_retain_distinct_value(
+def test_determine_required_precision_to_keep_values_distinct(
     values: list[int | float],
     expected_precision: int | None,
 ):
-    """Test determine_required_precision_to_retain_distinct_value output."""
+    """Test determine_required_precision_to_keep_values_distinct output."""
     assert len({round(v, expected_precision) for v in values}) == len(values), (
         "Test case setup error: expected precision does not retain unique values."
     )
 
     assert (
-        determine_required_precision_to_retain_distinct_value(values)
+        determine_required_precision_to_keep_values_distinct(values)
         == expected_precision
     )
 
@@ -80,7 +80,7 @@ def test_floating_point_inaccuracies_guarded_by_checking_lower_precision():
     )
 
     assert (
-        determine_required_precision_to_retain_distinct_value(values)
+        determine_required_precision_to_keep_values_distinct(values)
         == required_precision
     )
 
@@ -93,7 +93,7 @@ def test_zero_returned_if_lower_precision_check_falls_through():
     assert _min_significance_to_differentiate_values(pl.Series("values", values)) == 1
 
     assert (
-        determine_required_precision_to_retain_distinct_value(values)
+        determine_required_precision_to_keep_values_distinct(values)
         == required_precision
     )
 
@@ -102,7 +102,7 @@ def test_none_returned_for_single_value():
     """Test that None is returned for a single value."""
     values = [1.234828393]
 
-    assert determine_required_precision_to_retain_distinct_value(values) is None
+    assert determine_required_precision_to_keep_values_distinct(values) is None
 
 
 @pytest.mark.parametrize(
@@ -118,4 +118,4 @@ def test_negative_precision_returns_none(values: list[int | float]):
     Negative precision means that rounding to 10s, 100s etc.
 
     """
-    assert determine_required_precision_to_retain_distinct_value(values) is None
+    assert determine_required_precision_to_keep_values_distinct(values) is None
