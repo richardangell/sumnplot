@@ -1,6 +1,7 @@
 """Base discretiser abstract base class."""
 
 from abc import ABC, abstractmethod
+from typing import Sequence
 
 import polars as pl
 
@@ -17,8 +18,8 @@ class BaseDiscretiserError(SumNPlotError):
 def generate_cut_expr(
     *,
     column: str,
-    breaks: list[int | float],
-    labels: list[str] | None = None,
+    breaks: Sequence[int | float],
+    labels: Sequence[str] | None = None,
     new_name: str | None = None,
 ) -> pl.Expr:
     """Generate a polars expression to discretise a column into bins.
@@ -41,7 +42,7 @@ def generate_cut_expr(
     )
 
 
-def generate_bin_labels(breaks: list[int | float]) -> list[str]:
+def generate_bin_labels(breaks: Sequence[int | float]) -> list[str]:
     """Generate labels for bins based on break points.
 
     Args:
