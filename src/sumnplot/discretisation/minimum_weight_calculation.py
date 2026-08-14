@@ -36,22 +36,22 @@ def threshold_crossing_minimum_weight(
     weights arguments.
 
     Args:
-        df : The input DataFrame.
-        column : The name of the numeric column to calculate thresholds for.
-        weights : The name of the numeric column containing weights.
-        min_weight : The minimum weight threshold to trigger a crossing.
+        df (pl.DataFrame): The input DataFrame.
+        column (str): The name of the numeric column to calculate thresholds for.
+        weights (str): The name of the numeric column containing weights.
+        min_weight (float): The minimum weight threshold to trigger a crossing.
 
     Returns:
-        A list of column values where the cumulative weight crosses the min_weight
-        threshold.
+        list[int | float]: A list of column values where the cumulative weight crosses
+            the min_weight threshold.
 
     Raises:
-        MissingColumnError : If the specified column or weights column is not found in
+        MissingColumnError: If the specified column or weights column is not found in
             the DataFrame.
-        NumericColumnError : If the specified column or weights column is not numeric.
-        NullsInColumnError : If the specified column or weights column contains null
+        NumericColumnError: If the specified column or weights column is not numeric.
+        NullsInColumnError: If the specified column or weights column contains null
             values.
-        ThresholdCrossingError : If the min_weight is less than or equal to 0.
+        ThresholdCrossingError: If the min_weight is less than or equal to 0.
 
     """
     if df.get_column(column).has_nulls():

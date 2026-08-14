@@ -11,13 +11,14 @@ def get_weighted_average_expr(
     """Generate a polars expression to calculate the weighted average.
 
     Args:
-        column : The name of the column for which to calculate the weighted average.
-        weights : The name of the weights column.
-        new_name : The name for the resulting expression. If None, no alias is applied
-            and the expression will have the 'column' name.
+        column (str): The name of the column for which to calculate the weighted
+            average.
+        weights (str): The name of the weights column.
+        new_name (str | None): The name for the resulting expression. If None, no alias
+            is applied and the expression will have the 'column' name.
 
     Returns:
-        A polars expression that can be used to calculate the weighted average.
+        pl.Expr: Expression that can be used to calculate the weighted average.
 
     """
     expr = (pl.col(column) * pl.col(weights)).sum() / pl.col(weights).sum()
@@ -32,12 +33,12 @@ def get_sum_weight_expr(weights: str, new_name: str | None = None) -> pl.Expr:
     """Generate a polars expression to calculate the sum of weights.
 
     Args:
-        weights : The name of the weights column.
-        new_name : The name for the resulting expression. If None, no alias is applied
-            and the expression will have the 'weights' name.
+        weights (str): The name of the weights column.
+        new_name (str | None): The name for the resulting expression. If None, no alias
+            is applied and the expression will have the 'weights' name.
 
     Returns:
-        A polars expression that can be used to calculate the sum of weights.
+        pl.Expr: Expression that can be used to calculate the sum of weights.
 
     """
     expr = pl.col(weights).sum()

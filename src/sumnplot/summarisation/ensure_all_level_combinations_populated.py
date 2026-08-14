@@ -33,20 +33,20 @@ def ensure_all_level_combinations_populated(
     all other types the unique levels are taken from what is available in the full_df.
 
     Args:
-        full_df : The full DataFrame, provides the unique levels for each groupby
-            column.
-        summary_df : The summary DataFrame that may have missing combinations of
-            levels.
-        groupby_columns : The columns to group by.
-        value_columns : A dictionary mapping value column names to their default fill
-            values.
+        full_df (pl.DataFrame): The full DataFrame, provides the unique levels for each
+            groupby column.
+        summary_df (pl.DataFrame): The summary DataFrame that may have missing
+            combinations of levels.
+        groupby_columns (list[str]): The columns to group by.
+        value_columns (dict[str, Any]): A dictionary mapping value column names to
+            their default fill values.
 
     Returns:
-        A DataFrame with all combinations of levels populated, with missing values
-        filled with values from the `value_columns` dictionary.
+        pl.DataFrame: Data with all combinations of levels populated, with missing
+            values filled with values from the `value_columns` dictionary.
 
     Raises:
-        ExceptionGroup : If any of the groupby columns are missing from either
+        ExceptionGroup: If any of the groupby columns are missing from either
             `full_df` or `summary_df`, an ExceptionGroup is raised containing all
             MissingColumnError instances for the missing columns.
 

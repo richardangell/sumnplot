@@ -14,8 +14,10 @@ class MissingColumnError(SumNPlotError):
         """Initialise the MissingColumnError with the missing column name.
 
         Args:
-            column : The name of the missing column.
-            dataframe_name : The name of the argument which has the missing column.
+            column (str): The name of the missing column.
+            dataframe_name (str | None): The name of the argument which has the missing
+                column. Defaults to None, in which case the error message will not
+                include the argument name.
 
         """
         self.column = column
@@ -36,7 +38,7 @@ class NumericColumnError(SumNPlotError):
         """Initialise the NumericColumnError with the non-numeric column name.
 
         Args:
-            column : The name of the column that is not numeric.
+            column (str): The name of the column that is not numeric.
 
         """
         self.column = column
@@ -51,7 +53,7 @@ class NullsInColumnError(SumNPlotError):
         """Initialise the NullsInColumnError with the column name containing nulls.
 
         Args:
-            column : The name of the column that contains null values.
+            column (str): The name of the column that contains null values.
 
         """
         self.column = column
@@ -66,9 +68,10 @@ class InvalidArgumentError(SumNPlotError):
         """Initialise the InvalidArgumentError with the argument name and message.
 
         Args:
-            argument : The name of the argument that is invalid.
-            value : The invalid value of the argument.
-            conditions : A list of conditions that the argument value must satisfy.
+            argument (str): The name of the argument that is invalid.
+            value (Any): The invalid value of the argument.
+            conditions (list[str]): A list of conditions that the argument value must
+                satisfy.
 
         """
         self.argument = argument

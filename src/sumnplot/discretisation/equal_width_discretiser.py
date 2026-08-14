@@ -30,14 +30,18 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         """Initialise the EqualWidthDiscretiser.
 
         Args:
-            column : The name of the column to discretise.
-            weights : The name of the weights column.
-            n_bins : The number of bins to divide the column into.
-            new_name : The name of the new column to be created. If None, the original
-                column name will be used.
-            round_breaks_for_labels : Whether to round the break points for labels. If
-                True, the break points will be rounded to the lowest precision to
-                keep each unique value. If False, the break points will not be rounded.
+            column (str): The name of the column to discretise.
+            weights (str): The name of the weights column.
+            n_bins (int): The number of bins to divide the column into.
+            new_name (str | None): The name of the new column to be created. If None,
+                the original column name will be used.
+            round_breaks_for_labels (bool): Whether to round the break points for
+                labels. If True, the break points will be rounded to the lowest
+                precision to keep each unique value. If False, the break points will
+                not be rounded.
+
+        Raises:
+            InvalidArgumentError: If n_bins is less than or equal to 0.
 
         """
         if n_bins <= 0:
@@ -59,10 +63,11 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         """Calculate the cut points for discretisation based on equal width.
 
         Args:
-            df : The polars DataFrame containing the column to calculate cut points for.
+            df (pl.DataFrame): The polars DataFrame containing the column to calculate
+            cut points for.
 
         Returns:
-            self : The fitted EqualWidthDiscretiser instance.
+            EqualWidthDiscretiser: The fitted EqualWidthDiscretiser instance.
 
         """
         if self.column not in df.columns:

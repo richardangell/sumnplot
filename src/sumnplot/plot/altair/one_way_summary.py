@@ -15,7 +15,21 @@ class ColourError(SumNPlotError):
 
 @dataclass(frozen=True)
 class OneWaySummaryColours:
-    """Colours used in one-way summary plots."""
+    """Colours used in one-way summary plots.
+
+    When used in produce_one_way_summary_plot, the bar_colour is used for the bars
+    in the plot and the line_colours are used for the lines in the plot. The number
+    of line colours must be equal to or greater than the number of lines in the plot.
+    If there are more line colours than lines in the plot, a ColourError will be
+    raised.
+
+    Attributes:
+        bar_colour (str): The colour to use for the bars in the plot.
+        line_colours (tuple[str, ...] | None): The colours to use for the lines in
+            the plot. If None, no lines are expected in the plot however if there
+            are lines are present, an error will be raised.
+
+    """
 
     bar_colour: str
     line_colours: tuple[str, ...] | None = None
@@ -24,10 +38,10 @@ class OneWaySummaryColours:
         """Check that there are enough line colours for the number of lines to plot.
 
         Args:
-            lines : The list of lines to plot.
+            lines (list[str]): The list of lines to plot.
 
         Raises:
-            ColourError : If there are not enough line colours specified for the number
+            ColourError: If there are not enough line colours specified for the number
                 of lines to plot.
 
         """
@@ -101,22 +115,22 @@ def produce_one_way_summary_plot(
     """Output an Altair chart one-way summary of pre-summarised data.
 
     Args:
-        df : The pre-summarised data to plot.
-        x_axis_column : the name of the column in df that contains the labels to plot
-            along the x axis.
-        left_y_axis_column : The name of the columns in df to plot on the left y axis,
-            plotted as bars.
-        right_y_axis_columns : The names of the columns in df to plot on the right y
-            axis. Plotted as line is specified, if not specified then no lines are
-            plotted on the chart.
-        title : The title to display at the top of the chart. If not specified then
-            the name of the x_axis_column is used as the title.
-        colours : The colours to use for the bars and lines in the chart. If not
-            specified then default colours are used.
-        chart_width : The width of the chart in pixels.
-        chart_height : The height of the chart in pixels.
-        bar_opacity : The opacity of the bars in the chart, between 0 and 1.
-        x_axis_label_angle : The angle of the x axis labels in degrees.
+        df (pl.DataFrame): The pre-summarised data to plot.
+        x_axis_column (str): The name of the column in df that contains the labels to
+            plot along the x axis.
+        left_y_axis_column (str): The name of the column in df to plot on the left y
+            axis, plotted as bars.
+        right_y_axis_columns (list[str] | None): The names of the columns in df to plot
+            on the right y axis. Plotted as line is specified, if not specified then no
+            lines are plotted on the chart.
+        title (str | None): The title to display at the top of the chart. If not
+            specified then the name of the x_axis_column is used as the title.
+        colours (OneWaySummaryColours): The colours to use for the bars and lines in the
+            chart. If not specified then default colours are used.
+        chart_width (int | None): The width of the chart in pixels.
+        chart_height (int | None): The height of the chart in pixels.
+        bar_opacity (float): The opacity of the bars in the chart, between 0 and 1.
+        x_axis_label_angle (int): The angle of the x axis labels in degrees.
 
     Returns:
         The Altair chart containing bars and optionally multiple lines, sharing an
@@ -177,6 +191,7 @@ def produce_one_way_summary_plot(
         )
 
         for right_y_axis_index, right_y_axis_column in enumerate(right_y_axis_columns):
+            # pyrefly: ignore [unsupported-operation]
             line_colour = colours.line_colours[right_y_axis_index]
 
             y_values = alt.Y(

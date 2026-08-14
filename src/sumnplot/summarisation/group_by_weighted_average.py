@@ -25,8 +25,8 @@ class ResponseWeight:
     """Class to represent a response and weight column pair.
 
     Attributes:
-        response : The name of the response column.
-        weight : The name of the associated weight column.
+        response (str): The name of the response column.
+        weight (str): The name of the associated weight column.
 
     """
 
@@ -48,16 +48,16 @@ def group_by_weighted_average(
     will be left as nulls.
 
     Args:
-        df : The DataFrame to group.
-        groupby_columns : The columns to group by.
-        responses : A list of ResponseWeight objects specifying response and weight
-            column pairs.
+        df (pl.DataFrame): The DataFrame to group.
+        groupby_columns (list[str]): The columns to group by.
+        responses (list[ResponseWeight]): A list of ResponseWeight objects
+            specifying response and weight column pairs.
 
     Returns:
-        A DataFrame grouped by the specified columns with aggregated responses.
+        pl.DataFrame: Data grouped by the specified columns with aggregated responses.
 
     Raises:
-        ExceptionGroup : If any of the groupby columns or response/weight columns are
+        ExceptionGroup: If any of the groupby columns or response/weight columns are
             missing from the DataFrame, an ExceptionGroup is raised containing all
             MissingColumnError instances for the missing columns.
 

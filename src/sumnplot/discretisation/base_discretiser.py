@@ -25,14 +25,15 @@ def generate_cut_expr(
     """Generate a polars expression to discretise a column into bins.
 
     Args:
-        column : The name of the column to discretise.
-        breaks : The break points for discretisation.
-        labels : The labels for the bins. If None, the bin indices will be used.
-        new_name : The name of the new column to be created. If None, the original
-            column name will be used.
+        column (str): The name of the column to discretise.
+        breaks (Sequence[int | float]): The break points for discretisation.
+        labels (Sequence[str] | None): The labels for the bins. If None, the bin
+        indices will be used.
+        new_name (str | None): The name of the new column to be created. If None, the
+            original column name will be used.
 
     Returns:
-        The polars expression that can be used to discretise the column.
+        pl.Expr: The polars expression that can be used to discretise the column.
 
     """
     return (
@@ -50,11 +51,11 @@ def generate_bin_labels(
     """Generate labels for bins based on break points.
 
     Args:
-        breaks : The break points for discretisation.
-        left_closed : Whether the intervals are left-closed or right-closed.
+        breaks (Sequence[int | float]): The break points for discretisation.
+        left_closed (bool): Whether the intervals are left-closed or right-closed.
 
     Returns:
-        A list of labels for the bins.
+        list[str]: A list of labels for the bins.
 
     """
     if left_closed:
@@ -109,7 +110,8 @@ class BaseDiscretiser(ABC):
         instance for later use.
 
         Args:
-            df : The polars DataFrame containing the column to calculate cut points for.
+            df (pl.DataFrame): The polars DataFrame containing the column to calculate
+                cut points for.
 
         """
         ...
@@ -121,7 +123,7 @@ class BaseDiscretiser(ABC):
         the instance.
 
         Returns:
-            A polars expression that can be used to discretise the column.
+            pl.Expr: A polars expression that can be used to discretise the column.
 
         Raises:
             BaseDiscretiserError : If the cut points have not been calculated.
@@ -157,15 +159,16 @@ class BaseDiscretiser(ABC):
         """Discretise column in the DataFrame using the calculated cut points.
 
         Args:
-            df : The polars DataFrame containing the column to discretise.
+            df (pl.DataFrame): The polars DataFrame containing the column to
+                discretise.
 
         Returns:
-            A new polars DataFrame with the discretised column added.
+            pl.DataFrame: A new polars DataFrame with the discretised column added.
 
         Raises:
-            BaseDiscretiserError : If the cut points have not been calculated.
-            MissingColumnError : If the specified column is not found in the DataFrame.
-            NumericColumnError : If the specified column is not numeric.
+            BaseDiscretiserError: If the cut points have not been calculated.
+            MissingColumnError: If the specified column is not found in the DataFrame.
+            NumericColumnError: If the specified column is not numeric.
 
         """
         if self.column not in df.columns:

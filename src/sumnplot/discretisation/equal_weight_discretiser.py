@@ -33,15 +33,20 @@ class EqualWeightDiscretiser(BaseDiscretiser):
         """Initialise the EqualWeightDiscretiser.
 
         Args:
-            column : The name of the column to discretise.
-            weights : The name of the weights column.
-            min_weight_proportion : The minimum proportion of the total weight for
-            each bin. Must be between 0 and 1 (exclusive).
-            new_name : The name of the new column to be created. If None, the original
-                column name will be used.
-            round_breaks_for_labels : Whether to round the break points for labels. If
-                True, the break points will be rounded to the lowest precision to
-                keep each unique value. If False, the break points will not be rounded.
+            column (str): The name of the column to discretise.
+            weights (str): The name of the weights column.
+            min_weight_proportion (float): The minimum proportion of the total weight
+                for each bin. Must be between 0 and 1 (exclusive).
+            new_name (str | None): The name of the new column to be created. If None,
+                the original column name will be used.
+            round_breaks_for_labels (bool): Whether to round the break points for
+                labels. If True, the break points will be rounded to the lowest
+                precision to keep each unique value. If False, the break points will
+                not be rounded.
+
+        Raises:
+            InvalidArgumentError: If min_weight_proportion is not between 0 and 1
+                (exclusive).
 
         """
         if not (0 < min_weight_proportion <= 1):
@@ -63,10 +68,17 @@ class EqualWeightDiscretiser(BaseDiscretiser):
         """Calculate the cut points for discretisation based on equal weight.
 
         Args:
-            df : The polars DataFrame containing the column to calculate cut points for.
+            df (pl.DataFrame): The polars DataFrame containing the column to calculate
+                cut points for.
 
         Returns:
-            self : The fitted EqualWeightDiscretiser instance.
+            EqualWeightDiscretiser: The fitted EqualWeightDiscretiser instance.
+
+        Raises:
+            MissingColumnError: If the specified column or weights column is not found
+                in the DataFrame.
+            NumericColumnError: If the specified column or weights column is not
+                numeric.
 
         """
         if self.column not in df.columns:
@@ -98,6 +110,7 @@ class EqualWeightDiscretiser(BaseDiscretiser):
             df=df_without_nulls,
             column=self.column,
             weights=self.weights,
+            # pyrefly: ignore [unsupported-operation]
             min_weight=self.min_weight_proportion * total_weight,  # pyright: ignore[reportOperatorIssue]
         )
 
