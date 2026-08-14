@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 
 import polars as pl
 
+from sumnplot.discretisation.rounding import (
+    determine_required_precision_to_keep_values_distinct,
+)
 from sumnplot.exceptions import MissingColumnError, NumericColumnError, SumNPlotError
 
 
@@ -38,6 +41,25 @@ def generate_cut_expr(
     )
 
 
+def generate_bin_labels(breaks: list[int | float]) -> list[str]:
+    """Generate labels for bins based on break points.
+
+    Args:
+        breaks : The break points for discretisation.
+
+    Returns:
+        A list of labels for the bins.
+
+    """
+    first_label = f"(-inf, {breaks[0]})"
+    last_label = f"[{breaks[-1]}, inf)"
+    labels = [first_label]
+    for i in range(len(breaks) - 1):
+        labels.append(f"[{breaks[i]}, {breaks[i + 1]})")
+    labels.append(last_label)
+    return labels
+
+
 class BaseDiscretiser(ABC):
     """Abstract base class for discretisers."""
 
@@ -45,6 +67,7 @@ class BaseDiscretiser(ABC):
     weights: str
     min_weight_proportion: float
     new_name: str | None
+    round_breaks_for_labels: bool
     _breaks: list[int | float] | None
 
     @property
@@ -98,9 +121,22 @@ class BaseDiscretiser(ABC):
             )
             raise BaseDiscretiserError(msg)
 
+        if self.round_breaks_for_labels:
+            required_precision = determine_required_precision_to_keep_values_distinct(
+                self.breaks,
+            )
+            if required_precision is not None:
+                rounded_breaks = [round(b, required_precision) for b in self.breaks]
+                labels = generate_bin_labels(rounded_breaks)
+            else:
+                labels = None
+        else:
+            labels = None
+
         return generate_cut_expr(
             column=self.column,
             breaks=self.breaks,
+            labels=labels,
             new_name=self.new_name,
         )
 
