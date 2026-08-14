@@ -64,10 +64,16 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
         Args:
             df (pl.DataFrame): The polars DataFrame containing the column to calculate
-            cut points for.
+                cut points for.
 
         Returns:
             EqualWidthDiscretiser: The fitted EqualWidthDiscretiser instance.
+
+        Raises:
+            MissingColumnError: If the specified column or weights column is not found
+                in the DataFrame.
+            NumericColumnError: If the specified column or weights column is not
+                numeric.
 
         """
         if self.column not in df.columns:

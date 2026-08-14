@@ -22,16 +22,13 @@ class GroupByWeightedAverageError(SumNPlotError):
 
 @dataclass(frozen=True)
 class ResponseWeight:
-    """Class to represent a response and weight column pair.
-
-    Attributes:
-        response (str): The name of the response column.
-        weight (str): The name of the associated weight column.
-
-    """
+    """Class to represent a response and weight column pair."""
 
     response: str
+    """The name of the response column."""
+
     weight: str
+    """The name of the associated weight column."""
 
 
 def group_by_weighted_average(

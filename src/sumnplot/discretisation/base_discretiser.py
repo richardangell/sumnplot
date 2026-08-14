@@ -78,11 +78,15 @@ class BaseDiscretiser(ABC):
     """Abstract base class for discretisers."""
 
     column: str
+    """The name of the column to discretise."""
     weights: str
-    min_weight_proportion: float
+    """The name of the weights column."""
     new_name: str | None
+    """The name of the new column to be created, if not None."""
     round_breaks_for_labels: bool
+    """Whether to round the break points for labels."""
     _breaks: list[int | float] | None
+    """The calculated cut points for discretisation."""
 
     @property
     def breaks(self) -> list[int | float] | None:
