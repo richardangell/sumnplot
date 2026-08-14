@@ -63,8 +63,8 @@ class TestGenerateCutExpr:
 class TestGenerateBinLabels:
     """Unit tests for the generate_bin_labels function."""
 
-    def test_generate_bin_labels_function(self):
-        """Test that generate_bin_labels function generates correct labels."""
+    def test_left_closed_interval(self):
+        """Test that generate_bin_labels with left closed intervals."""
         breaks = [0, 18, 35, 50, 65, 100]
         expected_labels = [
             "(-inf, 0)",
@@ -75,4 +75,18 @@ class TestGenerateBinLabels:
             "[65, 100)",
             "[100, inf)",
         ]
-        assert generate_bin_labels(breaks) == expected_labels
+        assert generate_bin_labels(breaks, left_closed=True) == expected_labels
+
+    def test_right_closed_interval(self):
+        """Test that generate_bin_labels with right-closed intervals."""
+        breaks = [0, 18, 35, 50, 65, 100]
+        expected_labels = [
+            "(-inf, 0]",
+            "(0, 18]",
+            "(18, 35]",
+            "(35, 50]",
+            "(50, 65]",
+            "(65, 100]",
+            "(100, inf)",
+        ]
+        assert generate_bin_labels(breaks, left_closed=False) == expected_labels

@@ -37,26 +37,38 @@ def generate_cut_expr(
     """
     return (
         pl.col(column)
-        .cut(breaks=breaks, labels=labels, include_breaks=False)
+        .cut(breaks=breaks, labels=labels, left_closed=False, include_breaks=False)
         .alias(new_name if new_name is not None else column)
     )
 
 
-def generate_bin_labels(breaks: Sequence[int | float]) -> list[str]:
+def generate_bin_labels(
+    breaks: Sequence[int | float],
+    *,
+    left_closed: bool = False,
+) -> list[str]:
     """Generate labels for bins based on break points.
 
     Args:
         breaks : The break points for discretisation.
+        left_closed : Whether the intervals are left-closed or right-closed.
 
     Returns:
         A list of labels for the bins.
 
     """
-    first_label = f"(-inf, {breaks[0]})"
-    last_label = f"[{breaks[-1]}, inf)"
+    if left_closed:
+        left_bracket = "["
+        right_bracket = ")"
+    else:
+        left_bracket = "("
+        right_bracket = "]"
+
+    first_label = f"(-inf, {breaks[0]}{right_bracket}"
+    last_label = f"{left_bracket}{breaks[-1]}, inf)"
     labels = [first_label]
     for i in range(len(breaks) - 1):
-        labels.append(f"[{breaks[i]}, {breaks[i + 1]})")
+        labels.append(f"{left_bracket}{breaks[i]}, {breaks[i + 1]}{right_bracket}")
     labels.append(last_label)
     return labels
 
