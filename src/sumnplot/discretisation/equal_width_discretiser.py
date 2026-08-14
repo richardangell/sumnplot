@@ -20,10 +20,12 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
     def __init__(
         self,
+        *,
         column: str,
         weights: str,
         n_bins: int,
         new_name: str | None = None,
+        round_breaks_for_labels: bool = False,
     ) -> None:
         """Initialise the EqualWidthDiscretiser.
 
@@ -33,6 +35,9 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             n_bins : The number of bins to divide the column into.
             new_name : The name of the new column to be created. If None, the original
                 column name will be used.
+            round_breaks_for_labels : Whether to round the break points for labels. If
+                True, the break points will be rounded to the lowest precision to
+                keep each unique value. If False, the break points will not be rounded.
 
         """
         if n_bins <= 0:
@@ -46,6 +51,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         self.weights = weights
         self.n_bins = n_bins
         self.new_name = new_name
+        self.round_breaks_for_labels = round_breaks_for_labels
 
         self._breaks = None
 

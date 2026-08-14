@@ -67,7 +67,7 @@ class TestGenerateBinLabels:
         """Test that generate_bin_labels with left closed intervals."""
         breaks = [0, 18, 35, 50, 65, 100]
         expected_labels = [
-            "(-inf, 0)",
+            "[-inf, 0)",
             "[0, 18)",
             "[18, 35)",
             "[35, 50)",
@@ -87,6 +87,6 @@ class TestGenerateBinLabels:
             "(35, 50]",
             "(50, 65]",
             "(65, 100]",
-            "(100, inf)",
+            "(100, inf]",
         ]
         assert generate_bin_labels(breaks, left_closed=False) == expected_labels

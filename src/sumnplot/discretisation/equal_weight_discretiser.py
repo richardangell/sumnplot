@@ -23,10 +23,12 @@ class EqualWeightDiscretiser(BaseDiscretiser):
 
     def __init__(
         self,
+        *,
         column: str,
         weights: str,
         min_weight_proportion: float,
         new_name: str | None = None,
+        round_breaks_for_labels: bool = False,
     ) -> None:
         """Initialise the EqualWeightDiscretiser.
 
@@ -37,6 +39,9 @@ class EqualWeightDiscretiser(BaseDiscretiser):
             each bin. Must be between 0 and 1 (exclusive).
             new_name : The name of the new column to be created. If None, the original
                 column name will be used.
+            round_breaks_for_labels : Whether to round the break points for labels. If
+                True, the break points will be rounded to the lowest precision to
+                keep each unique value. If False, the break points will not be rounded.
 
         """
         if not (0 < min_weight_proportion <= 1):
@@ -50,6 +55,7 @@ class EqualWeightDiscretiser(BaseDiscretiser):
         self.weights = weights
         self.min_weight_proportion = min_weight_proportion
         self.new_name = new_name
+        self.round_breaks_for_labels = round_breaks_for_labels
 
         self._breaks = None
 

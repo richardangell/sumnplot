@@ -27,6 +27,33 @@ def sample_df():
 
 
 @pytest.fixture
+def sample_df_with_floats():
+    """Return 10 row DataFrame with float values with many decimal places.
+
+    There values only need to be rounded to 3 decimal places to retain each distinct
+    value.
+
+    """
+    return pl.DataFrame(
+        {
+            "value": [
+                1.456_2495434,
+                1.457_404049493,
+                1.458_4345353,
+                1.459_3232324,
+                1.460_3435353,
+                1.461_483484388,
+                1.462_1848383,
+                1.463_3535353,
+                1.464_193838383,
+                1.465_27473839,
+            ],
+            "weight": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        },
+    )
+
+
+@pytest.fixture
 def sample_df_with_nulls():
     """Fixture to create a sample DataFrame for testing with nulls in the values.
 
@@ -68,11 +95,13 @@ class TestInitialisation:
             weights="weight",
             min_weight_proportion=0.3,
             new_name="value_bin",
+            round_breaks_for_labels=True,
         )
         assert discretiser.column == "value"
         assert discretiser.weights == "weight"
         assert discretiser.min_weight_proportion == 0.3
         assert discretiser.new_name == "value_bin"
+        assert discretiser.round_breaks_for_labels is True
 
         assert discretiser.breaks is None
 
@@ -303,3 +332,48 @@ class TestTransform:
         )
 
         assert_series_equal(actual_levels, expected_levels)
+
+    def test_labels_rounded(self, sample_df_with_floats: pl.DataFrame):
+        """Test that labels are rounded when round_breaks_for_labels is True."""
+        discretiser_with_rounding = EqualWeightDiscretiser(
+            column="value",
+            weights="weight",
+            min_weight_proportion=0.4,
+            new_name=None,
+            round_breaks_for_labels=True,
+        )
+
+        discretiser_without_rounding = EqualWeightDiscretiser(
+            column="value",
+            weights="weight",
+            min_weight_proportion=0.4,
+            new_name=None,
+            round_breaks_for_labels=False,
+        )
+
+        discretiser_with_rounding.fit(sample_df_with_floats)
+        discretiser_without_rounding.fit(sample_df_with_floats)
+
+        transformed_df_with_rounding = discretiser_with_rounding.transform(
+            sample_df_with_floats,
+        )
+        transformed_df_without_rounding = discretiser_without_rounding.transform(
+            sample_df_with_floats,
+        )
+
+        assert transformed_df_with_rounding.shape == (10, 2)
+        assert transformed_df_without_rounding.shape == (10, 2)
+
+        expected_rounded_enum = pl.Enum(
+            ["(-inf, 1.459]", "(1.459, 1.463]", "(1.463, inf]"],
+        )
+        assert transformed_df_with_rounding["value"].dtype == expected_rounded_enum
+
+        expected_unrounded_enum = pl.Enum(
+            [
+                "(-inf, 1.4593232324]",
+                "(1.4593232324, 1.4633535353]",
+                "(1.4633535353, inf]",
+            ],
+        )
+        assert transformed_df_without_rounding["value"].dtype == expected_unrounded_enum

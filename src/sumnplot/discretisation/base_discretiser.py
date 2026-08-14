@@ -64,8 +64,8 @@ def generate_bin_labels(
         left_bracket = "("
         right_bracket = "]"
 
-    first_label = f"(-inf, {breaks[0]}{right_bracket}"
-    last_label = f"{left_bracket}{breaks[-1]}, inf)"
+    first_label = f"{left_bracket}-inf, {breaks[0]}{right_bracket}"
+    last_label = f"{left_bracket}{breaks[-1]}, inf{right_bracket}"
     labels = [first_label]
     for i in range(len(breaks) - 1):
         labels.append(f"{left_bracket}{breaks[i]}, {breaks[i + 1]}{right_bracket}")
