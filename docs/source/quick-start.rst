@@ -5,7 +5,8 @@ Welcome to the quick start guide for ``sumnplot``.
 
 ``sumnplot`` provides functionality to produce summary plots like below. The code to produce this plot can be found at the bottom of this page.
 
-   .. image:: ../images/one_way.png
+   .. raw:: html
+       :file: ../images/chart.html
 
 Installation
 --------------------
@@ -37,6 +38,7 @@ The code to produce the plot at the top of this page is below;
 
      import polars as pl
      from sklearn.datasets import load_diabetes
+
      from sumnplot.discretisation import EqualWeightDiscretiser
      from sumnplot.summarisation import group_by_weighted_average, ResponseWeight
      from sumnplot.plot.altair.one_way_summary import produce_one_way_summary_plot
