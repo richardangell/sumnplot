@@ -4,7 +4,6 @@ import re
 
 import polars as pl
 import pytest
-from polars.testing import assert_frame_equal
 
 from sumnplot.exceptions import MissingColumnError
 from sumnplot.summarisation.group_by_weighted_average import (
@@ -12,6 +11,8 @@ from sumnplot.summarisation.group_by_weighted_average import (
     ResponseWeight,
     group_by_weighted_average,
 )
+from sumnplot.summarisation.summary_operation import SummaryOperation
+from sumnplot.summarisation.summary_table import SummaryTable
 
 
 @pytest.fixture
@@ -217,7 +218,7 @@ def test_output_single_groupby_column(sample_data: pl.DataFrame):
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         {
             "group": ["A", "B"],
             "value": [50 / 3, 150 / 4],
@@ -225,7 +226,16 @@ def test_output_single_groupby_column(sample_data: pl.DataFrame):
         },
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected
 
 
 def test_output_multiple_groupby_columns(sample_data: pl.DataFrame):
@@ -243,7 +253,7 @@ def test_output_multiple_groupby_columns(sample_data: pl.DataFrame):
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         {
             "group": ["A", "A", "B", "B"],
             "group2": ["X", "Y", "X", "Y"],
@@ -252,7 +262,16 @@ def test_output_multiple_groupby_columns(sample_data: pl.DataFrame):
         },
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected
 
 
 def test_output_with_missing_level_in_single_enum_groupby_column(
@@ -274,7 +293,7 @@ def test_output_with_missing_level_in_single_enum_groupby_column(
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         [
             pl.Series(
                 name="group",
@@ -286,7 +305,16 @@ def test_output_with_missing_level_in_single_enum_groupby_column(
         ],
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected
 
 
 def test_output_with_missing_levels_in_multiple_enum_groupby_columns(
@@ -308,7 +336,7 @@ def test_output_with_missing_levels_in_multiple_enum_groupby_columns(
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         [
             pl.Series(
                 name="group",
@@ -328,7 +356,16 @@ def test_output_with_missing_levels_in_multiple_enum_groupby_columns(
         ],
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected
 
 
 def test_output_with_missing_levels_in_multiple_groupby_columns(
@@ -350,7 +387,7 @@ def test_output_with_missing_levels_in_multiple_groupby_columns(
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         {
             "group": ["A", "A", "B", "B", "C", "C"],
             "group2": ["X", "Y", "X", "Y", "X", "Y"],
@@ -359,7 +396,16 @@ def test_output_with_missing_levels_in_multiple_groupby_columns(
         },
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected
 
 
 def test_three_way_group_by(sample_data_with_mixed_group_by_columns: pl.DataFrame):
@@ -379,7 +425,7 @@ def test_three_way_group_by(sample_data_with_mixed_group_by_columns: pl.DataFram
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         {
             "group": ["A", "A", "A", "A", "B", "B", "B", "B", "C", "C", "C", "C"],
             "group2": ["X", "X", "Y", "Y", "X", "X", "Y", "Y", "X", "X", "Y", "Y"],
@@ -418,7 +464,16 @@ def test_three_way_group_by(sample_data_with_mixed_group_by_columns: pl.DataFram
         pl.col("group2").cast(pl.Categorical),
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected
 
 
 def test_multiple_responses(sample_data_with_multiple_responses: pl.DataFrame):
@@ -442,7 +497,7 @@ def test_multiple_responses(sample_data_with_multiple_responses: pl.DataFrame):
         responses=responses,
     )
 
-    expected = pl.DataFrame(
+    expected_data = pl.DataFrame(
         {
             "group": ["A", "B"],
             "value1": [50 / 3, 150 / 4],
@@ -453,4 +508,16 @@ def test_multiple_responses(sample_data_with_multiple_responses: pl.DataFrame):
         },
     )
 
-    assert_frame_equal(result, expected)
+    expected = SummaryTable(
+        data=expected_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types={
+            "value1": SummaryOperation.WEIGHTED_AVERAGE,
+            "value2": SummaryOperation.WEIGHTED_AVERAGE,
+            "value3": SummaryOperation.WEIGHTED_AVERAGE,
+            "weight1": SummaryOperation.SUM,
+            "weight2": SummaryOperation.SUM,
+        },
+    )
+
+    assert result == expected

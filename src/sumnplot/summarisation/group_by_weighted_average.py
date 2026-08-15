@@ -10,6 +10,8 @@ from sumnplot.exceptions import MissingColumnError, SumNPlotError
 from sumnplot.summarisation.ensure_all_level_combinations_populated import (
     ensure_all_level_combinations_populated,
 )
+from sumnplot.summarisation.summary_operation import SummaryOperation
+from sumnplot.summarisation.summary_table import SummaryTable
 from sumnplot.summarisation.weighted_average import (
     get_sum_weight_expr,
     get_weighted_average_expr,
@@ -36,7 +38,7 @@ def group_by_weighted_average(
     *,
     groupby_columns: list[str],
     responses: list[ResponseWeight],
-) -> pl.DataFrame:
+) -> SummaryTable:
     """Group by the specified columns and aggregate the specified column.
 
     This function ensures that all combinations of levels in the group by columns
@@ -51,7 +53,7 @@ def group_by_weighted_average(
             specifying response and weight column pairs.
 
     Returns:
-        pl.DataFrame: Data grouped by the specified columns with aggregated responses.
+        SummaryTable: Data grouped by the specified columns with aggregated responses.
 
     Raises:
         ExceptionGroup: If any of the groupby columns or response/weight columns are
@@ -80,6 +82,8 @@ def group_by_weighted_average(
         )
         raise GroupByWeightedAverageError(msg)
 
+    summary_operations = {}
+
     deduped_weights = []
     for response in responses:
         if response.weight not in deduped_weights:
@@ -89,16 +93,28 @@ def group_by_weighted_average(
 
     for response_weight in responses:
         agg_expressions.append(
-            get_weighted_average_expr(response_weight.response, response_weight.weight),
+            get_weighted_average_expr(
+                column=response_weight.response,
+                weights=response_weight.weight,
+                new_name=None,
+            ),
         )
+        summary_operations[response_weight.response] = SummaryOperation.WEIGHTED_AVERAGE
     for weight in deduped_weights:
-        agg_expressions.append(get_sum_weight_expr(weight))
+        agg_expressions.append(get_sum_weight_expr(weights=weight, new_name=None))
+        summary_operations[weight] = SummaryOperation.SUM
 
-    summary = df.group_by(groupby_columns).agg(agg_expressions)
+    summary_df = df.group_by(groupby_columns).agg(agg_expressions)
 
-    return ensure_all_level_combinations_populated(
+    summary_df = ensure_all_level_combinations_populated(
         full_df=df,
-        summary_df=summary,
+        summary_df=summary_df,
         groupby_columns=groupby_columns,
         value_columns={response.weight: 0 for response in responses},
+    )
+
+    return SummaryTable(
+        summary_df,
+        groupby_columns=groupby_columns,
+        summarised_column_types=summary_operations,
     )
