@@ -111,6 +111,11 @@ class SummaryTable:
         return self._data.tail(n)
 
     @property
+    def n(self) -> int:
+        """Return the number of rows in the summary table."""
+        return self._data.height
+
+    @property
     def groupby_columns(self) -> list[str]:
         """The columns the results are grouped by."""
         return self._groupby_columns
@@ -145,3 +150,16 @@ class SummaryTable:
             field="summarised_column_types",
             operation="delete",
         )
+
+    def __eq__(self, other: Any) -> bool:  # noqa: ANN401
+        """Check if two SummaryTable instances are equal."""
+        if not isinstance(other, SummaryTable):
+            return False
+
+        if self.groupby_columns != other.groupby_columns:
+            return False
+
+        if self.summarised_column_types != other.summarised_column_types:
+            return False
+
+        return self._data.equals(other.head(other.n))

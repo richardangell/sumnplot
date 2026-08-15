@@ -181,3 +181,60 @@ def test_modifying_summarised_column_types_raises_error(
         ),
     ):
         del summary_table.summarised_column_types
+
+
+def test_n_property_returns_correct_row_count(summary_table: SummaryTable) -> None:
+    """Test n property returns the correct number of rows in the summary table."""
+    assert summary_table.n == 3
+
+
+class TestSummaryTableEquality:
+    """Test the equality operator for SummaryTable instances."""
+
+    def test_different_types_not_equal(self, summary_table: SummaryTable) -> None:
+        """Test that a SummaryTable is not equal to an object of a different type."""
+        assert summary_table != "not_a_summary_table"
+
+    def test_equal_summary_tables(self, summary_table: SummaryTable) -> None:
+        """Test that two identical SummaryTable instances are equal."""
+        identical_table = SummaryTable(
+            summary_table.head(5),
+            groupby_columns=summary_table.groupby_columns,
+            summarised_column_types=summary_table.summarised_column_types,
+        )
+        assert summary_table == identical_table
+
+    def test_unequal_groupby_columns(self, summary_table: SummaryTable) -> None:
+        """Test that SummaryTables with different groupby_columns are not equal."""
+        different_groupby = SummaryTable(
+            summary_table.head(5).with_columns(
+                pl.col("group").alias("different_group"),
+            ),
+            groupby_columns=["different_group"],
+            summarised_column_types=summary_table.summarised_column_types,
+        )
+        assert summary_table != different_groupby
+
+    def test_unequal_summarised_column_types(self, summary_table: SummaryTable) -> None:
+        """Test SummaryTables with different summarised_column_types are not equal."""
+        different_summarised = SummaryTable(
+            summary_table.head(5),
+            groupby_columns=summary_table.groupby_columns,
+            summarised_column_types={"value": SummaryOperation.WEIGHTED_AVERAGE},
+        )
+        assert summary_table != different_summarised
+
+    def test_unequal_data(self, summary_table: SummaryTable) -> None:
+        """Test that SummaryTables with different data are not equal."""
+        different_data = pl.DataFrame(
+            {
+                "group": ["A", "B", "C"],
+                "value": [100, 200, 300],
+            },
+        )
+        different_data_table = SummaryTable(
+            different_data,
+            groupby_columns=summary_table.groupby_columns,
+            summarised_column_types=summary_table.summarised_column_types,
+        )
+        assert summary_table != different_data_table
