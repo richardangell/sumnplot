@@ -10,8 +10,8 @@ from sumnplot.exceptions import MissingColumnError
 from sumnplot.summarisation.summary_operation import SummaryOperation
 from sumnplot.summarisation.summary_table import (
     SummaryTable,
+    SummaryTableError,
     SummaryTableModificationError,
-    SummyTableError,
 )
 
 
@@ -35,6 +35,49 @@ def summary_table(sample_data: pl.DataFrame) -> SummaryTable:
         sample_data,
         groupby_columns=groupby_columns,
         summarised_column_types=summarised_column_types,
+    )
+
+
+@pytest.fixture
+def sample_data_with_several_value_columns() -> pl.DataFrame:
+    """Return a sample DataFrame with several value columns."""
+    return pl.DataFrame(
+        {
+            "group": ["A", "B", "C"],
+            "f0": [10, 20, 30],
+            "f1": [100, 200, 300],
+            "f2": [1000, 2000, 3000],
+        },
+    )
+
+
+@pytest.fixture
+def summary_table_with_several_value_columns(
+    sample_data_with_several_value_columns: pl.DataFrame,
+) -> SummaryTable:
+    """Return a SummaryTable with single group column and summarised value column."""
+    groupby_columns = ["group"]
+    summarised_column_types = {
+        "f0": SummaryOperation.WEIGHTED_AVERAGE,
+        "f1": SummaryOperation.SUM,
+        "f2": SummaryOperation.SUM,
+    }
+    return SummaryTable(
+        sample_data_with_several_value_columns,
+        groupby_columns=groupby_columns,
+        summarised_column_types=summarised_column_types,
+    )
+
+
+@pytest.fixture
+def sample_data_with_several_group_by_columns() -> pl.DataFrame:
+    """Return a sample DataFrame with 2 groupby columns."""
+    return pl.DataFrame(
+        {
+            "group_a": ["A", "B", "C", "A", "B", "C"],
+            "group_b": ["X", "X", "X", "Y", "Y", "Y"],
+            "f0": [10, 20, 30, 40, 50, 60],
+        },
     )
 
 
@@ -65,7 +108,7 @@ def test_valid_initialisation(summary_table: SummaryTable) -> None:
 def test_empty_groupby_columns_raises_error(sample_data: pl.DataFrame) -> None:
     """Test that an error is raised when groupby_columns is empty."""
     with pytest.raises(
-        SummyTableError,
+        SummaryTableError,
         match=re.escape("Groupby columns must not be empty."),
     ):
         SummaryTable(
@@ -78,7 +121,7 @@ def test_empty_groupby_columns_raises_error(sample_data: pl.DataFrame) -> None:
 def test_empty_summarised_column_types_raises_error(sample_data: pl.DataFrame) -> None:
     """Test that an error is raised when summarised_column_types is empty."""
     with pytest.raises(
-        SummyTableError,
+        SummaryTableError,
         match=re.escape("Summarised column types must not be empty."),
     ):
         SummaryTable(sample_data, groupby_columns=["group"], summarised_column_types={})
@@ -87,7 +130,7 @@ def test_empty_summarised_column_types_raises_error(sample_data: pl.DataFrame) -
 def test_groupby_columns_not_unique_raises_error(sample_data: pl.DataFrame) -> None:
     """Test that an error is raised when groupby_columns are not unique."""
     with pytest.raises(
-        SummyTableError,
+        SummaryTableError,
         match=re.escape("Groupby columns must be unique."),
     ):
         SummaryTable(
@@ -102,7 +145,7 @@ def test_groupby_and_summarised_columns_overlap_raises_error(
 ) -> None:
     """Test if groupby_columns and summarised_column_types overlap error is raised."""
     with pytest.raises(
-        SummyTableError,
+        SummaryTableError,
         match=re.escape(
             "Groupby columns and summarised columns must not overlap. "
             "Overlapping columns: group.",
@@ -238,3 +281,96 @@ class TestSummaryTableEquality:
             summarised_column_types=summary_table.summarised_column_types,
         )
         assert summary_table != different_data_table
+
+
+class TestSummaryTableUnpivot:
+    """Test the unpivot method of SummaryTable."""
+
+    def test_unpivot_single_groupby_single_value(
+        self,
+        summary_table: SummaryTable,
+    ) -> None:
+        """Test that unpivot returns the expected DataFrame."""
+        actual = summary_table.unpivot(
+            on=["value"],
+            index=["group"],
+        )
+
+        expected_df = pl.DataFrame(
+            {
+                "group": ["A", "B", "C"],
+                "variable": ["value", "value", "value"],
+                "value": [10, 20, 30],
+            },
+        )
+
+        assert_frame_equal(actual, expected_df)
+
+    def test_unpivot_single_groupby_single_value_rename(
+        self,
+        summary_table: SummaryTable,
+    ) -> None:
+        """Test that unpivot returns the expected DataFrame with renamed columns."""
+        actual = summary_table.unpivot(
+            on=["value"],
+            index=["group"],
+            variable_name="var",
+            value_name="val",
+        )
+
+        expected_df = pl.DataFrame(
+            {
+                "group": ["A", "B", "C"],
+                "var": ["value", "value", "value"],
+                "val": [10, 20, 30],
+            },
+        )
+
+        assert_frame_equal(actual, expected_df)
+
+    def test_unpivot_multiple_value_columns(
+        self,
+        summary_table_with_several_value_columns: SummaryTable,
+    ) -> None:
+        """Test that unpivot works with multiple value columns."""
+        actual = summary_table_with_several_value_columns.unpivot(
+            on=["f0", "f1", "f2"],
+            index=["group"],
+        )
+
+        expected_df = pl.DataFrame(
+            {
+                "group": ["A", "B", "C", "A", "B", "C", "A", "B", "C"],
+                "variable": ["f0", "f0", "f0", "f1", "f1", "f1", "f2", "f2", "f2"],
+                "value": [10, 20, 30, 100, 200, 300, 1000, 2000, 3000],
+            },
+        )
+
+        assert_frame_equal(actual, expected_df)
+
+    def test_unpivot_multiple_groupby_columns(
+        self,
+        sample_data_with_several_group_by_columns: pl.DataFrame,
+    ) -> None:
+        """Test that unpivot works with multiple groupby columns."""
+        summary_table = SummaryTable(
+            sample_data_with_several_group_by_columns,
+            groupby_columns=["group_a", "group_b"],
+            summarised_column_types={"f0": SummaryOperation.SUM},
+        )
+
+        actual = summary_table.unpivot(
+            on=["f0"],
+            index=["group_a", "group_b"],
+        )
+
+        expected_df = pl.DataFrame(
+            {
+                "group_a": ["A", "B", "C", "A", "B", "C"],
+                "group_b": ["X", "X", "X", "Y", "Y", "Y"],
+                "variable": ["f0"] * 6,
+                "value": [10, 20, 30, 40, 50, 60],
+            },
+        )
+
+        assert_frame_equal(actual, expected_df)

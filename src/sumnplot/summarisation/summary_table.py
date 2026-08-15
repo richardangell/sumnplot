@@ -10,11 +10,11 @@ if TYPE_CHECKING:
     from sumnplot.summarisation.summary_operation import SummaryOperation
 
 
-class SummyTableError(SumNPlotError):
+class SummaryTableError(SumNPlotError):
     """Base class for errors in the SummaryTable class."""
 
 
-class SummaryTableModificationError(SummyTableError):
+class SummaryTableModificationError(SummaryTableError):
     """Exception to be raised when trying to modify an SummaryTable attribute."""
 
     def __init__(self, field: str, operation: Literal["modify", "delete"]) -> None:
@@ -46,9 +46,9 @@ class SummaryTable:
                 type of summarisation applied to each.
 
         Raises:
-            SummyTableError: If groupby_columns or summarised_column_types are empty.
-            SummyTableError: If groupby_columns are not unique.
-            SummyTableError: If groupby_columns and summarised_column_types overlap.
+            SummaryTableError: If groupby_columns or summarised_column_types are empty.
+            SummaryTableError: If groupby_columns are not unique.
+            SummaryTableError: If groupby_columns and summarised_column_types overlap.
             ExceptionGroup: If any of the groupby_columns or summarised_column_types
                 are missing from the DataFrame, an ExceptionGroup is raised containing
                 all MissingColumnError instances for the missing columns.
@@ -59,15 +59,15 @@ class SummaryTable:
         """
         if not groupby_columns:
             msg = "Groupby columns must not be empty."
-            raise SummyTableError(msg)
+            raise SummaryTableError(msg)
 
         if not summarised_column_types:
             msg = "Summarised column types must not be empty."
-            raise SummyTableError(msg)
+            raise SummaryTableError(msg)
 
         if len(set(groupby_columns)) != len(groupby_columns):
             msg = "Groupby columns must be unique."
-            raise SummyTableError(msg)
+            raise SummaryTableError(msg)
 
         summarised_columns = list(summarised_column_types.keys())
 
@@ -77,7 +77,7 @@ class SummaryTable:
                 f"Groupby columns and summarised columns must not overlap. "
                 f"Overlapping columns: {', '.join(overlapping_columns)}."
             )
-            raise SummyTableError(msg)
+            raise SummaryTableError(msg)
 
         missing_columns_exceptions = []
         for col in groupby_columns:
@@ -100,7 +100,27 @@ class SummaryTable:
                 [*groupby_columns, *summarised_column_types.keys()],
             )
         self._groupby_columns = groupby_columns
-        self._summarised_columns_types = summarised_column_types
+        self._summarised_column_types = summarised_column_types
+
+    def unpivot(
+        self,
+        on: list[str],
+        index: list[str],
+        variable_name: str | None = None,
+        value_name: str | None = None,
+    ) -> pl.DataFrame:
+        """Unpivot the summary table data to a long format.
+
+        Returns:
+            pl.DataFrame: The unpivoted summary table in long format.
+
+        """
+        return self._data.unpivot(
+            on=on,
+            index=index,
+            variable_name=variable_name,
+            value_name=value_name,
+        )
 
     def head(self, n: int = 5) -> pl.DataFrame:
         """Return the first n rows of the summary table."""
@@ -133,7 +153,7 @@ class SummaryTable:
     @property
     def summarised_column_types(self) -> dict[str, SummaryOperation]:
         """The columns that have been summarised and their types."""
-        return self._summarised_columns_types
+        return self._summarised_column_types
 
     @summarised_column_types.setter
     def summarised_column_types(self, value: Any) -> None:  # noqa: ANN401, ARG002
