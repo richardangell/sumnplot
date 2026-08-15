@@ -13,6 +13,8 @@ from sumnplot.plot.altair.one_way_summary import (
     OneWaySummaryColours,
     produce_one_way_summary_plot,
 )
+from sumnplot.summarisation.summary_operation import SummaryOperation
+from sumnplot.summarisation.summary_table import SummaryTable
 
 
 @pytest.fixture
@@ -32,6 +34,25 @@ def sample_data() -> pl.DataFrame:
 
 
 @pytest.fixture
+def summary_table(sample_data: pl.DataFrame) -> SummaryTable:
+    """Create a SummaryTable for testing."""
+    groupby_columns = ["x_var"]
+    summarised_column_types = {
+        "w_col": SummaryOperation.SUM,
+        "f0": SummaryOperation.WEIGHTED_AVERAGE,
+        "f1": SummaryOperation.WEIGHTED_AVERAGE,
+        "f2": SummaryOperation.WEIGHTED_AVERAGE,
+        "f3": SummaryOperation.WEIGHTED_AVERAGE,
+        "f4": SummaryOperation.WEIGHTED_AVERAGE,
+    }
+    return SummaryTable(
+        sample_data,
+        groupby_columns=groupby_columns,
+        summarised_column_types=summarised_column_types,
+    )
+
+
+@pytest.fixture
 def sample_data_with_extra_columns(sample_data: pl.DataFrame) -> pl.DataFrame:
     """Create a sample DataFrame with extra columns for testing."""
     return sample_data.with_columns(
@@ -40,6 +61,32 @@ def sample_data_with_extra_columns(sample_data: pl.DataFrame) -> pl.DataFrame:
         pl.col("f2").alias("f7"),
         pl.col("f3").alias("f8"),
         pl.col("f4").alias("f9"),
+    )
+
+
+@pytest.fixture
+def summary_table_with_extra_columns(
+    sample_data_with_extra_columns: pl.DataFrame,
+) -> SummaryTable:
+    """Create a SummaryTable with extra columns for testing."""
+    groupby_columns = ["x_var"]
+    summarised_column_types = {
+        "w_col": SummaryOperation.SUM,
+        "f0": SummaryOperation.WEIGHTED_AVERAGE,
+        "f1": SummaryOperation.WEIGHTED_AVERAGE,
+        "f2": SummaryOperation.WEIGHTED_AVERAGE,
+        "f3": SummaryOperation.WEIGHTED_AVERAGE,
+        "f4": SummaryOperation.WEIGHTED_AVERAGE,
+        "f5": SummaryOperation.WEIGHTED_AVERAGE,
+        "f6": SummaryOperation.WEIGHTED_AVERAGE,
+        "f7": SummaryOperation.WEIGHTED_AVERAGE,
+        "f8": SummaryOperation.WEIGHTED_AVERAGE,
+        "f9": SummaryOperation.WEIGHTED_AVERAGE,
+    }
+    return SummaryTable(
+        sample_data_with_extra_columns,
+        groupby_columns=groupby_columns,
+        summarised_column_types=summarised_column_types,
     )
 
 
@@ -256,7 +303,9 @@ def _construct_expected_line_layer(
     return {"layer": lines}
 
 
-def test_too_many_columns_for_line_colours_raises_exception(sample_data: pl.DataFrame):
+def test_too_many_columns_for_line_colours_raises_exception(
+    summary_table: SummaryTable,
+):
     """Test exception raised when more right y axis columns than line colours."""
     colours = OneWaySummaryColours(
         bar_colour="#000000",
@@ -271,7 +320,7 @@ def test_too_many_columns_for_line_colours_raises_exception(sample_data: pl.Data
 
     with pytest.raises(ColourError, match=expected_message):
         produce_one_way_summary_plot(
-            sample_data,
+            summary_table,
             x_axis_column="x_var",
             left_y_axis_column="w_col",
             right_y_axis_columns=right_y_axis_columns,
@@ -279,7 +328,7 @@ def test_too_many_columns_for_line_colours_raises_exception(sample_data: pl.Data
         )
 
 
-def test_bars_plot_only(sample_data: pl.DataFrame):
+def test_bars_plot_only(sample_data: pl.DataFrame, summary_table: SummaryTable):
     """Test that the function produces a bar plot when only."""
     opacity = 0.6
     height = 90
@@ -288,7 +337,7 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
     label_angle = 90
 
     chart = produce_one_way_summary_plot(
-        sample_data,
+        summary_table,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=None,
@@ -319,14 +368,17 @@ def test_bars_plot_only(sample_data: pl.DataFrame):
     assert chart_dict["layer"][0] == expected_bar_layer
 
 
-def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
+def test_bar_and_single_line_plot(
+    sample_data: pl.DataFrame,
+    summary_table: SummaryTable,
+):
     """Test that the function produces a bar plot and a single line plot."""
     opacity = 0.9
     height = 100
     width = 140
 
     chart = produce_one_way_summary_plot(
-        sample_data,
+        summary_table,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=["f0"],
@@ -372,7 +424,10 @@ def test_bar_and_single_line_plot(sample_data: pl.DataFrame):
     assert chart_dict["layer"][1] == expected_line_layer
 
 
-def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
+def test_bar_and_multiple_line_plot(
+    sample_data: pl.DataFrame,
+    summary_table: SummaryTable,
+):
     """Test that the function produces a bar plot and multiple line plots."""
     opacity = 0.3
     height = 200
@@ -380,7 +435,7 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
     title = "Bar and Multiple Lines Summary Plot"
 
     chart = produce_one_way_summary_plot(
-        sample_data,
+        summary_table,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=["f0", "f1", "f2", "f3"],
@@ -427,7 +482,7 @@ def test_bar_and_multiple_line_plot(sample_data: pl.DataFrame):
 
 
 def test_many_lines_can_be_plot_as_long_as_colours_specified(
-    sample_data_with_extra_columns: pl.DataFrame,
+    summary_table_with_extra_columns: SummaryTable,
 ):
     """Test that the function produces a bar plot and multiple line plots."""
     colours = OneWaySummaryColours(
@@ -449,7 +504,7 @@ def test_many_lines_can_be_plot_as_long_as_colours_specified(
     right_y_axis_columns = ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9"]
 
     chart = produce_one_way_summary_plot(
-        sample_data_with_extra_columns,
+        summary_table_with_extra_columns,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
         right_y_axis_columns=right_y_axis_columns,

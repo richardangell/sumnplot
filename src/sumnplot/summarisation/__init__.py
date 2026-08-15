@@ -7,6 +7,8 @@ from sumnplot.summarisation.group_by_weighted_average import (
     ResponseWeight,
     group_by_weighted_average,
 )
+from sumnplot.summarisation.summary_operation import SummaryOperation
+from sumnplot.summarisation.summary_table import SummaryTable
 from sumnplot.summarisation.weighted_average import (
     get_sum_weight_expr,
     get_weighted_average_expr,
@@ -14,6 +16,8 @@ from sumnplot.summarisation.weighted_average import (
 
 __all__ = [
     "ResponseWeight",
+    "SummaryOperation",
+    "SummaryTable",
     "ensure_all_level_combinations_populated",
     "get_sum_weight_expr",
     "get_weighted_average_expr",

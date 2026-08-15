@@ -1,12 +1,16 @@
 """One-way summary plots using Altair."""
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import altair as alt
 import polars as pl
 from altair import FacetChart, LayerChart
 
 from sumnplot.exceptions import MissingColumnError, SumNPlotError
+
+if TYPE_CHECKING:
+    from sumnplot.summarisation.summary_table import SummaryTable
 
 
 class ColourError(SumNPlotError):
@@ -100,7 +104,7 @@ def _determine_y_axis_range(
 
 
 def produce_one_way_summary_plot(
-    df: pl.DataFrame,
+    summary: SummaryTable,
     *,
     x_axis_column: str,
     left_y_axis_column: str,
@@ -115,18 +119,18 @@ def produce_one_way_summary_plot(
     """Output an Altair chart one-way summary of pre-summarised data.
 
     Args:
-        df (pl.DataFrame): The pre-summarised data to plot.
-        x_axis_column (str): The name of the column in df that contains the labels to
-            plot along the x axis.
-        left_y_axis_column (str): The name of the column in df to plot on the left y
-            axis, plotted as bars.
-        right_y_axis_columns (list[str] | None): The names of the columns in df to plot
-            on the right y axis. Plotted as line is specified, if not specified then no
-            lines are plotted on the chart.
+        summary (SummaryTable): The pre-summarised data to plot.
+        x_axis_column (str): The name of the column in summary that contains the labels
+            to plot along the x axis.
+        left_y_axis_column (str): The name of the column in summary to plot on the left
+            y axis as bars.
+        right_y_axis_columns (list[str] | None): The names of the columns in summary to
+            plot on the right y axis, as lines. If None then no lines are plotted on
+            the chart.
         title (str | None): The title to display at the top of the chart. If not
             specified then the name of the x_axis_column is used as the title.
-        colours (OneWaySummaryColours): The colours to use for the bars and lines in the
-            chart. If not specified then default colours are used.
+        colours (OneWaySummaryColours): The colours to use for the bars and lines in
+            the chart. If not specified then default colours are used.
         chart_width (int | None): The width of the chart in pixels.
         chart_height (int | None): The height of the chart in pixels.
         bar_opacity (float): The opacity of the bars in the chart, between 0 and 1.
@@ -138,18 +142,18 @@ def produce_one_way_summary_plot(
 
     Raises:
         ExceptionGroup : If any of the specified columns are not present in the input
-            df argument then an ExceptionGroup is raised containing a
+            summary argument then an ExceptionGroup is raised containing a
             MissingColumnError for each missing column.
 
     """
     column_errors = []
-    if x_axis_column not in df.columns:
+    if x_axis_column not in summary.groupby_columns:
         column_errors.append(MissingColumnError(x_axis_column))
-    if left_y_axis_column not in df.columns:
+    if left_y_axis_column not in summary.summarised_column_types:
         column_errors.append(MissingColumnError(left_y_axis_column))
     if right_y_axis_columns:
         for col in right_y_axis_columns:
-            if col not in df.columns:
+            if col not in summary.summarised_column_types:
                 column_errors.append(MissingColumnError(col))
 
     if column_errors:
@@ -163,6 +167,8 @@ def produce_one_way_summary_plot(
     )
 
     title_ = alt.TitleParams(title or x_axis_column, anchor="middle")
+
+    df = summary.head(summary.n)
 
     x_axis = alt.Chart(df, title=title_).encode(
         tooltip=tooltip_columns,
