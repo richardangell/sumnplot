@@ -91,17 +91,23 @@ def summary_table_with_extra_columns(
 
 def _assert_top_level_keys(
     chart_dict: dict,
+    expected_fixed_keys: tuple[str, ...] = (
+        "config",
+        "layer",
+        "data",
+        "$schema",
+        "datasets",
+    ),
     **chart_specific_expected_keys: dict[str, Any],
 ) -> None:
     """Assert that the top-level keys of the chart dictionary match the expected keys.
 
     Tests that the user supplied keys exist in the top level keys of the chart dict
     and take the supplied values. Also checks for the existence of the fixed keys
-    that are always present in the chart dict; 'config', 'layer', 'data', '$schema',
-    'datasets'.
+    that are always present in the chart dict; the keys in `expected_fixed_keys`.
 
     """
-    fixed_keys = ["config", "layer", "data", "$schema", "datasets"]
+    fixed_keys = list(expected_fixed_keys)
     expected_keys = fixed_keys + list(chart_specific_expected_keys.keys())
     assert set(chart_dict.keys()) == set(expected_keys)
 
@@ -109,18 +115,15 @@ def _assert_top_level_keys(
         assert chart_dict[expected_key] == expected_value
 
 
-def _assert_chart_data(chart_dict: dict, expected_df: pl.DataFrame) -> None:
+def _assert_chart_data(
+    chart_dict: dict,
+    dataset_key: str,
+    expected_df: pl.DataFrame,
+) -> None:
     """Assert that the chart data matches the expected DataFrame."""
-    assert chart_dict["data"].keys() == {"name"}
-
-    actual_data_name = chart_dict["data"]["name"]
-
-    assert chart_dict["datasets"].keys() == {actual_data_name}
-    assert len(chart_dict["datasets"][actual_data_name]) == len(expected_df)
-
     assert_frame_equal(
         expected_df,
-        pl.DataFrame(chart_dict["datasets"][actual_data_name]),
+        pl.DataFrame(chart_dict["datasets"][dataset_key]),
     )
 
 
@@ -200,106 +203,53 @@ def _construct_expected_bar_layer(
     }
 
 
-def _construct_line_layer(
+def _construct_line_or_point_layer(
     type_: Literal["line", "point"],
-    colour: str,
+    *,
+    colours: list[str],
     x_axis_name: str,
-    y_axis_name: str,
-    left_y_axis_name: str,
+    y_axis_names: list[str],
     y_axis_label: str,
     y_axis_range: tuple[float, float],
-    expected_title: str,
-    extra_tooltip_fields: list[str] | None = None,
+    x_axis_label_angle: int = 0,
+    unpivoted_value_name: str = "value",
+    unpivoted_variable_name: str = "variable",
+    encoding_color_legend_is_none: bool = False,
 ) -> dict:
     """Construct either point or line layer for the right y axis."""
-    tooltip_fields = (
-        [*extra_tooltip_fields, left_y_axis_name]
-        if extra_tooltip_fields
-        else [y_axis_name]
-    )
-    expected_tooltip = _construct_expected_tooltip(
-        x_axis_name=x_axis_name,
-        y_axis_names=tooltip_fields,
-    )
-
     expected_x_axis = {
-        "axis": {"labelAngle": 0, "title": x_axis_name},
+        "axis": {"labelAngle": x_axis_label_angle, "title": x_axis_name},
         "field": x_axis_name,
         "type": "ordinal",
         "sort": None,
     }
     expected_y_axis = {
         "axis": {"grid": True, "title": y_axis_label},
-        "field": y_axis_name,
+        "field": unpivoted_value_name,
         "type": "quantitative",
         "scale": {"domain": list(y_axis_range)},
     }
+    expected_color = {
+        "field": unpivoted_variable_name,
+        "type": "nominal",
+        "scale": {"domain": y_axis_names, "range": colours},
+        "legend": None,
+    }
+    if not encoding_color_legend_is_none:
+        del expected_color["legend"]
 
     expected_line_encoding = {
-        "tooltip": expected_tooltip,
         "x": expected_x_axis,
         "y": expected_y_axis,
+        "color": expected_color,
     }
 
-    expected_line_mark = {"type": type_, "color": colour}
-
-    expected_title_ = {"anchor": "middle", "text": expected_title}
+    expected_line_mark = {"type": type_}
 
     return {
         "mark": expected_line_mark,
         "encoding": expected_line_encoding,
-        "title": expected_title_,
     }
-
-
-def _construct_expected_line_layer(
-    x_axis_name: str,
-    left_y_axis_name: str,
-    right_y_axis_names: list[str],
-    right_y_axis_range: tuple[float, float],
-    right_y_axis_label: str,
-    expected_title: str,
-) -> dict:
-    """Construct entire line layer.
-
-    This includes a line and point layer for each right y axis column. The left y
-    axis column is included in the tooltip for each line and point layer.
-
-    """
-    lines = []
-
-    for right_y_axis_index, right_y_axis_name in enumerate(right_y_axis_names):
-        assert DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours is not None
-        line_colour = DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours[right_y_axis_index]
-
-        line = _construct_line_layer(
-            type_="line",
-            colour=line_colour,
-            x_axis_name=x_axis_name,
-            y_axis_name=right_y_axis_name,
-            left_y_axis_name=left_y_axis_name,
-            y_axis_label=right_y_axis_label,
-            y_axis_range=right_y_axis_range,
-            expected_title=expected_title,
-            extra_tooltip_fields=right_y_axis_names,
-        )
-
-        line_points = _construct_line_layer(
-            type_="point",
-            colour=line_colour,
-            x_axis_name=x_axis_name,
-            y_axis_name=right_y_axis_name,
-            left_y_axis_name=left_y_axis_name,
-            y_axis_label=right_y_axis_label,
-            y_axis_range=right_y_axis_range,
-            expected_title=expected_title,
-            extra_tooltip_fields=right_y_axis_names,
-        )
-
-        lines.append(line)
-        lines.append(line_points)
-
-    return {"layer": lines}
 
 
 def test_bars_plot_only(sample_data: pl.DataFrame, summary_table: SummaryTable):
@@ -327,7 +277,13 @@ def test_bars_plot_only(sample_data: pl.DataFrame, summary_table: SummaryTable):
     chart_dict = chart.to_dict()
 
     _assert_top_level_keys(chart_dict, height=height, width=width)  # type: ignore[reportArgumentType]
-    _assert_chart_data(chart_dict, expected_df=sample_data)
+
+    # One dataset for the entire chart as there is only one mark.
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["data"]["name"],
+        expected_df=sample_data,
+    )
 
     expected_bar_layer = _construct_expected_bar_layer(
         colour=DEFAULT_ONE_WAY_PLOT_COLOURS.bar_colour,
@@ -368,11 +324,42 @@ def test_bar_and_single_line_plot(
 
     _assert_top_level_keys(
         chart_dict,
+        expected_fixed_keys=("config", "layer", "$schema", "datasets"),
         height=height,  # type: ignore[reportArgumentType]
         width=width,  # type: ignore[reportArgumentType]
-        resolve={"scale": {"y": "independent"}},
+        resolve={"scale": {"y": "independent", "color": "independent"}},
     )
-    _assert_chart_data(chart_dict, expected_df=sample_data)
+
+    assert chart_dict["layer"][0]["mark"]["type"] == "bar", (
+        "Expecting layer 0 to be a bar mark."
+    )
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["layer"][0]["data"]["name"],
+        expected_df=sample_data,
+    )
+
+    assert chart_dict["layer"][1]["mark"]["type"] == "line", (
+        "Expecting layer 1 to be a line mark."
+    )
+    expected_line_data_unpivoted = sample_data.with_columns(
+        pl.lit("f0").alias("variable"),
+        pl.col("f0").alias("value"),
+    ).select(["x_var", "variable", "value"])
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["layer"][1]["data"]["name"],
+        expected_df=expected_line_data_unpivoted,
+    )
+
+    assert chart_dict["layer"][2]["mark"]["type"] == "point", (
+        "Expecting layer 2 to be a point mark."
+    )
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["layer"][2]["data"]["name"],
+        expected_df=expected_line_data_unpivoted,
+    )
 
     expected_bar_layer = _construct_expected_bar_layer(
         colour=DEFAULT_ONE_WAY_PLOT_COLOURS.bar_colour,
@@ -383,19 +370,38 @@ def test_bar_and_single_line_plot(
         expected_title="x_var",
         label_angle=0,
     )
+    # Use the actual dataset name from the chart dict.
+    expected_bar_layer["data"] = {"name": chart_dict["layer"][0]["data"]["name"]}
 
-    expected_line_layer = _construct_expected_line_layer(
+    assert DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours is not None
+
+    expected_line_layer = _construct_line_or_point_layer(
+        type_="line",
+        colours=list(DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours),
         x_axis_name="x_var",
-        left_y_axis_name="w_col",
-        right_y_axis_names=["f0"],
-        right_y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
-        right_y_axis_label="Response Scale",
-        expected_title="x_var",
+        y_axis_names=["f0"],
+        y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
+        y_axis_label="Response Scale",
     )
+    # Use the actual dataset name from the chart dict.
+    expected_line_layer["data"] = {"name": chart_dict["layer"][1]["data"]["name"]}
 
-    assert len(chart_dict["layer"]) == 2
+    expected_points_layer = _construct_line_or_point_layer(
+        type_="point",
+        colours=list(DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours),
+        x_axis_name="x_var",
+        y_axis_names=["f0"],
+        y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
+        y_axis_label="Response Scale",
+        encoding_color_legend_is_none=True,
+    )
+    # Use the actual dataset name from the chart dict.
+    expected_points_layer["data"] = {"name": chart_dict["layer"][2]["data"]["name"]}
+
+    assert len(chart_dict["layer"]) == 3
     assert chart_dict["layer"][0] == expected_bar_layer
     assert chart_dict["layer"][1] == expected_line_layer
+    assert chart_dict["layer"][2] == expected_points_layer
 
 
 def test_bar_and_multiple_line_plot(
@@ -408,11 +414,13 @@ def test_bar_and_multiple_line_plot(
     width = 240
     title = "Bar and Multiple Lines Summary Plot"
 
+    right_y_axis_columns = ["f0", "f1", "f2", "f3"]
+
     chart = produce_one_way_summary_plot(
         summary_table,
         x_axis_column="x_var",
         left_y_axis_column="w_col",
-        right_y_axis_columns=["f0", "f1", "f2", "f3"],
+        right_y_axis_columns=right_y_axis_columns,
         title=title,
         chart_width=width,
         chart_height=height,
@@ -425,34 +433,90 @@ def test_bar_and_multiple_line_plot(
 
     _assert_top_level_keys(
         chart_dict,
+        expected_fixed_keys=("config", "layer", "$schema", "datasets"),
         height=height,  # type: ignore[reportArgumentType]
         width=width,  # type: ignore[reportArgumentType]
-        resolve={"scale": {"y": "independent"}},
+        resolve={"scale": {"y": "independent", "color": "independent"}},
     )
-    _assert_chart_data(chart_dict, expected_df=sample_data)
+    assert chart_dict["layer"][0]["mark"]["type"] == "bar", (
+        "Expecting layer 0 to be a bar mark."
+    )
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["layer"][0]["data"]["name"],
+        expected_df=sample_data,
+    )
+
+    assert chart_dict["layer"][1]["mark"]["type"] == "line", (
+        "Expecting layer 1 to be a line mark."
+    )
+    # Manual unpivot of the original summary data.
+    expected_line_data_unpivoted = pl.concat(
+        [
+            sample_data.with_columns(
+                pl.lit(col).alias("variable"),
+                pl.col(col).alias("value"),
+            ).select(["x_var", "variable", "value"])
+            for col in right_y_axis_columns
+        ],
+        how="vertical",
+    )
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["layer"][1]["data"]["name"],
+        expected_df=expected_line_data_unpivoted,
+    )
+
+    assert chart_dict["layer"][2]["mark"]["type"] == "point", (
+        "Expecting layer 2 to be a point mark."
+    )
+    _assert_chart_data(
+        chart_dict=chart_dict,
+        dataset_key=chart_dict["layer"][2]["data"]["name"],
+        expected_df=expected_line_data_unpivoted,
+    )
 
     expected_bar_layer = _construct_expected_bar_layer(
         colour=DEFAULT_ONE_WAY_PLOT_COLOURS.bar_colour,
         opacity=opacity,
         x_axis_name="x_var",
         y_axis_name="w_col",
-        extra_tooltip_fields=["f0", "f1", "f2", "f3"],
+        extra_tooltip_fields=right_y_axis_columns,
         expected_title=title,
         label_angle=0,
     )
+    # Use the actual dataset name from the chart dict.
+    expected_bar_layer["data"] = {"name": chart_dict["layer"][0]["data"]["name"]}
 
-    expected_line_layer = _construct_expected_line_layer(
+    assert DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours is not None
+
+    expected_line_layer = _construct_line_or_point_layer(
+        type_="line",
+        colours=list(DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours),
         x_axis_name="x_var",
-        left_y_axis_name="w_col",
-        right_y_axis_names=["f0", "f1", "f2", "f3"],
-        right_y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
-        right_y_axis_label="Response Scale",
-        expected_title=title,
+        y_axis_names=right_y_axis_columns,
+        y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
+        y_axis_label="Response Scale",
     )
+    # Use the actual dataset name from the chart dict.
+    expected_line_layer["data"] = {"name": chart_dict["layer"][1]["data"]["name"]}
 
-    assert len(chart_dict["layer"]) == 2
+    expected_points_layer = _construct_line_or_point_layer(
+        type_="point",
+        colours=list(DEFAULT_ONE_WAY_PLOT_COLOURS.line_colours),
+        x_axis_name="x_var",
+        y_axis_names=right_y_axis_columns,
+        y_axis_range=(0.456, 0.504),  # range +-0.1 * (0.5 - 0.46)
+        y_axis_label="Response Scale",
+        encoding_color_legend_is_none=True,
+    )
+    # Use the actual dataset name from the chart dict.
+    expected_points_layer["data"] = {"name": chart_dict["layer"][2]["data"]["name"]}
+
+    assert len(chart_dict["layer"]) == 3
     assert chart_dict["layer"][0] == expected_bar_layer
     assert chart_dict["layer"][1] == expected_line_layer
+    assert chart_dict["layer"][2] == expected_points_layer
 
 
 def test_many_lines_can_be_plot_as_long_as_colours_specified(
@@ -488,7 +552,4 @@ def test_many_lines_can_be_plot_as_long_as_colours_specified(
     assert isinstance(chart, alt.LayerChart)
 
     chart_dict = chart.to_dict()
-
-    assert len(chart_dict["layer"]) == 2
-    assert chart_dict["layer"][1].keys() == {"layer"}
-    assert len(chart_dict["layer"][1]["layer"]) == 20  # 10 lines and 10 points
+    assert len(chart_dict["layer"]) == 3

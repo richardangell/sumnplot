@@ -170,23 +170,24 @@ def produce_one_way_summary_plot(
 
     df = summary.head(summary.n)
 
-    x_axis = alt.Chart(df, title=title_).encode(
-        tooltip=tooltip_columns,
-        x=alt.X(
-            f"{x_axis_column}:O",
-            axis=alt.Axis(labelAngle=x_axis_label_angle, title=x_axis_column),
-            sort=None,
-        ),
+    bars = (
+        alt.Chart(df, title=title_)
+        .encode(
+            tooltip=tooltip_columns,
+            x=alt.X(
+                f"{x_axis_column}:O",
+                axis=alt.Axis(labelAngle=x_axis_label_angle, title=x_axis_column),
+                sort=None,
+            ),
+        )
+        .mark_bar(color=colours.bar_colour, opacity=bar_opacity)
+        .encode(
+            y=alt.Y(
+                f"{left_y_axis_column}:Q",
+                axis=alt.Axis(grid=False, title=left_y_axis_column),
+            ),
+        )
     )
-
-    bar = x_axis.mark_bar(color=colours.bar_colour, opacity=bar_opacity).encode(
-        y=alt.Y(
-            f"{left_y_axis_column}:Q",
-            axis=alt.Axis(grid=False, title=left_y_axis_column),
-        ),
-    )
-
-    line_marks = []
 
     if right_y_axis_columns:
         check_enough_line_colours(colours=colours, lines=right_y_axis_columns)
@@ -196,28 +197,65 @@ def produce_one_way_summary_plot(
             y_axis_columns=right_y_axis_columns,
         )
 
-        for right_y_axis_index, right_y_axis_column in enumerate(right_y_axis_columns):
-            # pyrefly: ignore [unsupported-operation]
-            line_colour = colours.line_colours[right_y_axis_index]
+        results_unpivot = summary.unpivot(
+            on=right_y_axis_columns,
+            index=[x_axis_column],
+        )
 
-            y_values = alt.Y(
-                f"{right_y_axis_column}:Q",
-                axis=alt.Axis(grid=True, title="Response Scale"),
-                scale=alt.Scale(domain=[right_y_min, right_y_max]),
+        y_definition = alt.Y(
+            "value:Q",
+            axis=alt.Axis(grid=True, title="Response Scale"),
+            scale=alt.Scale(domain=[right_y_min, right_y_max]),
+        )
+
+        lines = (
+            alt.Chart(results_unpivot)
+            .mark_line()
+            .encode(
+                x=alt.X(
+                    f"{x_axis_column}:O",
+                    axis=alt.Axis(labelAngle=x_axis_label_angle, title=x_axis_column),
+                    sort=None,
+                ),
+                y=y_definition,
+                color=alt.Color(
+                    "variable:N",
+                    scale=alt.Scale(
+                        domain=right_y_axis_columns,
+                        range=list(colours.line_colours or []),
+                    ),
+                ),
             )
+        )
 
-            line = x_axis.mark_line(color=line_colour).encode(y=y_values)
-            line_points = x_axis.mark_point(color=line_colour).encode(y=y_values)
+        points = (
+            alt.Chart(results_unpivot)
+            .mark_point()
+            .encode(
+                x=alt.X(
+                    f"{x_axis_column}:O",
+                    axis=alt.Axis(labelAngle=x_axis_label_angle, title=x_axis_column),
+                    sort=None,
+                ),
+                y=y_definition,
+                color=alt.Color(
+                    "variable:N",
+                    scale=alt.Scale(
+                        domain=right_y_axis_columns,
+                        range=list(colours.line_colours or []),
+                    ),
+                    legend=None,
+                ),
+            )
+        )
 
-            line_marks.append(line)
-            line_marks.append(line_points)
-
-        right_axis_lines = alt.layer(*line_marks)
-
-        chart = alt.layer(bar, right_axis_lines).resolve_scale(y="independent")
+        chart = alt.layer(bars, lines, points).resolve_scale(
+            y="independent",
+            color="independent",
+        )
 
     else:
-        chart = alt.layer(bar)
+        chart = alt.layer(bars)
 
     properties = {}
     if chart_width is not None:
