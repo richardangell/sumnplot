@@ -7,25 +7,16 @@ import altair as alt
 import polars as pl
 from altair import FacetChart, LayerChart
 
-from sumnplot.exceptions import MissingColumnError, SumNPlotError
+from sumnplot.exceptions import MissingColumnError
+from sumnplot.plot.altair.exceptions import AltairPlotError
 
 if TYPE_CHECKING:
     from sumnplot.summarisation.summary_table import SummaryTable
 
 
-class ColourError(SumNPlotError):
-    """Raised when there is a problem with the colours specified for a plot."""
-
-
 @dataclass(frozen=True)
 class OneWaySummaryColours:
     """Colours used in one-way summary plots.
-
-    When used in produce_one_way_summary_plot, the bar_colour is used for the bars
-    in the plot and the line_colours are used for the lines in the plot. The number
-    of line colours must be equal to or greater than the number of lines in the plot.
-    If there are more line colours than lines in the plot, a ColourError will be
-    raised.
 
     Attributes:
         bar_colour (str): The colour to use for the bars in the plot.
@@ -38,28 +29,6 @@ class OneWaySummaryColours:
     bar_colour: str
     line_colours: tuple[str, ...] | None = None
 
-    def check_enough_line_colours(self, lines: list[str]) -> None:
-        """Check that there are enough line colours for the number of lines to plot.
-
-        Args:
-            lines (list[str]): The list of lines to plot.
-
-        Raises:
-            ColourError: If there are not enough line colours specified for the number
-                of lines to plot.
-
-        """
-        if self.line_colours is None:
-            msg = "No line colours specified."
-            raise ColourError(msg)
-
-        if len(lines) > len(self.line_colours):
-            msg = (
-                f"Not enough line colours specified for {len(lines)} lines. "
-                f"Only {len(self.line_colours)} line colours specified."
-            )
-            raise ColourError(msg)
-
 
 DEFAULT_ONE_WAY_PLOT_COLOURS = OneWaySummaryColours(
     bar_colour="#ffa500",
@@ -71,6 +40,30 @@ DEFAULT_ONE_WAY_PLOT_COLOURS = OneWaySummaryColours(
         "#4b0082",
     ),
 )
+
+
+def check_enough_line_colours(colours: OneWaySummaryColours, lines: list[str]) -> None:
+    """Check that there are enough line colours for the number of lines to plot.
+
+    Args:
+        colours (OneWaySummaryColours): The colours to use for the lines in the plot.
+        lines (list[str]): The list of lines to plot.
+
+    Raises:
+        AltairPlotError: If there are not enough line colours specified for the number
+        of lines to plot.
+
+    """
+    if colours.line_colours is None:
+        msg = "No line colours specified."
+        raise AltairPlotError(msg)
+
+    if len(lines) > len(colours.line_colours):
+        msg = (
+            f"Not enough line colours specified for {len(lines)} lines. "
+            f"Only {len(colours.line_colours)} line colours specified."
+        )
+        raise AltairPlotError(msg)
 
 
 def _determine_y_axis_range(
@@ -141,11 +134,18 @@ def produce_one_way_summary_plot(
         x axis with lines on the right y axis and bars on the left y axis.
 
     Raises:
-        ExceptionGroup : If any of the specified columns are not present in the input
+        AltairPlotError: If the summary argument contains more than one groupby column.
+        ExceptionGroup: If any of the specified columns are not present in the input
             summary argument then an ExceptionGroup is raised containing a
             MissingColumnError for each missing column.
+        AltairPlotError: If there are not enough line colours specified for the number
+            of lines to plot.
 
     """
+    if len(summary.groupby_columns) > 1:
+        msg = "summary contains data summarised by more than one groupby column."
+        raise AltairPlotError(msg)
+
     column_errors = []
     if x_axis_column not in summary.groupby_columns:
         column_errors.append(MissingColumnError(x_axis_column))
@@ -189,7 +189,7 @@ def produce_one_way_summary_plot(
     line_marks = []
 
     if right_y_axis_columns:
-        colours.check_enough_line_colours(right_y_axis_columns)
+        check_enough_line_colours(colours=colours, lines=right_y_axis_columns)
 
         right_y_min, right_y_max = _determine_y_axis_range(
             df=df,

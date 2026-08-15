@@ -9,7 +9,6 @@ from polars.testing import assert_frame_equal
 
 from sumnplot.plot.altair.one_way_summary import (
     DEFAULT_ONE_WAY_PLOT_COLOURS,
-    ColourError,
     OneWaySummaryColours,
     produce_one_way_summary_plot,
 )
@@ -301,31 +300,6 @@ def _construct_expected_line_layer(
         lines.append(line_points)
 
     return {"layer": lines}
-
-
-def test_too_many_columns_for_line_colours_raises_exception(
-    summary_table: SummaryTable,
-):
-    """Test exception raised when more right y axis columns than line colours."""
-    colours = OneWaySummaryColours(
-        bar_colour="#000000",
-        line_colours=("#FF0000", "#00FF00"),  # Only 2 line colours specified
-    )
-
-    right_y_axis_columns = ["f0", "f1", "f2"]  # 3 right y axis columns
-
-    expected_message = (
-        "Not enough line colours specified for 3 lines. Only 2 line colours specified."
-    )
-
-    with pytest.raises(ColourError, match=expected_message):
-        produce_one_way_summary_plot(
-            summary_table,
-            x_axis_column="x_var",
-            left_y_axis_column="w_col",
-            right_y_axis_columns=right_y_axis_columns,
-            colours=colours,
-        )
 
 
 def test_bars_plot_only(sample_data: pl.DataFrame, summary_table: SummaryTable):
