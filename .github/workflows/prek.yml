@@ -27,8 +27,10 @@ jobs:
       - name: Check Pyrefly Installation
         run: |
           source .venv/bin/activate
-          prek --version
+          pyrefly --version
 
+      # Cannot find a way to use the pyrefly installation within the uv virtual environment
+      # in the prek Github action, so just envoke prek directly.
       - name: Run prek
         run: |
           source .venv/bin/activate
