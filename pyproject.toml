@@ -21,7 +21,6 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "jupyter>=1.1.1",
     "prek>=0.4.12",
     "pyrefly>=1.2.0",
     "pytest>=9.1.1",
@@ -29,6 +28,9 @@ dev = [
 docs = [
     "sphinx>=9.1.0",
     "sphinx-rtd-theme>=3.1.0",
+]
+viz = [
+    "jupyter>=1.1.1",
 ]
 
 [tool.ruff]
