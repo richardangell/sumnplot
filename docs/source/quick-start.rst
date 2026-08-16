@@ -66,6 +66,6 @@ The code to produce the plot at the top of this page is below;
          x_axis_column="bp",
          left_y_axis_column="w",
          right_y_axis_columns=["s1", "s2", "s3"],
-         title="One Way Summary Plot by 'bp'",
+         title="One Way Summary by 'bp'",
          x_axis_label_angle=90,
      )
