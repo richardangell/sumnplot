@@ -29,6 +29,7 @@ jobs:
 
       - name: Check Pyrefly Installation
         run: |
+          source .venv/bin/activate
           pyrefly --version
 
       - name: Run prek
