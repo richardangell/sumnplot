@@ -5,12 +5,13 @@ Welcome to the quick start guide for ``sumnplot``.
 
 ``sumnplot`` provides functionality to produce summary plots like below. The code to produce this plot can be found at the bottom of this page.
 
-   .. image:: ../images/two_way.png
+   .. raw:: html
+       :file: ../images/chart.html
 
 Installation
 --------------------
 
-The easiest way to get ``sumnplot`` is to install directly from ``pip``;
+The easiest way to get ``sumnplot`` is to install directly from ``pypi``;
 
    .. code::
 
@@ -19,47 +20,52 @@ The easiest way to get ``sumnplot`` is to install directly from ``pip``;
 Discretisation
 --------------------
 
-``sumnplot.discretisation`` provides some simple ways to discretise numeric variables including by equal width, equal weight or quantile buckets.
+``sumnplot.discretisation`` provides some simple ways to discretise numeric variables with either equal width or equal weight buckets.
 
 Summarisation
 --------------------
 
-``sumnplot.summary`` provides a way to summarise multiple columnswith the ``ColumnSummariser`` class. This will sum columns by other columns and can discretise columns using the ``discretisation`` module,
+``sumnplot.summarisation`` provides a ``group_by_weighted_average`` function that works with ``polars.DataFrame`` objects. It is provided as a light wrapper around the ``polars.group_by`` functionality but ensures that all levels of the group by variables are present in the output.
 
 Plotting
 --------------------
 
-``sumnplot.plot.matplotlib`` provides to functions to plot one or two way summary data.
+``sumnplot.plot.altair`` provides a function to produce one-way summary plots using ``altair``.
 
 The code to produce the plot at the top of this page is below;
 
    .. code::
 
+     import polars as pl
      from sklearn.datasets import load_diabetes
-     from sumnplot.discretisation import QuantileDiscretiser
-     from sumnplot.summary import ColumnSummariser
-     from sumnplot.plot.matplotlib import plot_summarised_variable_2way
 
-     X, y = load_diabetes(return_X_y=True, as_frame=True)
-     X["s1"] = X["s1"] - X["s1"].min()
+     from sumnplot.discretisation import EqualWeightDiscretiser
+     from sumnplot.summarisation import group_by_weighted_average, ResponseWeight
+     from sumnplot.plot.altair.one_way_summary import produce_one_way_summary_plot
 
-     two_way_summary = ColumnSummariser._summarise_column(
-         df=X,
-         to_summarise_columns=["s1", "s2", "s3"],
-         to_summarise_columns_labels=["obs", "p1", "p2"],
-         to_summarise_divide_column="s1",
-         by_column=QuantileDiscretiser(
-             variable="age", quantiles=(0, 0.25, 0.5, 0.75, 1.0)
-         ),
-         second_by_column=QuantileDiscretiser(
-             variable="bmi", quantiles=(0, 0.33, 0.66, 1.0)
-         ),
+     X, _ = load_diabetes(return_X_y=True, as_frame=True)
+     df = pl.DataFrame(X).with_columns(pl.lit(1).alias("w"))
+
+     bp_discretiser = EqualWeightDiscretiser(
+         column="bp",
+         weights="w",
+         min_weight_proportion=0.05,
+         round_breaks_for_labels=True,
+     )
+     bp_discretiser.fit(df)
+     df = bp_discretiser.transform(df)
+
+     results = group_by_weighted_average(
+         df,
+         groupby_columns=["bp"],
+         responses=[ResponseWeight("s1", "w"), ResponseWeight("s2", "w"), ResponseWeight("s3", "w")],
      )
 
-     plot_summarised_variable_2way(
-         two_way_summary,
-         axis_right=0,
-         axis_left=[1, 2],
-         bar_type="stacked",
-         bars_percent=True,
+     produce_one_way_summary_plot(
+         results,
+         x_axis_column="bp",
+         left_y_axis_column="w",
+         right_y_axis_columns=["s1", "s2", "s3"],
+         title="One Way Summary by 'bp'",
+         x_axis_label_angle=90,
      )

@@ -3,14 +3,14 @@ api documentation
 
 .. currentmodule:: sumnplot
 
-summary module
-------------------
+summarisation module
+--------------------
 
 .. autosummary::
     :toctree: api/
 
-    summary.ColumnSummariser
-    summary.DataFrameValueCounter
+    summarisation.group_by_weighted_average
+    summarisation.ResponseWeight
     
 discretisation module
 --------------------------
@@ -18,27 +18,13 @@ discretisation module
 .. autosummary::
     :toctree: api/
 
-    discretisation.Discretiser
     discretisation.EqualWidthDiscretiser
     discretisation.EqualWeightDiscretiser
-    discretisation.QuantileDiscretiser
          
-plot.matplotlib module
+plot.altair module
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    plot.matplotlib.plot_summarised_variable
-    plot.matplotlib.plot_summarised_variable_2way
-   
-checks module
-------------------
-
-.. autosummary::
-    :toctree: api/
-
-    checks.check_type
-    checks.check_condition
-    checks.check_columns_in_df
-        
+    plot.altair.produce_one_way_summary_plot
