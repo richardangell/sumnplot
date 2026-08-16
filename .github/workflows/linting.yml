@@ -1,4 +1,4 @@
-name: prek
+name: linting
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  prek:
+  linting:
     runs-on: ubuntu-latest
     name: Run linting checks via prek
     steps:
