@@ -27,5 +27,9 @@ jobs:
       - name: Activate the virtual environment
         run: source .venv/bin/activate
 
+      - name: Check Pyrefly Installation
+        run: |
+          pyrefly --version
+
       - name: Run prek
         uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2.0.6
