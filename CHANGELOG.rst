@@ -35,6 +35,8 @@ Removed
 - Entirety of the old implementation.
 - Removed ``pandas``, ``scikit-learn`` and ``matplotlib`` dependencies.
 - Jupyter notebooks in the ``demo`` folder and ``mybinder.org`` environment file.
+- Two way plotting functionality.
+- Quantile based discretisation.
 
 0.4.0 (unreleased)
 ------------------
