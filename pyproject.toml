@@ -31,6 +31,8 @@ docs = [
 ]
 viz = [
     "jupyter>=1.1.1",
+    "pandas>=3.0.5",
+    "scikit-learn>=1.9.0",
 ]
 
 [tool.ruff]
