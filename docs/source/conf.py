@@ -14,18 +14,18 @@
 
 import os
 import sys
+import tomllib
 
 sys.path.insert(0, os.path.abspath("../../src"))
 
-import sumnplot
-
+pyproject_toml_dict = tomllib.load(open("../../pyproject.toml", "rb"))
 
 # -- Project information -----------------------------------------------------
 
 project = "sumnplot"
 copyright = "2021, Richard Angell"
 author = "Richard Angell"
-release = sumnplot.__version__
+release = pyproject_toml_dict["project"]["version"]
 
 # -- General configuration ---------------------------------------------------
 
