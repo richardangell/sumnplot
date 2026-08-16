@@ -15,9 +15,9 @@
 import os
 import sys
 
-import sumnplot
-
 sys.path.insert(0, os.path.abspath("../../src"))
+
+import sumnplot
 
 
 # -- Project information -----------------------------------------------------
