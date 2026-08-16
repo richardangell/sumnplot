@@ -16,20 +16,40 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
+0.5.0 (2026-08-16) 
+------------------
+
+Added
+^^^^^
+- Minimum required ``Python`` version is now ``3.12``.
+- Tests.
+
+Changed
+^^^^^^^
+- Refactor project to support ``polars`` for data and ``altair`` for plotting.
+- Swap from ``poetry`` to ``uv`` for project management.
+- Swap from ``pre-commit`` to ``prek`` and update associated GitHub actions workflow.
+
+Removed
+^^^^^^^
+- Entirety of the old implementation.
+- Removed ``pandas``, ``scikit-learn`` and ``matplotlib`` dependencies.
+- Jupyter notebooks in the ``demo`` folder and ``mybinder.org`` environment file.
+
 0.4.0 (unreleased)
------------------------
+------------------
 
 Changed
 ^^^^^^^
 
-- Bumped minimum required dependency versions
+- Bumped minimum required dependency versions:
   * ``pandas``: ``2.2.0``
   * ``scikit-learn``: ``1.5.0``
 
 Fixed
 ^^^^^
 
-- Fix conda env file for mybinder.org not specifying where to install sumnplot from (now installed from pypi)
+- Fix conda env file for mybinder.org not specifying where to install sumnplot from (now installed from pypi).
 
 
 0.3.0 (2022-05-28) 
@@ -38,29 +58,29 @@ Fixed
 Added
 ^^^^^
 
-- Add github actions pipelines
-- Add ``.flake8``, ``mypy.ini`` and ``.pre-comit-config.yaml`` files for the project
-- Add ``checks`` module
-- Add new ``summary.ColumnSummariser`` class to summarise multiple columns
-- Add new base class for discretisers; ``discretisation.Discretiser``
-- Add new changelog in ``CHANGELOG.rst`` file
+- Add github actions pipelines.
+- Add ``.flake8``, ``mypy.ini`` and ``.pre-commit-config.yaml`` files for the project.
+- Add ``checks`` module.
+- Add new ``summary.ColumnSummariser`` class to summarise multiple columns.
+- Add new base class for discretisers; ``discretisation.Discretiser``.
+- Add new changelog in ``CHANGELOG.rst`` file.
 
 Changed
 ^^^^^^^
 
-- Rename package to sumnplot
-- Update documentation on readthedocs
-- Update demo notebooks and rename ``examples`` folder to ``demo``
-- Update project ``README.md``
-- Change project to use ``flit`` as the package build tool
-- Swap ``requirements.txt`` to ``pyproject.toml``
-- Combine ``plot.one_way`` and ``plot.two_way`` modules into ``plot.matplotlib``
-- Convert ``data_values_summary.data_values_summary`` function to ``summary.DataFrameValueCounter`` class
-- Convert ``discretisation.discretise`` function into ``discretisation.EqualWidthDiscretiser``, ``discretisation.EqualWeightDiscretiser``, ``discretisation.QuantileDiscretiser`` classes
+- Rename package to ``sumnplot``.
+- Update documentation on ``readthedocs``.
+- Update demo notebooks and rename ``examples`` folder to ``demo``.
+- Update project ``README.md``.
+- Change project to use ``flit`` as the package build tool.
+- Swap ``requirements.txt`` to ``pyproject.toml``.
+- Combine ``plot.one_way`` and ``plot.two_way`` modules into ``plot.matplotlib``.
+- Convert ``data_values_summary.data_values_summary`` function to ``summary.DataFrameValueCounter`` class.
+- Convert ``discretisation.discretise`` function into ``discretisation.EqualWidthDiscretiser``, ``discretisation.EqualWeightDiscretiser``, ``discretisation.QuantileDiscretiser`` classes.
 
 Removed
 ^^^^^^^
 
-- Remove ``plot.helpers`` and ``plot.templates`` modules
-- Remove ``plot.one_way.summary_plot`` and ``plot.two_way.summary_plot`` functions
-- Remove ``tests`` folder
+- Remove ``plot.helpers`` and ``plot.templates`` modules.
+- Remove ``plot.one_way.summary_plot`` and ``plot.two_way.summary_plot`` functions.
+- Remove ``tests`` folder.
