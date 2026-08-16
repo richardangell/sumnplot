@@ -1,4 +1,4 @@
 altair==6.2.2
 polars==1.43.2
 Sphinx==9.1.0
-sphinx-rtd-theme==3.0.0
+sphinx-rtd-theme==3.1.0
