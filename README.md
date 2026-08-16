@@ -4,58 +4,54 @@
 ![Read the Docs](https://img.shields.io/readthedocs/sumnplot)
 ![GitHub](https://img.shields.io/github/license/richardangell/sumnplot)
 ![GitHub last commit](https://img.shields.io/github/last-commit/richardangell/sumnplot)
-![Build](https://github.com/richardangell/sumnplot/actions/workflows/run_pre-commit.yml/badge.svg?branch=main)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/richardangell/sumnplot/HEAD?labpath=demo)
 
 ## Introduction
 
-``sumplot`` provides some very simple functionality to discretise, summarise and plot variables.
+``sumplot`` provides some very simple functionality to discretise, summarise and plot data.
 
-The example below uses the [diabetes](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_diabetes.html) data and will summarise the variables `s1`, `s2` and `s3` by `age` and `bmi` which are both discretised according to specific quantiles. 
+The example below uses the [diabetes](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_diabetes.html) dataset and summarises the variables `s1`, `s2` and `s3` by `bp`. The `bp` variable is discretised into buckets with a minimum of 5% of weight per bucket.
 
 ```python
+import polars as pl
 from sklearn.datasets import load_diabetes
-from sumnplot.discretisation import QuantileDiscretiser
-from sumnplot.summary import ColumnSummariser
-from sumnplot.plot.matplotlib import plot_summarised_variable_2way
-```
 
-```python
-X, y = load_diabetes(return_X_y=True, as_frame=True)
-X["s1"] = X["s1"] - X["s1"].min()
-```
+from sumnplot.discretisation import EqualWeightDiscretiser
+from sumnplot.summarisation import group_by_weighted_average, ResponseWeight
+from sumnplot.plot.altair.one_way_summary import produce_one_way_summary_plot
 
-```python
-two_way_summary = ColumnSummariser._summarise_column(
-    df=X,
-    to_summarise_columns=["s1", "s2", "s3"],
-    to_summarise_columns_labels=["obs", "p1", "p2"],
-    to_summarise_divide_column="s1",
-    by_column=QuantileDiscretiser(
-        variable="age", quantiles=(0, 0.25, 0.5, 0.75, 1.0)
-    ),
-    second_by_column=QuantileDiscretiser(
-        variable="bmi", quantiles=(0, 0.33, 0.66, 1.0)
-    ),
+X, _ = load_diabetes(return_X_y=True, as_frame=True)
+df = pl.DataFrame(X).with_columns(pl.lit(1).alias("w"))
+
+bp_discretiser = EqualWeightDiscretiser(
+    column="bp",
+    weights="w",
+    min_weight_proportion=0.05,
+    round_breaks_for_labels=True,
+)
+bp_discretiser.fit(df)
+df = bp_discretiser.transform(df)
+
+results = group_by_weighted_average(
+    df,
+    groupby_columns=["bp"],
+    responses=[ResponseWeight("s1", "w"), ResponseWeight("s2", "w"), ResponseWeight("s3", "w")],
+)
+
+chart = produce_one_way_summary_plot(
+    results,
+    x_axis_column="bp",
+    left_y_axis_column="w",
+    right_y_axis_columns=["s1", "s2", "s3"],
+    title="One Way Summary by 'bp'",
+    x_axis_label_angle=90,
 )
 ```
 
-```python
-plot_summarised_variable_2way(
-    two_way_summary,
-    axis_right=0,
-    axis_left=[1, 2],
-    bar_type="stacked",
-    bars_percent=True,
-)
-```
-
-
-[![Banner](docs/images/two_way.png)](https://github.com/richardangell/sumnplot/blob/main/demo/Plotting.ipynb)
+![chart](docs/images/chart.png)
 
 ## Install
 
-The easiest way to get `sumnplot` is directly from [pypi](https://pypi.org/project/sumnplot/) using;
+The easiest way to get `sumnplot` is directly from [pypi](https://pypi.org/project/sumnplot/) using:
 
 ```
 pip install sumnplot
@@ -67,30 +63,12 @@ Documentation can be found at [readthedocs](https://sumnplot.readthedocs.io/en/l
 
 For information on how to build the documentation locally see the docs [README](https://github.com/richardangell/sumnplot/tree/master/docs).
 
-## Examples
-
-There are various example notebooks demonstrating how to use the package in the [demo](https://github.com/richardangell/sumnplot/tree/master/demo) folder in the repo.
-
-To open the example notebooks in [binder](https://mybinder.org/) click [here](https://mybinder.org/v2/gh/richardangell/sumnplot/HEAD?labpath=demo) or click on the `launch binder` shield above and then click on the directory button in the side bar to the left to navigate to the specific notebook.
-
 ## Build
 
-`sumnplot` uses [flit](https://flit.readthedocs.io/en/latest/index.html) as the package build tool. 
+`sumnplot` uses [uv](https://docs.astral.sh/uv/) as the project management tool. 
 
-To install `sumnplot` for development, use the following commands from the root directory;
-
-```
-pip install "flit>=3.2,<4"
-flit install
-```
-
-The default `deps` flag for `flit` is `all` so this will install all of the libraries required for testing and creating the docs.
-
-To install `sumnplot` in editable mode (i.e. the equivalent of `pip install . -e`) use the `symlink` flag;
+To install `sumnplot` for development, first [install uv](https://docs.astral.sh/uv/getting-started/installation/) then run the following from the project root:
 
 ```
-flit install --symlink
+uv sync
 ```
-
-See the [flit docs](https://flit.readthedocs.io/en/latest/cmdline.html#) for all the command line options for `flit`.
-
