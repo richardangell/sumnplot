@@ -1,6 +1,6 @@
 [project]
 name = "sumnplot"
-version = "0.5.0.dev0"
+version = "0.5.0"
 description = "Super simple summarisation and plotting."
 readme = "README.md"
 authors = [
